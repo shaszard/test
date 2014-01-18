@@ -193,6 +193,7 @@ ADD_DEFINITIONS(-DLIBGROUPVIEW_STATIC)
 IF(UNIX AND APPLE)
 	SET(BINARY_DEST_DIR MultiMC.app/Contents/MacOS)
 	SET(PLUGIN_DEST_DIR MultiMC.app/Contents/MacOS)
+	SET(LIBRARY_DEST_DIR MultiMC.app/Contents/MacOS)
 	SET(QTCONF_DEST_DIR MultiMC.app/Contents/Resources)
 	SET(APPS "\${CMAKE_INSTALL_PREFIX}/MultiMC.app")
 
@@ -206,11 +207,13 @@ IF(UNIX AND APPLE)
 	SET(MACOSX_BUNDLE_COPYRIGHT "Copyright 2013 MultiMC Contributors")
 ELSEIF(UNIX)
 	SET(BINARY_DEST_DIR bin)
+	SET(LIBRARY_DEST_DIR bin)
 	SET(PLUGIN_DEST_DIR plugins)
 	SET(QTCONF_DEST_DIR .)
 	SET(APPS "\${CMAKE_INSTALL_PREFIX}/bin/MultiMC")
 ELSEIF(WIN32)
 	SET(BINARY_DEST_DIR .)
+	SET(LIBRARY_DEST_DIR .)
 	SET(PLUGIN_DEST_DIR .)
 	SET(QTCONF_DEST_DIR .)
 	SET(APPS "\${CMAKE_INSTALL_PREFIX}/MultiMC.exe")
@@ -220,6 +223,10 @@ ENDIF()
 SET(DIRS "${QT_LIBS_DIR}")
 
 ################################ Included Libs ################################
+
+# Add threadweaver
+add_subdirectory(depends/threadweaver)
+include_directories(depends/threadweaver)
 
 # Add quazip
 add_subdirectory(depends/quazip)
@@ -572,7 +579,7 @@ ADD_EXECUTABLE(MultiMC MACOSX_BUNDLE WIN32 main.cpp ${MULTIMC_RCS})
 
 # Link
 TARGET_LINK_LIBRARIES(MultiMC MultiMC_common)
-TARGET_LINK_LIBRARIES(MultiMC_common xz-embedded unpack200 quazip libUtil libSettings libGroupView ${MultiMC_LINK_ADDITIONAL_LIBS})
+TARGET_LINK_LIBRARIES(MultiMC_common xz-embedded unpack200 quazip libUtil libSettings libGroupView threadweaver ${MultiMC_LINK_ADDITIONAL_LIBS})
 QT5_USE_MODULES(MultiMC Core Widgets Network Xml Concurrent ${MultiMC_QT_ADDITIONAL_MODULES})
 QT5_USE_MODULES(MultiMC_common Core Widgets Network Xml Concurrent ${MultiMC_QT_ADDITIONAL_MODULES})
 
