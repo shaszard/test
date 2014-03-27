@@ -63,7 +63,7 @@ protected:
 private:
 	Ui::OneSixModEditDialog *ui;
 	std::shared_ptr<VersionFinal> m_version;
-	std::shared_ptr<ModList> m_mods;
+	std::shared_ptr<ModsModel> m_mods;
 	std::shared_ptr<ModList> m_resourcepacks;
 	EnabledItemFilter *main_model;
 	OneSixInstance *m_inst;

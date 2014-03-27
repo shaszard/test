@@ -124,4 +124,21 @@ public: /* data */
 	QList<RawLibraryPtr> overwriteLibs;
 	QList<RawLibraryPtr> addLibs;
 	QList<QString> removeLibs;
+
+	struct Mod
+	{
+		enum Type
+		{
+			LocalFile
+		};
+		Type type;
+
+		QString id;
+
+		bool enabled;
+	};
+	bool shouldOverwriteMods = false;
+	QList<Mod> overwriteMods;
+	QList<Mod> addMods;
+	QList<Mod> removeMods;
 };

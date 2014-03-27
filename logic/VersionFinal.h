@@ -19,12 +19,79 @@
 
 #include <QString>
 #include <QList>
+#include <QDir>
 #include <memory>
 
 #include "OneSixLibrary.h"
 #include "VersionFile.h"
+#include "Mod.h"
 
 class OneSixInstance;
+
+class QFileInfo;
+class QFileSystemWatcher;
+
+struct VersionFinalMod
+{
+	VersionFinalMod(const QFileInfo &file) : mod(file) {}
+
+	enum Type
+	{
+		Unknown,
+		Local
+	};
+	Type type;
+
+	// in case of Local: filename
+	QString id;
+
+	Mod mod;
+	bool enabled;
+	bool enable(const bool e);
+};
+
+class ModsModel : public QAbstractListModel
+{
+	Q_OBJECT
+public:
+	enum Columns
+	{
+		ActiveColumn = 0,
+		NameColumn,
+		VersionColumn
+	};
+
+	explicit ModsModel(VersionFinal *version, OneSixInstance *instance, QObject *parent = 0);
+
+	virtual QVariant data(const QModelIndex &index, int role) const;
+	virtual int rowCount(const QModelIndex &parent) const;
+	virtual int columnCount(const QModelIndex &parent) const;
+	virtual Qt::ItemFlags flags(const QModelIndex &index) const;
+	bool setData(const QModelIndex &index, const QVariant &value, int role);
+	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+
+	bool installMod(const QFileInfo &file);
+	void deleteMods(const int first, const int last);
+	Mod &operator[](const int index);
+
+	inline void beginReset() { beginResetModel(); }
+	inline void endReset() { endResetModel(); }
+
+private
+slots:
+	void directoriesChanged();
+
+private:
+	VersionFinal *m_version;
+	OneSixInstance *m_instance;
+	QFileSystemWatcher *m_watcher;
+	QDir m_modsDir;
+
+	void setWatching(const bool watching);
+
+	// methods that will change user.json
+	bool setEnabled(const int index, const bool enabled);
+};
 
 class VersionFinal : public QAbstractListModel
 {
@@ -109,6 +176,9 @@ public:
 	/// the list of libs - both active and inactive, native and java
 	QList<std::shared_ptr<OneSixLibrary>> libraries;
 
+	QList<VersionFinalMod> mods;
+	ModsModel *modsModel;
+
 	/*
 	FIXME: add support for those rules here? Looks like a pile of quick hacks to me though.
 
@@ -132,6 +202,9 @@ public:
 
 	QList<VersionFilePtr> versionFiles;
 	VersionFilePtr versionFile(const QString &id);
+
+	QJsonObject getUserJsonObject() const;
+	void setUserJsonObject(const QJsonObject &object);
 
 private:
 	OneSixInstance *m_instance;

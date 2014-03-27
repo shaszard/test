@@ -30,7 +30,7 @@ public:
 	virtual void init() override;
 
 	//////  Mod Lists  //////
-	std::shared_ptr<ModList> loaderModList();
+	std::shared_ptr<ModsModel> loaderModList();
 	std::shared_ptr<ModList> resourcePackList();
 
 	////// Directories //////

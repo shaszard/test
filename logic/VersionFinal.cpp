@@ -18,9 +18,14 @@
 #include <QDebug>
 #include <QFile>
 #include <QDir>
+#include <QFileSystemWatcher>
+#include <QJsonDocument>
 
 #include "OneSixVersionBuilder.h"
 #include "OneSixInstance.h"
+#include "MMCJson.h"
+
+Q_DECLARE_METATYPE(Qt::CheckState)
 
 template <typename A, typename B> QMap<A, B> invert(const QMap<B, A> &in)
 {
@@ -32,8 +37,191 @@ template <typename A, typename B> QMap<A, B> invert(const QMap<B, A> &in)
 	return out;
 }
 
+ModsModel::ModsModel(VersionFinal *version, OneSixInstance *instance, QObject *parent)
+	: QAbstractListModel(parent), m_version(version), m_instance(instance)
+{
+	m_modsDir = QDir(m_instance->minecraftRoot());
+	m_modsDir.cd("mods");
+	m_watcher = new QFileSystemWatcher(this);
+	directoriesChanged();
+	connect(m_watcher, &QFileSystemWatcher::directoryChanged, this, &ModsModel::directoriesChanged);
+	m_watcher->addPath(m_instance->minecraftRoot());
+	setWatching(true);
+}
+
+QVariant ModsModel::data(const QModelIndex &index, int role) const
+{
+	const int row = index.row();
+	const int column = index.column();
+	if (!index.isValid() || row < 0 || row >= m_version->mods.size() || column < 0 || column > columnCount(index.parent()))
+	{
+		return QVariant();
+	}
+
+	VersionFinalMod mod = m_version->mods.at(row);
+
+	if (role == Qt::DisplayRole)
+	{
+		switch (column)
+		{
+		case NameColumn:
+			return mod.mod.name();
+		case VersionColumn:
+			return mod.mod.version();
+		}
+	}
+	else if (role == Qt::CheckStateRole)
+	{
+		switch (column)
+		{
+		case ActiveColumn:
+			return mod.mod.enabled() ? Qt::Checked : Qt::Unchecked;
+		}
+	}
+	else if (role == Qt::ToolTipRole)
+	{
+		return mod.mod.mmc_id();
+	}
+	return QVariant();
+}
+int ModsModel::rowCount(const QModelIndex &parent) const
+{
+	return m_version->mods.size();
+}
+int ModsModel::columnCount(const QModelIndex &parent) const
+{
+	return 3;
+}
+bool ModsModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+	if (index.row() < 0 || index.row() >= rowCount(index) || !index.isValid())
+	{
+		return false;
+	}
+
+	if (role == Qt::CheckStateRole)
+	{
+		if (setEnabled(
+					index.row(),
+					value.value<Qt::CheckState>() == Qt::Checked))
+		{
+			emit dataChanged(index, index);
+			return true;
+		}
+	}
+	return false;
+}
+QVariant ModsModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+	switch (role)
+	{
+	case Qt::DisplayRole:
+		switch (section)
+		{
+		case ActiveColumn:
+			return QString();
+		case NameColumn:
+			return QString("Name");
+		case VersionColumn:
+			return QString("Version");
+		default:
+			return QVariant();
+		}
+
+	case Qt::ToolTipRole:
+		switch (section)
+		{
+		case ActiveColumn:
+			return "Is the mod enabled?";
+		case NameColumn:
+			return "The name of the mod.";
+		case VersionColumn:
+			return "The version of the mod.";
+		default:
+			return QVariant();
+		}
+	default:
+		return QVariant();
+	}
+	return QVariant();
+}
+Qt::ItemFlags ModsModel::flags(const QModelIndex &index) const
+{
+	Qt::ItemFlags defaultFlags = QAbstractListModel::flags(index);
+	if (index.isValid())
+	{
+		return Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled |
+			   defaultFlags;
+	}
+	else
+	{
+		return Qt::ItemIsDropEnabled | defaultFlags;
+	}
+}
+
+bool ModsModel::installMod(const QFileInfo &file)
+{
+	for (int i = 0; i < m_version->mods.size(); ++i)
+	{
+		const VersionFinalMod mod = m_version->mods.at(i);
+		if (mod.type == VersionFinalMod::Local && file == mod.mod.filename())
+		{
+			return true;
+		}
+	}
+	try
+	{
+		QJsonObject object = m_version->getUserJsonObject();
+		QJsonObject plusmods = object.value("+mods");
+	}
+	catch (MMCError &e)
+	{
+		QLOG_ERROR() << e.cause();
+		return false;
+	}
+	return true;
+}
+void ModsModel::deleteMods(const int first, const int last)
+{
+
+}
+Mod &ModsModel::operator[](const int index)
+{
+	return m_version->mods[index].mod;
+}
+
+void ModsModel::directoriesChanged()
+{
+	setWatching(false);
+	for (auto file : m_modsDir.entryInfoList(QDir::Files | QDir::Dirs))
+	{
+		installMod(file);
+		QFile::remove(file.absoluteFilePath());
+	}
+	setWatching(true);
+}
+
+void ModsModel::setWatching(const bool watching)
+{
+	QDir dir(m_instance->minecraftRoot());
+	dir.cd("mods");
+	if (watching && dir.exists())
+	{
+		m_watcher->addPath(dir.absolutePath());
+	}
+	else
+	{
+		m_watcher->removePath(dir.absolutePath());
+	}
+}
+
+bool ModsModel::setEnabled(const int index, const bool enabled)
+{
+	return false;
+}
+
 VersionFinal::VersionFinal(OneSixInstance *instance, QObject *parent)
-	: QAbstractListModel(parent), m_instance(instance)
+	: QAbstractListModel(parent), modsModel(new ModsModel(this, instance, this)), m_instance(instance)
 {
 	clear();
 }
@@ -42,9 +230,11 @@ void VersionFinal::reload(const bool onlyVanilla, const QStringList &external)
 {
 	//FIXME: source of epic failure.
 	beginResetModel();
+	modsModel->beginReset();
 	OneSixVersionBuilder::build(this, m_instance, onlyVanilla, external);
 	reapply(true);
 	endResetModel();
+	modsModel->endReset();
 }
 
 void VersionFinal::clear()
@@ -75,9 +265,11 @@ bool VersionFinal::remove(const int index)
 	if (canRemove(index) && QFile::remove(versionFiles.at(index)->filename))
 	{
 		beginResetModel();
+		modsModel->beginReset();
 		versionFiles.removeAt(index);
 		reapply(true);
 		endResetModel();
+		modsModel->endReset();
 		return true;
 	}
 	return false;
@@ -101,6 +293,29 @@ VersionFilePtr VersionFinal::versionFile(const QString &id)
 		}
 	}
 	return 0;
+}
+
+QJsonObject VersionFinal::getUserJsonObject() const
+{
+	QFile f(m_instance->instanceRoot() + "/user.json");
+	if (!f.exists())
+	{
+		return QJsonObject();
+	}
+	if (!f.open(QFile::ReadOnly))
+	{
+		throw FileOpenError(f);
+	}
+	return MMCJson::ensureObject(MMCJson::parseDocument(f.readAll(), f.fileName()), f.fileName());
+}
+void VersionFinal::setUserJsonObject(const QJsonObject &object)
+{
+	QFile f(m_instance->instanceRoot() + "/user.json");
+	if (!f.open(QFile::WriteOnly | QFile::Truncate))
+	{
+		throw FileOpenError(f);
+	}
+	f.write(QJsonDocument(object).toJson(QJsonDocument::Indented));
 }
 
 QList<std::shared_ptr<OneSixLibrary> > VersionFinal::getActiveNormalLibs()
@@ -295,6 +510,7 @@ void VersionFinal::reapply(const bool alreadyReseting)
 	if (!alreadyReseting)
 	{
 		beginResetModel();
+		modsModel->beginReset();
 	}
 
 	clear();
@@ -314,6 +530,7 @@ void VersionFinal::reapply(const bool alreadyReseting)
 	if (!alreadyReseting)
 	{
 		endResetModel();
+		modsModel->endReset();
 	}
 }
 

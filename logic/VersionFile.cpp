@@ -7,6 +7,7 @@
 #include "logic/VersionFile.h"
 #include "logic/OneSixLibrary.h"
 #include "logic/VersionFinal.h"
+#include "logic/Mod.h"
 #include "MMCJson.h"
 
 using namespace MMCJson;
@@ -75,6 +76,27 @@ RawLibraryPtr RawLibrary::fromJson(const QJsonObject &libObj, const QString &fil
 		out->rules = rulesFromJsonV4(libObj);
 	}
 	return out;
+}
+
+VersionFile::Mod modFromJson(const QJsonObject &modObj)
+{
+	const QString type = modObj.value("type").toString("local");
+	VersionFile::Mod mod;
+	if (type == "local")
+	{
+		mod.type = VersionFile::Mod::LocalFile;
+	}
+	switch (mod.type)
+	{
+	case VersionFile::Mod::LocalFile:
+		mod.id = ensureString(modObj.value("file"), "'file'");
+		break;
+	}
+	if (modObj.contains("enabled"))
+	{
+		mod.enabled = ensureBoolean(modObj.value("enabled"), "'enabled'");
+	}
+	return mod;
 }
 
 VersionFilePtr VersionFile::fromJson(const QJsonDocument &doc, const QString &filename,
@@ -266,6 +288,30 @@ VersionFilePtr VersionFile::fromJson(const QJsonDocument &doc, const QString &fi
 			out->removeLibs.append(ensureString(libObj.value("name")));
 		}
 	}
+
+	if (root.contains("mods"))
+	{
+		out->shouldOverwriteMods = true;
+		for (auto modVal : ensureArray(root.value("mods"), "'mods'"))
+		{
+			out->overwriteMods.append(modFromJson(ensureObject(modVal, "mod")));
+		}
+	}
+	if (root.contains("+mods"))
+	{
+		for (auto modVal : ensureArray(root.value("+mods"), "'+mods'"))
+		{
+			out->addMods.append(modFromJson(ensureObject(modVal, "mod")));
+		}
+	}
+	if (root.contains("-mods"))
+	{
+		for (auto modVal : ensureArray(root.value("-mods"), "'-mods'"))
+		{
+			out->removeMods.append(modFromJson(ensureObject(modVal, "mod")));
+		}
+	}
+
 	return out;
 }
 
@@ -291,6 +337,25 @@ OneSixLibraryPtr VersionFile::createLibrary(RawLibraryPtr lib)
 	out->finalize();
 	return out;
 }
+VersionFinalMod createMod(VersionFile::Mod mod)
+{
+	VersionFinalMod::Type type;
+	QString filename;
+	switch (mod.type)
+	{
+	case VersionFile::Mod::LocalFile:
+		type = VersionFinalMod::Local;
+		filename = mod.id;
+	default:
+		type = VersionFinalMod::Unknown;
+	}
+	VersionFinalMod out(filename);
+	out.type = type;
+	out.mod = Mod(QFileInfo(filename));
+	out.id = mod.id;
+	out.enabled = mod.enabled;
+	return out;
+}
 
 int VersionFile::findLibrary(QList<OneSixLibraryPtr> haystack, const QString &needle)
 {
@@ -301,6 +366,32 @@ int VersionFile::findLibrary(QList<OneSixLibraryPtr> haystack, const QString &ne
 		{
 			return i;
 		}
+	}
+	return -1;
+}
+int findMod(QList<VersionFinalMod> haystack, const VersionFile::Mod &needle)
+{
+	auto typesEqual = [](const VersionFinalMod &m1, const VersionFile::Mod &m2)
+	{
+		if (m1.type == VersionFinalMod::Local && m1.type == VersionFile::Mod::LocalFile)
+		{
+			return true;
+		}
+		return false;
+	};
+
+	for (int i = 0; i < haystack.size(); ++i)
+	{
+		VersionFinalMod mod = haystack.at(i);
+		if (!typesEqual(mod, needle))
+		{
+			continue;
+		}
+		if (mod.id != needle.id)
+		{
+			continue;
+		}
+		return i;
 	}
 	return -1;
 }
@@ -530,6 +621,38 @@ void VersionFile::applyTo(VersionFinal *version)
 		else
 		{
 			QLOG_WARN() << "Couldn't find" << lib << "(skipping)";
+		}
+	}
+	if (shouldOverwriteMods)
+	{
+		version->mods.clear();
+		for (auto mod : overwriteMods)
+		{
+			version->mods.append(createMod(mod));
+		}
+	}
+	for (auto mod : addMods)
+	{
+		int index = findMod(version->mods, mod);
+		if (index < 0)
+		{
+			version->mods.append(createMod(mod));
+		}
+		else
+		{
+			version->mods[index].enabled = mod.enabled;
+		}
+	}
+	for (auto mod : removeMods)
+	{
+		int index = findMod(version->mods, mod);
+		if (index >= 0)
+		{
+			version->mods.removeAt(index);
+		}
+		else
+		{
+			QLOG_WARN() << "Couldn't find" << mod.id << "(skipping)";
 		}
 	}
 }

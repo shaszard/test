@@ -20,6 +20,8 @@ public:
 
 namespace MMCJson
 {
+QJsonDocument parseDocument(const QByteArray &data, const QString &what);
+
 /// make sure the value exists. throw otherwise.
 QJsonValue ensureExists(QJsonValue val, const QString what = "value");
 

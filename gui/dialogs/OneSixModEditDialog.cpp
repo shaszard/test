@@ -67,11 +67,9 @@ OneSixModEditDialog::OneSixModEditDialog(OneSixInstance *inst, QWidget *parent)
 	}
 	// Loader mods
 	{
-		ensureFolderPathExists(m_inst->loaderModsDir());
 		m_mods = m_inst->loaderModList();
 		ui->loaderModTreeView->setModel(m_mods.get());
 		ui->loaderModTreeView->installEventFilter(this);
-		m_mods->startWatching();
 		auto smodel = ui->loaderModTreeView->selectionModel();
 		connect(smodel, SIGNAL(currentChanged(QModelIndex, QModelIndex)),
 				SLOT(loaderCurrent(QModelIndex, QModelIndex)));
@@ -91,7 +89,6 @@ OneSixModEditDialog::OneSixModEditDialog(OneSixInstance *inst, QWidget *parent)
 
 OneSixModEditDialog::~OneSixModEditDialog()
 {
-	m_mods->stopWatching();
 	m_resourcepacks->stopWatching();
 	delete ui;
 }
@@ -304,9 +301,7 @@ void OneSixModEditDialog::on_addModBtn_clicked()
 		this, QApplication::translate("LegacyModEditDialog", "Select Loader Mods"));
 	for (auto filename : fileNames)
 	{
-		m_mods->stopWatching();
 		m_mods->installMod(QFileInfo(filename));
-		m_mods->startWatching();
 	}
 }
 void OneSixModEditDialog::on_rmModBtn_clicked()
@@ -316,9 +311,7 @@ void OneSixModEditDialog::on_rmModBtn_clicked()
 
 	if (!lastfirst(list, first, last))
 		return;
-	m_mods->stopWatching();
 	m_mods->deleteMods(first, last);
-	m_mods->startWatching();
 }
 void OneSixModEditDialog::on_viewModBtn_clicked()
 {

@@ -2,6 +2,17 @@
 #include <QString>
 #include <math.h>
 
+QJsonDocument MMCJson::parseDocument(const QByteArray &data, const QString &what)
+{
+	QJsonParseError error;
+	QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+	if (error.error != QJsonParseError::NoError)
+	{
+		throw JSONValidationError(what + " is not valid JSON: " + error.errorString() + " at " + error.offset);
+	}
+	return doc;
+}
+
 bool MMCJson::ensureBoolean(const QJsonValue val, const QString what)
 {
 	if (!val.isBool())

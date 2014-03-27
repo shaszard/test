@@ -256,14 +256,13 @@ void OneSixInstance::cleanupAfterRun()
 	dir.removeRecursively();
 }
 
-std::shared_ptr<ModList> OneSixInstance::loaderModList()
+std::shared_ptr<ModsModel> OneSixInstance::loaderModList()
 {
 	I_D(OneSixInstance);
 	if (!d->loader_mod_list)
 	{
-		d->loader_mod_list.reset(new ModList(loaderModsDir()));
+		d->loader_mod_list.reset(d->version->modsModel);
 	}
-	d->loader_mod_list->update();
 	return d->loader_mod_list;
 }
 
