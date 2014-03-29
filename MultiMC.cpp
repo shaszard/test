@@ -443,6 +443,7 @@ void MultiMC::initGlobalSettings()
 	m_settings->registerSetting("JvmArgs", "");
 
 	// Custom Commands
+	m_settings->registerSetting("PreUpdateCommand", "");
 	m_settings->registerSetting({"PreLaunchCommand", "PreLaunchCmd"}, "");
 	m_settings->registerSetting({"PostExitCommand", "PostExitCmd"}, "");
 

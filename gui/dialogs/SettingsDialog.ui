@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>545</width>
-    <height>609</height>
+    <width>531</width>
+    <height>633</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -20,7 +20,7 @@
    <string>Settings</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../../graphics.qrc">
+   <iconset>
     <normaloff>:/icons/toolbar/settings</normaloff>:/icons/toolbar/settings</iconset>
   </property>
   <property name="modal">
@@ -669,25 +669,35 @@
          <property name="title">
           <string>Custom Commands</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_4">
-          <item row="1" column="0">
-           <widget class="QLabel" name="labelPostExitCmd">
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelPreUpdateCmd">
             <property name="text">
-             <string>Post-exit command:</string>
+             <string>Pre-update command:</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="preUpdateCmdTextBox"/>
+          </item>
+          <item row="1" column="0">
            <widget class="QLabel" name="labelPreLaunchCmd">
             <property name="text">
              <string>Pre-launch command:</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
+          <item row="1" column="1">
            <widget class="QLineEdit" name="preLaunchCmdTextBox"/>
           </item>
-          <item row="1" column="1">
+          <item row="2" column="0">
+           <widget class="QLabel" name="labelPostExitCmd">
+            <property name="text">
+             <string>Post-exit command:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
            <widget class="QLineEdit" name="postExitCmdTextBox"/>
           </item>
          </layout>
@@ -702,7 +712,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Pre-launch command runs before the instance launches and post-exit command runs after it exits. Both will be run in MultiMC's working directory with INST_ID, INST_DIR, and INST_NAME as environment variables.</string>
+          <string>Pre-update command will run before any updates to the instance. Pre-launch command runs before the instance launches and post-exit command runs after it exits. The commands will be run in MultiMC's working directory with INST_ID, INST_DIR, and INST_NAME as environment variables.</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -1019,7 +1029,24 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>buttonBox</tabstop>
+  <tabstop>settingsTabs</tabstop>
+  <tabstop>autoUpdateCheckBox</tabstop>
+  <tabstop>updateChannelComboBox</tabstop>
+  <tabstop>trackFtbBox</tabstop>
+  <tabstop>ftbLauncherBox</tabstop>
+  <tabstop>ftbLauncherBrowseBtn</tabstop>
+  <tabstop>ftbBox</tabstop>
+  <tabstop>ftbBrowseBtn</tabstop>
+  <tabstop>instDirTextBox</tabstop>
+  <tabstop>instDirBrowseBtn</tabstop>
+  <tabstop>modsDirTextBox</tabstop>
+  <tabstop>modsDirBrowseBtn</tabstop>
+  <tabstop>lwjglDirTextBox</tabstop>
+  <tabstop>lwjglDirBrowseBtn</tabstop>
+  <tabstop>iconsDirTextBox</tabstop>
+  <tabstop>iconsDirBrowseBtn</tabstop>
+  <tabstop>languageBox</tabstop>
+  <tabstop>resetNotificationsBtn</tabstop>
   <tabstop>sortLastLaunchedBtn</tabstop>
   <tabstop>sortByNameBtn</tabstop>
   <tabstop>jsonEditorTextBox</tabstop>
@@ -1037,12 +1064,30 @@
   <tabstop>javaDetectBtn</tabstop>
   <tabstop>javaTestBtn</tabstop>
   <tabstop>jvmArgsTextBox</tabstop>
+  <tabstop>preUpdateCmdTextBox</tabstop>
   <tabstop>preLaunchCmdTextBox</tabstop>
   <tabstop>postExitCmdTextBox</tabstop>
-  <tabstop>settingsTabs</tabstop>
+  <tabstop>proxyDefaultBtn</tabstop>
+  <tabstop>proxyNoneBtn</tabstop>
+  <tabstop>proxySOCKS5Btn</tabstop>
+  <tabstop>proxyHTTPBtn</tabstop>
+  <tabstop>proxyAddrEdit</tabstop>
+  <tabstop>proxyPortEdit</tabstop>
+  <tabstop>proxyUserEdit</tabstop>
+  <tabstop>proxyPassEdit</tabstop>
+  <tabstop>jprofilerPathEdit</tabstop>
+  <tabstop>jprofilerPathBtn</tabstop>
+  <tabstop>jprofilerCheckBtn</tabstop>
+  <tabstop>jvisualvmPathEdit</tabstop>
+  <tabstop>jvisualvmPathBtn</tabstop>
+  <tabstop>jvisualvmCheckBtn</tabstop>
+  <tabstop>mceditPathEdit</tabstop>
+  <tabstop>mceditPathBtn</tabstop>
+  <tabstop>mceditCheckBtn</tabstop>
+  <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources>
-  <include location="../../graphics.qrc"/>
+  <include location="../../resources/multimc/multimc.qrc"/>
  </resources>
  <connections>
   <connection>
@@ -1079,7 +1124,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="sortingModeGroup"/>
   <buttongroup name="proxyGroup"/>
+  <buttongroup name="sortingModeGroup"/>
  </buttongroups>
 </ui>

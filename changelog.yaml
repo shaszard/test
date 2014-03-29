@@ -40,6 +40,7 @@
         - These patches are applied after version.json in a customisable order,
         - A list of these files is shown in the left most tab in the Edit Mods dialog, where a list of libraries was shown before.
         - custom.json can still be used for overriding everything.
+    - Added an extra pre-update command point to instance startup
     - Offline mode can be used even when online
     - Show an "empty" message in version selector dialogs
     - Fix FTB paths on windows

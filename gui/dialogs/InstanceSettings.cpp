@@ -148,11 +148,13 @@ void InstanceSettings::applySettings()
 	m_obj->set("OverrideCommands", custcmd);
 	if (custcmd)
 	{
+		m_obj->set("PreUpdateCommand", ui->preUpdateCmdTextBox->text());
 		m_obj->set("PreLaunchCommand", ui->preLaunchCmdTextBox->text());
 		m_obj->set("PostExitCommand", ui->postExitCmdTextBox->text());
 	}
 	else
 	{
+		m_obj->reset("PreUpdateCommand");
 		m_obj->reset("PreLaunchCommand");
 		m_obj->reset("PostExitCommand");
 	}
@@ -184,6 +186,7 @@ void InstanceSettings::loadSettings()
 
 	// Custom Commands
 	ui->customCommandsGroupBox->setChecked(m_obj->get("OverrideCommands").toBool());
+	ui->preUpdateCmdTextBox->setText(m_obj->get("PreUpdateCommand").toString());
 	ui->preLaunchCmdTextBox->setText(m_obj->get("PreLaunchCommand").toString());
 	ui->postExitCmdTextBox->setText(m_obj->get("PostExitCommand").toString());
 }

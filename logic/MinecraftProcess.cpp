@@ -311,6 +311,7 @@ bool MinecraftProcess::preLaunch()
 	}
 	return true;
 }
+
 bool MinecraftProcess::postLaunch()
 {
 	QString postlaunch_cmd = m_instance->settings().get("PostExitCommand").toString();

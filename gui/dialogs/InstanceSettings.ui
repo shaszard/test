@@ -329,18 +329,18 @@
          <property name="checked">
           <bool>false</bool>
          </property>
-         <layout class="QGridLayout" name="gridLayout_4">
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="preLaunchCmdTextBox"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="labelPostExitCmd">
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelPreUpdateCmd">
             <property name="text">
-             <string>Post-exit command:</string>
+             <string>Pre-update command:</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="preUpdateCmdTextBox"/>
+          </item>
+          <item row="1" column="0">
            <widget class="QLabel" name="labelPreLaunchCmd">
             <property name="text">
              <string>Pre-launch command:</string>
@@ -348,6 +348,16 @@
            </widget>
           </item>
           <item row="1" column="1">
+           <widget class="QLineEdit" name="preLaunchCmdTextBox"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="labelPostExitCmd">
+            <property name="text">
+             <string>Post-exit command:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
            <widget class="QLineEdit" name="postExitCmdTextBox"/>
           </item>
          </layout>
@@ -365,7 +375,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Pre-launch command runs before the instance launches and post-exit command runs after it exits. Both will be run in MultiMC's working directory with INST_ID, INST_DIR, and INST_NAME as environment variables.</string>
+          <string>Pre-update command will run before any updates to the instance. Pre-launch command runs before the instance launches and post-exit command runs after it exits. The commands will be run in MultiMC's working directory with INST_ID, INST_DIR, and INST_NAME as environment variables.</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

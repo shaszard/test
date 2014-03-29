@@ -379,6 +379,7 @@ void SettingsDialog::applySettings(SettingsObject *s)
 	NagUtils::checkJVMArgs(s->get("JvmArgs").toString(), this->parentWidget());
 
 	// Custom Commands
+	s->set("PreUpdateCommand", ui->preUpdateCmdTextBox->text());
 	s->set("PreLaunchCommand", ui->preLaunchCmdTextBox->text());
 	s->set("PostExitCommand", ui->postExitCmdTextBox->text());
 
@@ -393,8 +394,6 @@ void SettingsDialog::applySettings(SettingsObject *s)
 		s->set("InstSortMode", "Name");
 		break;
 	}
-
-	s->set("PostExitCommand", ui->postExitCmdTextBox->text());
 
 	// Profilers
 	s->set("JProfilerPath", ui->jprofilerPathEdit->text());
@@ -480,6 +479,7 @@ void SettingsDialog::loadSettings(SettingsObject *s)
 	ui->jvmArgsTextBox->setText(s->get("JvmArgs").toString());
 
 	// Custom Commands
+	ui->preUpdateCmdTextBox->setText(s->get("PreUpdateCommand").toString());
 	ui->preLaunchCmdTextBox->setText(s->get("PreLaunchCommand").toString());
 	ui->postExitCmdTextBox->setText(s->get("PostExitCommand").toString());
 

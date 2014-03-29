@@ -54,7 +54,7 @@ slots:
 private:
 	Ui::VersionSelectDialog *ui;
 
-	BaseVersionList *m_vlist;
+	BaseVersionList *m_vlist = nullptr;
 
 	QSortFilterProxyModel *m_proxyModel;
 
