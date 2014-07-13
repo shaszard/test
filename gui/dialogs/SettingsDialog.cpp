@@ -419,6 +419,8 @@ void SettingsDialog::applySettings(SettingsObject *s)
 
 	s->set("PostExitCommand", ui->postExitCmdTextBox->text());
 
+	s->set("CopyToCentralMods", ui->copyCentralModsBox->isChecked());
+
 	// Profilers
 	s->set("JProfilerPath", ui->jprofilerPathEdit->text());
 	s->set("JVisualVMPath", ui->jvisualvmPathEdit->text());
@@ -510,6 +512,8 @@ void SettingsDialog::loadSettings(SettingsObject *s)
 	ui->proxyPortEdit->setValue(s->get("ProxyPort").value<qint16>());
 	ui->proxyUserEdit->setText(s->get("ProxyUser").toString());
 	ui->proxyPassEdit->setText(s->get("ProxyPass").toString());
+
+	ui->copyCentralModsBox->setChecked(s->get("CopyToCentralMods").toBool());
 
 	// Java Settings
 	ui->javaPathTextBox->setText(s->get("JavaPath").toString());

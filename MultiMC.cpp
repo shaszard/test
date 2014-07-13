@@ -501,6 +501,9 @@ void MultiMC::initGlobalSettings()
 	m_settings->registerSetting("InstSortMode", "Name");
 	m_settings->registerSetting("SelectedInstance", QString());
 
+	// Behaviour
+	m_settings->registerSetting("CopyToCentralMods", false);
+
 	// Window state and geometry
 	m_settings->registerSetting("MainWindowState", "");
 	m_settings->registerSetting("MainWindowGeometry", "");
