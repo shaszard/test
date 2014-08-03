@@ -33,6 +33,9 @@ Config::Config()
 	VERSION_STR = "@MultiMC_VERSION_STRING@";
 	VERSION_CSTR = "@MultiMC_VERSION_STRING@";
 	NEWS_RSS_URL = "@MultiMC_NEWS_RSS_URL@";
+
+	IMGUR_CLIENT_ID = "@MultiMC_IMGUR_CLIENT_ID@";
+	IMGUR_CLIENT_SECRET = "@MultiMC_IMGUR_CLIENT_SECRET@";
 }
 
 QString Config::versionTypeName() const

@@ -36,6 +36,11 @@ void Task::setProgress(int new_progress)
 	m_progress = new_progress;
 	emit progress(new_progress, 100);
 }
+void Task::setProgress2(qint64 current, qint64 total)
+{
+	m_progress = current * 100 / total;
+	emit progress(current, total);
+}
 
 void Task::getProgress(qint64 &current, qint64 &total)
 {

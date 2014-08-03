@@ -57,6 +57,7 @@ protected
 slots:
 	void setStatus(const QString &status);
 	void setProgress(int progress);
+	void setProgress2(qint64 current, qint64 total);
 
 protected:
 	QString m_statusString;

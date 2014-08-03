@@ -674,6 +674,18 @@ std::shared_ptr<URNResolver> MultiMC::resolver()
 	return m_resolver;
 }
 
+QWidget *MultiMC::topLevelWidget()
+{
+	for (QWidget *widget : topLevelWidgets())
+	{
+		if (widget->isVisible())
+		{
+			return widget;
+		}
+	}
+	return topLevelWidgets().isEmpty() ? 0 : topLevelWidgets().last();
+}
+
 void MultiMC::installUpdates(const QString updateFilesDir, UpdateFlags flags)
 {
 	// if we are going to update on exit, save the params now
@@ -683,6 +695,7 @@ void MultiMC::installUpdates(const QString updateFilesDir, UpdateFlags flags)
 		m_updateOnExitFlags = flags & ~OnExit;
 		return;
 	}
+
 	// otherwise if there already were some params for on exit update, clear them and continue
 	else if (m_updateOnExitPath.size())
 	{

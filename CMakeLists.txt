@@ -96,6 +96,9 @@ if (MultiMC_TEST_SEGV)
 	add_definitions(-DTEST_SEGV)
 endif ()
 
+set(MultiMC_IMGUR_CLIENT_ID "" CACHE STRING "Go here to get your Imgur Client ID: https://api.imgur.com/oauth2/addclient")
+set(MultiMC_IMGUR_CLIENT_SECRET "" CACHE STRING "Go here to get your Imgur Client Secret: https://api.imgur.com/oauth2/addclient")
+
 
 ######## Set URLs ########
 set(MultiMC_NEWS_RSS_URL "http://multimc.org/rss.xml" CACHE STRING "URL to fetch MultiMC's news RSS feed from.")
@@ -328,6 +331,8 @@ SET(MULTIMC_SOURCES
 	gui/pages/global/MultiMCPage.h
 	gui/pages/global/ProxyPage.cpp
 	gui/pages/global/ProxyPage.h
+	gui/pages/global/ImgurPage.cpp
+	gui/pages/global/ImgurPage.h
 
 	# GUI - dialogs
 	gui/dialogs/AboutDialog.cpp
@@ -382,6 +387,8 @@ SET(MULTIMC_SOURCES
 	gui/widgets/ServerStatus.h
 	gui/widgets/VersionListView.cpp
 	gui/widgets/VersionListView.h
+	gui/widgets/ProgressWidget.cpp
+	gui/widgets/ProgressWidget.h
 
 
 	# GUI - instance group view
@@ -562,6 +569,13 @@ SET(MULTIMC_SOURCES
 	logic/screenshots/ImgurUpload.cpp
 	logic/screenshots/ImgurAlbumCreation.h
 	logic/screenshots/ImgurAlbumCreation.cpp
+	logic/screenshots/ImgurDataModels.h
+	logic/screenshots/ImgurDataModels.cpp
+	logic/screenshots/ImgurAuthTask.h
+	logic/screenshots/ImgurAuthTask.cpp
+	logic/screenshots/ImgurEndpoints.h
+	logic/screenshots/ImgurState.h
+	logic/screenshots/ImgurState.cpp
 
 	# Icons
 	logic/icons/MMCIcon.h
@@ -664,6 +678,7 @@ SET(MULTIMC_UIS
 	gui/pages/global/MinecraftPage.ui
 	gui/pages/global/MultiMCPage.ui
 	gui/pages/global/ProxyPage.ui
+	gui/pages/global/ImgurPage.ui
 
 	# Dialogs
 	gui/dialogs/CopyInstanceDialog.ui

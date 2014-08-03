@@ -131,6 +131,8 @@ public:
 		return m_tools;
 	}
 
+	QWidget *topLevelWidget();
+
 	void installUpdates(const QString updateFilesDir, UpdateFlags flags = None);
 
 	/*!
