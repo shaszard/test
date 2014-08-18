@@ -27,6 +27,7 @@
 #include "logic/quickmod/QuickMod.h"
 #include "logic/net/ByteArrayDownload.h"
 #include "logic/net/NetJob.h"
+#include "logic/tasks/TasksModel.h"
 #include "logic/Mod.h"
 #include "logic/MMCJson.h"
 #include "MultiMC.h"

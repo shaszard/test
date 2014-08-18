@@ -26,16 +26,6 @@
 #include "logic/MMCJson.h"
 #include "logic/BaseInstance.h"
 
-static QMap<QString, QString> jsonObjectToStringStringMap(const QJsonObject &obj)
-{
-	QMap<QString, QString> out;
-	for (auto it = obj.begin(); it != obj.end(); ++it)
-	{
-		out.insert(it.key(), MMCJson::ensureString(it.value()));
-	}
-	return out;
-}
-
 void QuickModVersion::parse(const QJsonObject &object)
 {
 	name_ = MMCJson::ensureString(object.value("name"), "'name'");

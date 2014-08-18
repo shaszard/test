@@ -26,6 +26,7 @@ class StatusChecker;
 class BaseProfilerFactory;
 class BaseDetachedToolFactory;
 class URNResolver;
+class TasksModel;
 
 #if defined(MMC)
 #undef MMC
@@ -124,6 +125,8 @@ public:
 
 	std::shared_ptr<URNResolver> resolver();
 
+	std::shared_ptr<TasksModel> tasksModel();
+
 	QMap<QString, std::shared_ptr<BaseProfilerFactory>> profilers()
 	{
 		return m_profilers;
@@ -218,6 +221,7 @@ private:
 	std::shared_ptr<MinecraftVersionList> m_minecraftlist;
 	std::shared_ptr<JavaVersionList> m_javalist;
 	std::shared_ptr<URNResolver> m_resolver;
+	std::shared_ptr<TasksModel> m_tasksModel;
 	std::shared_ptr<QuickModsList> m_quickmodslist;
 	std::shared_ptr<QuickModUpdateMonitor> m_quickmodUpdateMonitor;
 

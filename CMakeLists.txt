@@ -389,7 +389,8 @@ set(MULTIMC_SOURCES
 	gui/dialogs/UpdateDialog.h
 	gui/dialogs/VersionSelectDialog.cpp
 	gui/dialogs/VersionSelectDialog.h
-
+	gui/dialogs/TasksDialog.h
+	gui/dialogs/TasksDialog.cpp
 
 	# GUI - widgets
 	gui/widgets/Common.cpp
@@ -413,6 +414,8 @@ set(MULTIMC_SOURCES
 	gui/widgets/ServerStatus.h
 	gui/widgets/VersionListView.cpp
 	gui/widgets/VersionListView.h
+	gui/widgets/TasksWidget.h
+	gui/widgets/TasksWidget.cpp
 
 	# GUI - instance group view
 	gui/groupview/GroupedProxyModel.cpp
@@ -611,6 +614,10 @@ set(MULTIMC_SOURCES
 	logic/tasks/ThreadTask.cpp
 	logic/tasks/SequentialTask.h
 	logic/tasks/SequentialTask.cpp
+	logic/tasks/TasksModel.h
+	logic/tasks/TasksModel.cpp
+	logic/tasks/Action.h
+	logic/tasks/Action.cpp
 
 	# Settings
 	logic/settings/INIFile.cpp

@@ -6,6 +6,7 @@
 #include <HandleCrash.h>
 #endif
 
+#include "gui/dialogs/TasksDialog.h"
 
 int main_gui(MultiMC &app)
 {
@@ -18,6 +19,11 @@ int main_gui(MultiMC &app)
 	mainWin.checkMigrateLegacyAssets();
 	mainWin.checkSetDefaultJava();
 	mainWin.checkInstancePathForProblems();
+
+	TasksDialog dlg;
+	dlg.resize(640, 480);
+	dlg.show();
+
 	return app.exec();
 }
 

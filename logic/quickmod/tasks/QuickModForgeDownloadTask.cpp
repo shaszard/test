@@ -23,7 +23,7 @@
 #include "MultiMC.h"
 
 QuickModForgeDownloadTask::QuickModForgeDownloadTask(std::shared_ptr<OneSixInstance> instance, Bindable *parent)
-	: Task(parent), m_instance(instance)
+	: Task(tr("QuickMod Forge Download"), parent), m_instance(instance)
 {
 }
 

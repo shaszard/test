@@ -19,6 +19,7 @@
 #include "MD5EtagDownload.h"
 #include "ByteArrayDownload.h"
 #include "CacheDownload.h"
+#include "logic/tasks/TasksModel.h"
 
 #include "logger/QsLog.h"
 
@@ -86,6 +87,8 @@ void NetJob::partProgress(int index, qint64 bytesReceived, qint64 bytesTotal)
 
 void NetJob::start()
 {
+	MMC->tasksModel()->addItem(this);
+
 	QLOG_INFO() << m_job_name.toLocal8Bit() << " started.";
 	m_running = true;
 	for (auto iter : downloads)

@@ -23,6 +23,7 @@
 #include "logic/LwjglVersionList.h"
 #include "logic/minecraft/MinecraftVersionList.h"
 #include "logic/liteloader/LiteLoaderVersionList.h"
+#include "logic/tasks/TasksModel.h"
 
 #include "logic/forge/ForgeVersionList.h"
 
@@ -727,6 +728,15 @@ std::shared_ptr<URNResolver> MultiMC::resolver()
 		m_resolver.reset(new URNResolver());
 	}
 	return m_resolver;
+}
+
+std::shared_ptr<TasksModel> MultiMC::tasksModel()
+{
+	if (!m_tasksModel)
+	{
+		m_tasksModel.reset(new TasksModel());
+	}
+	return m_tasksModel;
 }
 
 void MultiMC::installUpdates(const QString updateFilesDir, UpdateFlags flags)

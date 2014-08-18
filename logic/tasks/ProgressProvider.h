@@ -39,6 +39,8 @@ public:
 	virtual QString getStatus() const = 0;
 	virtual void getProgress(qint64 &current, qint64 &total) = 0;
 	virtual bool isRunning() const = 0;
+	virtual QString getName() const = 0;
+
 public
 slots:
 	virtual void start() = 0;

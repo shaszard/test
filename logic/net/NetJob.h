@@ -55,6 +55,7 @@ public:
 					SLOT(partProgress(int, qint64, qint64)));
 			base->start();
 		}
+		emit childAdded(base);
 		return true;
 	}
 
@@ -90,16 +91,20 @@ public:
 		return m_running;
 	}
 	QStringList getFailedFiles();
+	virtual QString getName() const
+	{
+		return m_job_name;
+	}
+
 signals:
-	void started();
-	void progress(qint64 current, qint64 total);
-	void succeeded();
-	void failed();
+	void failed(); // TODO nuke
+	void childAdded(NetActionPtr action);
+
 public
 slots:
 	virtual void start();
 	// FIXME: implement
-	virtual void abort() {};
+	virtual void abort() {}
 private
 slots:
 	void partProgress(int index, qint64 bytesReceived, qint64 bytesTotal);

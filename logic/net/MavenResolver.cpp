@@ -77,6 +77,17 @@ struct POM : MavenResolver::LibraryIdentifier
 					{
 						return;
 					}
+					break;
+				case QXmlStreamReader::NoToken:
+				case QXmlStreamReader::Invalid:
+				case QXmlStreamReader::StartDocument:
+				case QXmlStreamReader::EndDocument:
+				case QXmlStreamReader::Characters:
+				case QXmlStreamReader::Comment:
+				case QXmlStreamReader::DTD:
+				case QXmlStreamReader::EntityReference:
+				case QXmlStreamReader::ProcessingInstruction:
+					break;
 				}
 			}
 		}
@@ -87,7 +98,7 @@ struct POM : MavenResolver::LibraryIdentifier
 };
 
 MavenResolver::MavenResolver(std::shared_ptr<OneSixInstance> instance, Bindable *parent)
-	: Task(parent), m_instance(instance)
+	: Task(tr("Maven Download"), parent), m_instance(instance)
 {
 }
 

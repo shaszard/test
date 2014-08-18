@@ -25,11 +25,17 @@ class Task : public ProgressProvider
 public:
 	explicit Task(Bindable *parent);
 	explicit Task(QObject *parent = 0);
-	virtual ~Task() {};
+	explicit Task(const QString &name, Bindable *parent);
+	explicit Task(const QString &name, QObject *parent = 0);
+	virtual ~Task() {}
 
-	virtual QString getStatus() const;
-	virtual void getProgress(qint64 &current, qint64 &total);
-	virtual bool isRunning() const;
+	virtual QString getStatus() const override;
+	virtual void getProgress(qint64 &current, qint64 &total) override;
+	virtual bool isRunning() const override;
+	virtual QString getName() const override
+	{
+		return m_name;
+	}
 
 	/*!
 	 * True if this task was successful.
@@ -46,7 +52,7 @@ public:
 public
 slots:
 	virtual void start();
-	virtual void abort() {};
+	virtual void abort() {}
 
 protected:
 	virtual void executeTask() = 0;
@@ -67,5 +73,6 @@ protected:
 	bool m_running = false;
 	bool m_succeeded = false;
 	QString m_failReason = "";
+	QString m_name;
 };
 

@@ -1,12 +1,14 @@
 #include "SequentialTask.h"
 
-SequentialTask::SequentialTask(QObject *parent) : Task(parent), m_currentIndex(-1)
+#include <QDebug>
+
+SequentialTask::SequentialTask(const QString &name, QObject *parent) : Task(name, parent), m_currentIndex(-1)
 {
 }
 
 QString SequentialTask::getStatus() const
 {
-	if (m_queue.isEmpty() || m_currentIndex >= m_queue.size())
+	if (m_queue.isEmpty() || m_currentIndex >= m_queue.size() || m_currentIndex < 0)
 	{
 		return QString();
 	}
@@ -79,4 +81,13 @@ void SequentialTask::subTaskProgress()
 	{
 		setProgress(100 * current / total);
 	}
+}
+
+int SequentialTask::size() const
+{
+	return m_queue.size();
+}
+std::shared_ptr<ProgressProvider> SequentialTask::at(const int index) const
+{
+	return m_queue.at(index);
 }

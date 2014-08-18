@@ -82,6 +82,7 @@
 #include "logic/java/JavaVersionList.h"
 #include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/QuickMod.h"
+#include "logic/tasks/TasksModel.h"
 
 #include "logic/auth/flows/AuthenticateTask.h"
 #include "logic/auth/flows/RefreshTask.h"
@@ -1291,6 +1292,7 @@ void MainWindow::updateInstance(InstancePtr instance, AuthSessionPtr session,
 		launchInstance(instance, session, profiler);
 		return;
 	}
+	MMC->tasksModel()->addItem(updateTask);
 	QuickModGuiUtil::setup(updateTask.get(), this);
 	connect(updateTask.get(), &Task::succeeded, [this, instance, session, profiler]
 	{ launchInstance(instance, session, profiler); });

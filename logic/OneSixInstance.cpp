@@ -109,7 +109,7 @@ QSet<QString> OneSixInstance::traits()
 
 std::shared_ptr<Task> OneSixInstance::doUpdate()
 {
-	auto task = std::shared_ptr<SequentialTask>(new SequentialTask);
+	auto task = std::shared_ptr<SequentialTask>(new SequentialTask(tr("OneSix Update")));
 	task->addTask(std::shared_ptr<Task>(new QuickModDownloadTask(getSharedPtr(), task.get())));
 	task->addTask(std::shared_ptr<Task>(new QuickModForgeDownloadTask(getSharedPtr(), task.get())));
 	task->addTask(std::shared_ptr<Task>(new QuickModLiteLoaderDownloadTask(getSharedPtr(), task.get())));

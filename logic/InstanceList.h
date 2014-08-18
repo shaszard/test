@@ -97,7 +97,6 @@ public:
 	{
 		return m_instances.at(i);
 	}
-	;
 
 	/*!
 	 * \brief Get the count of loaded instances
@@ -106,7 +105,6 @@ public:
 	{
 		return m_instances.count();
 	}
-	;
 
 	/// Clear all instances. Triggers notifications.
 	void clear();

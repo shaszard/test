@@ -9,12 +9,15 @@ class SequentialTask : public Task
 {
 	Q_OBJECT
 public:
-	explicit SequentialTask(QObject *parent = 0);
+	explicit SequentialTask(const QString &name = QString(), QObject *parent = 0);
 
 	virtual QString getStatus() const;
 	virtual void getProgress(qint64 &current, qint64 &total);
 
 	void addTask(std::shared_ptr<ProgressProvider> task);
+
+	int size() const;
+	std::shared_ptr<ProgressProvider> at(const int index) const;
 
 protected:
 	void executeTask();

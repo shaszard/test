@@ -27,7 +27,7 @@ class JavaCheckerJob : public ProgressProvider
 {
 	Q_OBJECT
 public:
-	explicit JavaCheckerJob(QString job_name) : ProgressProvider(), m_job_name(job_name) {};
+	explicit JavaCheckerJob(QString job_name) : ProgressProvider(), m_job_name(job_name) {}
 
 	bool addJavaCheckerAction(JavaCheckerPtr base)
 	{
@@ -74,7 +74,10 @@ public:
 	{
 		return m_running;
 	}
-	;
+	virtual QString getName() const override
+	{
+		return m_job_name;
+	}
 
 signals:
 	void started();

@@ -25,7 +25,7 @@
 
 QuickModDownloadTask::QuickModDownloadTask(std::shared_ptr<OneSixInstance> instance,
 										   Bindable *parent)
-	: Task(parent), m_instance(instance)
+	: Task(tr("QuickMod Download"), parent), m_instance(instance)
 {
 }
 
