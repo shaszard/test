@@ -22,11 +22,6 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QDataStream>
-#include <QMessageBox>
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QJsonObject>
-
 #include <pathutils.h>
 #include <JlCompress.h>
 

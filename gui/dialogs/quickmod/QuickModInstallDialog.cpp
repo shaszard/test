@@ -40,7 +40,6 @@
 #include "logic/quickmod/QuickModVersion.h"
 #include "logic/quickmod/QuickModSettings.h"
 #include "logic/quickmod/tasks/QuickModDependencyDownloadTask.h"
-#include "logic/quickmod/tasks/QuickModMavenFindTask.h"
 #include "logic/quickmod/QuickModDependencyResolver.h"
 #include "logic/OneSixInstance.h"
 #include "logic/net/ByteArrayDownload.h"
@@ -52,8 +51,6 @@
 #include "logic/quickmod/QuickModVersionList.h"
 
 Q_DECLARE_METATYPE(QTreeWidgetItem *)
-
-// {{{ Data structures and classes
 
 // TODO load parallel versions in parallel (makes sense, right?)
 
@@ -100,10 +97,6 @@ public:
 	}
 };
 
-// }}}
-
-// {{{ Initialization and updating
-
 QuickModInstallDialog::QuickModInstallDialog(std::shared_ptr<OneSixInstance> instance,
 											 QWidget *parent)
 	: QDialog(parent), ui(new Ui::QuickModInstallDialog),
@@ -132,11 +125,6 @@ QuickModInstallDialog::~QuickModInstallDialog()
 	delete ui;
 }
 
-// }}}
-
-// {{{ Utility functions
-
-// {{{ Progress list
 void QuickModInstallDialog::addProgressListEntry(QuickModVersionPtr version, const QString &url)
 {
 	auto item = new QTreeWidgetItem(ui->progressList);
@@ -226,13 +214,9 @@ void QuickModInstallDialog::contextMenuRequested(const QPoint &pos)
 	menu.exec(QCursor::pos());
 }
 
-// }}}
-
-// {{{ Other
 bool QuickModInstallDialog::checkIsDone()
 {
-	if (m_downloadingUrls.isEmpty() && m_mavenFindTasks.isEmpty() &&
-		ui->webTabView->count() == 0 && m_modVersions.isEmpty())
+	if (m_downloadingUrls.isEmpty() && ui->webTabView->count() == 0 && m_modVersions.isEmpty())
 	{
 		ui->finishButton->setEnabled(true);
 		return true;
@@ -265,14 +249,6 @@ void QuickModInstallDialog::on_donateFinishButton_clicked()
 	}
 	accept();
 }
-
-// }}}
-
-// }}}
-
-// {{{ Installer execution
-
-// {{{ Main function
 
 int QuickModInstallDialog::exec()
 {
@@ -318,11 +294,6 @@ int QuickModInstallDialog::exec()
 	return QDialog::exec();
 }
 
-// }}}
-
-// {{{ Sub-functions
-
-// {{{ Dependency resolution and downloading
 bool QuickModInstallDialog::downloadDeps()
 {
 	// download all dependency files so they are ready for the dependency resolution
@@ -332,6 +303,7 @@ bool QuickModInstallDialog::downloadDeps()
 	return dialog.exec(task) !=
 		   QDialog::Rejected; // Is this really the best way to check for failure?
 }
+
 bool QuickModInstallDialog::verifyMods(const QList<QuickModPtr> &mods)
 {
 	return QuickModVerifyModsDialog(mods, this).exec() == QDialog::Accepted;
@@ -373,6 +345,7 @@ bool QuickModInstallDialog::resolveDeps()
 	m_modVersions = m_resolvedVersions = resolver.resolve(m_initialMods);
 	return !error;
 }
+
 QuickModVersionPtr QuickModInstallDialog::getVersion(const QuickModRef &modUid,
 													 const QuickModVersionRef &filter, bool *ok)
 {
@@ -395,9 +368,7 @@ QuickModVersionPtr QuickModInstallDialog::getVersion(const QuickModRef &modUid,
 	*ok = true;
 	return std::dynamic_pointer_cast<QuickModVersion>(dialog.selectedVersion());
 }
-// }}}
 
-// {{{ Process version list
 void QuickModInstallDialog::processVersionList()
 {
 	QMutableListIterator<QuickModVersionPtr> it(m_modVersions);
@@ -432,9 +403,7 @@ void QuickModInstallDialog::processVersionList()
 		}
 	}
 }
-// }}}
 
-// {{{ Select download urls
 void QuickModInstallDialog::selectDownloadUrls()
 {
 	bool haveDonation = false;
@@ -461,9 +430,7 @@ void QuickModInstallDialog::selectDownloadUrls()
 
 	ui->donateFinishButton->setVisible(haveDonation);
 }
-// }}}
 
-// {{{ Run direct downloads
 void QuickModInstallDialog::runDirectDownloads()
 {
 	// do all of the direct download mods
@@ -480,9 +447,7 @@ void QuickModInstallDialog::runDirectDownloads()
 		}
 	}
 }
-// }}}
 
-// {{{ Webpage mod downloads
 void QuickModInstallDialog::downloadNextMod()
 {
 	if (checkIsDone())
@@ -515,11 +480,6 @@ void QuickModInstallDialog::runWebDownload(QuickModVersionPtr version)
 
 	setWebViewShown(true);
 }
-// }}}
-
-// }}}
-
-// {{{ Other stuff
 
 bool QuickModInstallDialog::install(QuickModVersionPtr version)
 {
@@ -534,12 +494,6 @@ bool QuickModInstallDialog::install(QuickModVersionPtr version)
 	}
 	return true;
 }
-
-// }}}
-
-// }}}
-
-// {{{ Event handlers
 
 void QuickModInstallDialog::urlCaught(QNetworkReply *reply, WebDownloadNavigator *navigator)
 {
@@ -585,8 +539,6 @@ void QuickModInstallDialog::downloadProgress(const qint64 current, const qint64 
 	auto reply = qobject_cast<QNetworkReply *>(sender());
 	auto version = reply->property("version").value<QuickModVersionPtr>();
 	setVersionProgress(version, current, max);
-	// ui->progressList->update(ui->progressList->model()->index(ui->progressList->indexOfTopLevelItem(item),
-	// 4));
 }
 
 void QuickModInstallDialog::downloadCompleted()
@@ -595,15 +547,47 @@ void QuickModInstallDialog::downloadCompleted()
 	m_downloadingUrls.removeAll(reply->url());
 	auto version = reply->property("version").value<QuickModVersionPtr>();
 
+	QVariant statusCode = reply->attribute( QNetworkRequest::HttpStatusCodeAttribute );
+	if ( !statusCode.isValid() )
+		return;
+
+	int status = statusCode.toInt();
+	QString reasonText = reply->attribute( QNetworkRequest::HttpReasonPhraseAttribute ).toString();
+	QLOG_DEBUG() << "HTTP " << reasonText << ":" << status;
+	if(status != 200)
+	{
+		auto pairs = reply->rawHeaderPairs();
+		for(auto pair : pairs)
+		{
+			QLOG_DEBUG() << pair.first << ":" << pair.second;
+		}
+		QLOG_DEBUG() << reply->readAll();
+	}
+
 	// redirection
 	const QVariant location = reply->header(QNetworkRequest::LocationHeader);
-	if (location.isValid())
+	QString redirectURL;
+	if(location.isValid())
 	{
-		const QUrl locationUrl = QUrl(location.toString());
+		redirectURL = location.toString();
+	}
+	// FIXME: This is a hack for https://bugreports.qt-project.org/browse/QTBUG-41061
+	else if(reply->hasRawHeader("Location"))
+	{
+		auto data = reply->rawHeader("Location");
+		if(data.size() > 2 && data[0] == '/' && data[1] == '/')
+			redirectURL = reply->url().scheme() + ":" + data;
+	}
+
+	if(!redirectURL.isEmpty())
+	{
+		QUrl locationUrl(redirectURL);
+		QLOG_DEBUG() << "Redirect to:" << locationUrl.toString();
 		processReply(MMC->qnam()->get(QNetworkRequest(locationUrl)), version);
 		m_downloadingUrls.append(locationUrl);
 		return;
 	}
+	QLOG_DEBUG() << "Final URL:" << reply->url().toString();
 
 	setProgressListMsg(version, tr("Installing"));
 
@@ -628,7 +612,5 @@ void QuickModInstallDialog::downloadCompleted()
 
 	checkIsDone();
 }
-
-// }}}
 
 #include "QuickModInstallDialog.moc"

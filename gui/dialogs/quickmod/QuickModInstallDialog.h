@@ -36,7 +36,6 @@ class BaseInstance;
 class OneSixInstance;
 class QuickMod;
 class QuickModInstaller;
-class QuickModMavenFindTask;
 class QTreeWidgetItem;
 
 class QuickModInstallDialog : public QDialog
@@ -138,7 +137,6 @@ private:
 	QList<QuickModVersionPtr> m_modVersions;
 	QList<QuickModVersionPtr> m_resolvedVersions;
 	QList<QUrl> m_downloadingUrls;
-	QList<QuickModMavenFindTask *> m_mavenFindTasks;
 
 	QMap<QuickModVersionPtr, QuickModDownload> m_selectedDownloadUrls;
 

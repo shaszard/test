@@ -59,7 +59,6 @@ void InstanceVersion::clear()
 	traits.clear();
 	quickmods.clear();
 	modFiles.clear();
-	mavenLibraries.clear();
 }
 
 bool InstanceVersion::canRemove(const int index) const
@@ -265,7 +264,7 @@ bool InstanceVersion::removeDeprecatedVersionFiles()
 QList<std::shared_ptr<OneSixLibrary> > InstanceVersion::getActiveNormalLibs()
 {
 	QList<std::shared_ptr<OneSixLibrary> > output;
-	for (auto lib : libraries + mavenLibraries)
+	for (auto lib : libraries)
 	{
 		if (lib->isActive() && !lib->isNative())
 		{

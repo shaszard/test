@@ -26,7 +26,6 @@
 #include "logic/quickmod/tasks/QuickModForgeDownloadTask.h"
 #include "logic/quickmod/tasks/QuickModLiteLoaderDownloadTask.h"
 #include "logic/tasks/SequentialTask.h"
-#include "logic/net/MavenResolver.h"
 #include "logic/minecraft/InstanceVersion.h"
 #include "logic/minecraft/VersionBuildError.h"
 #include "logic/assets/AssetsUtils.h"
@@ -78,7 +77,7 @@ QList<BasePage *> OneSixInstance::getPages()
 {
 	QList<BasePage *> values;
 	values.append(new VersionPage(this));
-	values.append(new ModFolderPage(QuickModInstanceModList::Mods, this, loaderModList(), "mods", "plugin-blue",
+	values.append(new ModFolderPage(this, loaderModList(), "mods", "plugin-blue",
 									tr("Loader mods"), "Loader-mods"));
 	values.append(new CoreModFolderPage(this, coreModList(), "coremods", "plugin-green",
 										tr("Core mods"), "Core-mods"));
@@ -114,7 +113,6 @@ std::shared_ptr<Task> OneSixInstance::doUpdate()
 	task->addTask(std::shared_ptr<Task>(new QuickModDownloadTask(getSharedPtr(), task.get())));
 	task->addTask(std::shared_ptr<Task>(new QuickModForgeDownloadTask(getSharedPtr(), task.get())));
 	task->addTask(std::shared_ptr<Task>(new QuickModLiteLoaderDownloadTask(getSharedPtr(), task.get())));
-	task->addTask(std::shared_ptr<Task>(new MavenResolver(getSharedPtr(), task.get())));
 	task->addTask(std::shared_ptr<Task>(new OneSixUpdate(this, task.get())));
 	return task;
 }
@@ -291,38 +289,6 @@ bool OneSixInstance::prepareForLaunch(AuthSessionPtr session, QString &launchScr
 	for (auto param : processMinecraftArgs(session))
 	{
 		launchScript += "param " + param + "\n";
-	}
-
-	if (!version->quickmods.isEmpty())
-	{
-		QStringList mods;
-		for (auto it = version->quickmods.begin(); it != version->quickmods.end(); ++it)
-		{
-			const auto modVersion = it.value().first.findVersion();
-			if (!modVersion)
-			{
-				continue;
-			}
-			if (modVersion->installType == QuickModVersion::ForgeMod)
-			{
-				mods.prepend("mods " + MMC->quickmodSettings()->existingModFile(modVersion->mod, modVersion));
-			}
-			else if (modVersion->installType == QuickModVersion::LiteLoaderMod)
-			{
-				mods.prepend("litemods " + MMC->quickmodSettings()->existingModFile(modVersion->mod, modVersion));
-			}
-		}
-		if (!mods.isEmpty())
-		{
-			launchScript += mods.join('\n') + '\n';
-		}
-	}
-	if (!version->modFiles.isEmpty())
-	{
-		for (auto mod : version->modFiles)
-		{
-			launchScript += "mods " + mod + '\n';
-		}
 	}
 
 	// window size, title and state, legacy
@@ -573,6 +539,19 @@ bool OneSixInstance::reload()
 	}
 	return false;
 }
+
+/*
+ * FIXME: the stuff below will be replaced. It is still useful to track properly added
+ * quickmods for things that do not have an exact mod 'file'. Like modpacks. Or things
+ * that expand into many files, like a bunch of config files.
+ * 
+ * However, it won't be done like this and the file, if it is visible in the version
+ * page at all, will actually look decent.
+ *
+ * What are the use cases really?
+ *
+ * Maybe the meta stuff could have its own kind of files inside the instance? Patch files?
+ */
 
 void OneSixInstance::setQuickModVersion(const QuickModRef &uid, const QuickModVersionRef &version, const bool manualInstall)
 {

@@ -50,6 +50,7 @@
 #include "logic/Mod.h"
 #include "logic/icons/IconList.h"
 
+
 QIcon VersionPage::icon() const
 {
 	return MMC->icons()->getIcon(m_inst->iconKey());

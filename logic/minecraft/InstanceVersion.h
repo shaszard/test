@@ -148,8 +148,7 @@ public:
 
 	/// the list of libs - both active and inactive, native and java
 	QList<OneSixLibraryPtr> libraries;
-	QList<OneSixLibraryPtr> mavenLibraries;
-	
+
 	/// same, but only vanilla.
 	QList<OneSixLibraryPtr> vanillaLibraries;
 

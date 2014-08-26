@@ -185,6 +185,7 @@ InstanceFactory::InstCreateError InstanceFactory::createInstance(InstancePtr &in
 	}
 
 	inst->init();
+
 	// FIXME: really, how do you even know?
 	return InstanceFactory::NoCreateError;
 }

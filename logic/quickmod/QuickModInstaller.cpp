@@ -89,11 +89,8 @@ void QuickModInstaller::install(const QuickModVersionPtr version, InstancePtr in
 	QDir finalDir;
 	switch (version->installType)
 	{
+	case QuickModVersion::LiteLoaderMod:
 	case QuickModVersion::ForgeMod:
-		if (std::dynamic_pointer_cast<OneSixInstance>(instance))
-		{
-			return;
-		}
 		finalDir = dirEnsureExists(instance->minecraftRoot(), "mods");
 		break;
 	case QuickModVersion::ForgeCoreMod:
@@ -106,8 +103,6 @@ void QuickModInstaller::install(const QuickModVersionPtr version, InstancePtr in
 			finalDir = dirEnsureExists(instance->minecraftRoot(), "coremods");
 		}
 		break;
-	case QuickModVersion::LiteLoaderMod:
-		return; // we give it to LiteLoader using the CLI
 	case QuickModVersion::Extract:
 		finalDir = dirEnsureExists(instance->minecraftRoot(), ".");
 		break;

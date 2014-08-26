@@ -87,6 +87,8 @@ QuickModDownloadSelectionDialog::highestPriorityDownload(const QuickModVersionPt
 	{
 		switch (type)
 		{
+		case QuickModDownload::Direct:
+			return highestPriorityDownload(version);
 		case QuickModDownload::Sequential:
 			return highestPriorityDownload(version, QuickModDownload::Parallel);
 		case QuickModDownload::Parallel:

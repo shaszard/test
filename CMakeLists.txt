@@ -490,8 +490,6 @@ set(MULTIMC_SOURCES
 	logic/net/ByteArrayUpload.cpp
 	logic/net/URLConstants.h
 	logic/net/URLConstants.cpp
-	logic/net/MavenResolver.h
-	logic/net/MavenResolver.cpp
 
 	# Yggdrasil login stuff
 	logic/auth/AuthSession.h
@@ -667,8 +665,6 @@ set(MULTIMC_SOURCES
 	logic/quickmod/QuickModFilesUpdater.h
 	logic/quickmod/QuickModInstaller.cpp
 	logic/quickmod/QuickModInstaller.h
-	logic/quickmod/QuickModInstanceModList.cpp
-	logic/quickmod/QuickModInstanceModList.h
 	logic/quickmod/QuickModLibraryInstaller.cpp
 	logic/quickmod/QuickModLibraryInstaller.h
 	logic/quickmod/QuickModUpdateMonitor.cpp
@@ -693,8 +689,24 @@ set(MULTIMC_SOURCES
 	logic/quickmod/tasks/QuickModForgeDownloadTask.h
 	logic/quickmod/tasks/QuickModLiteLoaderDownloadTask.cpp
 	logic/quickmod/tasks/QuickModLiteLoaderDownloadTask.h
-	logic/quickmod/tasks/QuickModMavenFindTask.cpp
-	logic/quickmod/tasks/QuickModMavenFindTask.h
+	logic/quickmod/QuickModsList.h
+	logic/quickmod/QuickModsList.cpp
+	logic/quickmod/QuickModFilesUpdater.h
+	logic/quickmod/QuickModFilesUpdater.cpp
+	logic/quickmod/QuickMod.h
+	logic/quickmod/QuickMod.cpp
+	logic/quickmod/QuickModVersion.h
+	logic/quickmod/QuickModVersion.cpp
+	logic/quickmod/QuickModDependencyResolver.h
+	logic/quickmod/QuickModDependencyResolver.cpp
+	logic/quickmod/QuickModInstaller.h
+	logic/quickmod/QuickModInstaller.cpp
+	logic/quickmod/QuickModUpdateMonitor.h
+	logic/quickmod/QuickModUpdateMonitor.cpp
+	logic/quickmod/QuickModLibraryInstaller.h
+	logic/quickmod/QuickModLibraryInstaller.cpp
+	logic/quickmod/QuickModBuilder.h
+	logic/quickmod/QuickModBuilder.cpp
 	
 	# Forge and all things forge related
 	logic/forge/ForgeVersion.h

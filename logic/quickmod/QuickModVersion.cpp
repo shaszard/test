@@ -100,6 +100,10 @@ void QuickModVersion::parse(const QJsonObject &object)
 		}
 	}
 
+	/*
+	 * FIXME: redo. we already have a library list parser. use it here.
+	 */
+	/*
 	libraries.clear();
 	if (object.contains("libraries"))
 	{
@@ -119,6 +123,7 @@ void QuickModVersion::parse(const QJsonObject &object)
 			libraries.append(library);
 		}
 	}
+	*/
 
 	downloads.clear();
 	for (auto dlValue : MMCJson::ensureArray(object.value("urls"), "urls"))

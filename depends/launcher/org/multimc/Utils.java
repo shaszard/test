@@ -78,7 +78,6 @@ public class Utils
 		Method method = urlClass.getDeclaredMethod("addURL", new Class[]{URL.class});
 		method.setAccessible(true);
 		method.invoke(urlClassLoader, new Object[]{u});
-		System.setProperty("java.class.path", System.getProperty("java.class.path") + System.getProperty("path.separator") + s);
 	}
 
 	/**

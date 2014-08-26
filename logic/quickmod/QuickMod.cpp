@@ -142,7 +142,6 @@ void QuickMod::parse(QuickModPtr _this, const QByteArray &data)
 	{
 		m_tags.append(MMCJson::ensureString(val, "'tag'"));
 	}
-
 	m_updateUrl = QUrl(MMCJson::ensureString(mod.value("updateUrl"), "'updateUrl'"));
 
 	m_versions.clear();
