@@ -156,11 +156,6 @@ InstanceList *BaseInstance::instList() const
 	return qobject_cast<InstanceList *>(parent());
 }
 
-InstancePtr BaseInstance::getSharedPtr()
-{
-	return instList()->getInstanceById(id());
-}
-
 std::shared_ptr<BaseVersionList> BaseInstance::versionList() const
 {
 	return MMC->minecraftlist();

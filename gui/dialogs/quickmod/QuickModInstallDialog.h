@@ -127,11 +127,11 @@ private slots:
 
 private:
 	Ui::QuickModInstallDialog *ui;
-	QuickModInstaller *m_installer;
 
 	std::shared_ptr<OneSixInstance> m_instance;
 
 	bool install(QuickModVersionPtr version);
+	void handleDownload(QuickModVersionPtr version, const QByteArray &data, const QUrl &url);
 
 	QList<QuickModRef> m_initialMods;
 	QList<QuickModVersionPtr> m_modVersions;

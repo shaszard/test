@@ -21,6 +21,7 @@
 #include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/QuickModSettings.h"
 #include "logic/quickmod/QuickModDependencyResolver.h"
+#include <logic/quickmod/InstalledMod.h>
 #include "logic/OneSixInstance.h"
 #include "MultiMC.h"
 
@@ -34,20 +35,33 @@ void QuickModDownloadTask::executeTask()
 {
 	const bool hasResolveError = QuickModDependencyResolver(m_instance).hasResolveError();
 
-	const QMap<QuickModRef, QPair<QuickModVersionRef, bool>> quickmods =
-		m_instance->getFullVersion()->quickmods;
+	auto modManager = m_instance->installedMods();
+	auto iter = modManager->iterateQuickMods();
 	QList<QuickModRef> mods;
-	for (auto it = quickmods.cbegin(); it != quickmods.cend(); ++it)
+	while (iter->isValid())
 	{
-		const QuickModVersionRef version = it.value().first;
-		QuickModMetadataPtr mod = version.isValid() ? MMC->quickmodslist()->mod(version.mod())
-											: MMC->quickmodslist()->mod(it.key());
+		auto version = iter->version();
 		QuickModVersionPtr ptr = MMC->quickmodslist()->version(version);
-		if (!ptr || !MMC->quickmodSettings()->isModMarkedAsExists(mod, version) || hasResolveError ||
-				(ptr->needsDeploy() && !MMC->quickmodSettings()->isModMarkedAsInstalled(mod->uid(), version, m_instance)))
+
+		// FIXME: unify the refs and don't do this silly stuff.
+		// FIXME: this is not respecting user preferences... taking first mod and running with
+		// it.
+		QuickModMetadataPtr mod;
+		if (version.isValid())
+			mod = MMC->quickmodslist()->mod(version.mod());
+		else
+			mod = MMC->quickmodslist()->mods(iter->uid()).first();
+
+		bool processMod = false;
+		processMod |= !ptr;
+		processMod |= !MMC->quickmodSettings()->isModMarkedAsExists(mod, version);
+		processMod |= hasResolveError;
+		processMod |= ptr->needsDeploy() && !modManager->isQuickmodInstalled(mod->uid());
+		if (processMod)
 		{
 			mods.append(mod->uid());
 		}
+		iter->next();
 	}
 
 	if (mods.isEmpty())
@@ -61,23 +75,22 @@ void QuickModDownloadTask::executeTask()
 		wait<QList<QuickModVersionPtr>>("QuickMods.InstallMods", m_instance, mods, &ok);
 	if (ok)
 	{
-		const auto quickmods = m_instance->getFullVersion()->quickmods;
+		auto inst_mods = m_instance->installedMods();
 		QMap<QuickModRef, QPair<QuickModVersionRef, bool>> mods;
 		for (const auto version : installedVersions)
 		{
 			const auto uid = version->mod->uid();
-			bool isManualInstall = quickmods.contains(uid) && quickmods[uid].second;
+			bool isManualInstall = inst_mods->installedQuickIsHardDep(uid);
 			mods.insert(version->mod->uid(), qMakePair(version->version(), isManualInstall));
 		}
 		try
 		{
-			m_instance->setQuickModVersions(mods);
+			m_instance->installedMods()->setQuickModVersions(mods);
 		}
 		catch (...)
 		{
 			QLOG_ERROR() << "This means that stuff will be downloaded on every instance launch";
 		}
-
 		emitSucceeded();
 	}
 	else
@@ -85,3 +98,5 @@ void QuickModDownloadTask::executeTask()
 		emitFailed(tr("Failure downloading QuickMods"));
 	}
 }
+
+

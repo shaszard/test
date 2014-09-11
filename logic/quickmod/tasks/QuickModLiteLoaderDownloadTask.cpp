@@ -19,6 +19,7 @@
 #include "logic/liteloader/LiteLoaderVersionList.h"
 #include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/QuickModMetadata.h"
+#include "logic/quickmod/InstalledMod.h"
 #include "logic/OneSixInstance.h"
 #include "MultiMC.h"
 
@@ -29,8 +30,8 @@ QuickModLiteLoaderDownloadTask::QuickModLiteLoaderDownloadTask(std::shared_ptr<O
 
 void QuickModLiteLoaderDownloadTask::executeTask()
 {
-	auto mods = m_instance->getFullVersion()->quickmods;
-	if (mods.isEmpty())
+	auto iter = m_instance->installedMods()->iterateQuickMods();
+	if (!iter->isValid())
 	{
 		emitSucceeded();
 		return;
@@ -44,17 +45,19 @@ void QuickModLiteLoaderDownloadTask::executeTask()
 	}
 
 	QStringList versionFilters;
-	for (auto it = mods.cbegin(); it != mods.cend(); ++it)
+	while (iter->isValid())
 	{
-		QuickModVersionPtr version = MMC->quickmodslist()->version(it.value().first);
+		QuickModVersionPtr version = MMC->quickmodslist()->version(iter->version());
 		if (!version)
 		{
+			iter->next();
 			continue;
 		}
 		if (!version->liteloaderVersionFilter.isEmpty())
 		{
 			versionFilters.append(version->liteloaderVersionFilter);
 		}
+		iter->next();
 	}
 	if (versionFilters.isEmpty())
 	{

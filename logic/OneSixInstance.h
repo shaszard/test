@@ -19,8 +19,11 @@
 
 #include "logic/minecraft/InstanceVersion.h"
 #include "logic/ModList.h"
+#include "logic/quickmod/QuickModRef.h"
+#include "logic/quickmod/QuickModVersionRef.h"
 #include "gui/pages/BasePageProvider.h"
 
+class InstalledMods;
 class QuickModRef;
 
 class OneSixInstance : public BaseInstance, public BasePageProvider
@@ -42,6 +45,7 @@ public:
 	std::shared_ptr<ModList> coreModList();
 	std::shared_ptr<ModList> resourcePackList() override;
 	std::shared_ptr<ModList> texturePackList() override;
+	std::shared_ptr<InstalledMods> installedMods();
 
 	virtual QSet<QString> traits();
 	
@@ -101,12 +105,7 @@ public:
 
 	virtual QStringList extraArguments() const override;
 
-	std::shared_ptr<OneSixInstance> getSharedPtr();
-
-	void setQuickModVersion(const QuickModRef &uid, const QuickModVersionRef &version, const bool manualInstall = false);
-	void setQuickModVersions(const QMap<QuickModRef, QPair<QuickModVersionRef, bool> > &mods);
-	void removeQuickMod(const QuickModRef &uid);
-	void removeQuickMods(const QList<QuickModRef> &uids);
+	std::shared_ptr<OneSixInstance> shared_from_this();
 
 signals:
 	void versionReloaded();

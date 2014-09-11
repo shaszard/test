@@ -82,6 +82,7 @@
 #include "logic/java/JavaVersionList.h"
 #include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/QuickModMetadata.h"
+#include <logic/quickmod/InstalledMod.h>
 
 #include "logic/auth/flows/AuthenticateTask.h"
 #include "logic/auth/flows/RefreshTask.h"
@@ -1225,7 +1226,9 @@ void MainWindow::doLaunch(bool online, BaseProfilerFactory *profiler)
 void MainWindow::updateInstance(InstancePtr instance, AuthSessionPtr session,
 								BaseProfilerFactory *profiler)
 {
-	if (auto onesix = std::dynamic_pointer_cast<OneSixInstance>(instance))
+	// FIXME: replace. This is logic in GUI, and even in the wrong place in the GUI.
+	std::shared_ptr<OneSixInstance> onesix = std::dynamic_pointer_cast<OneSixInstance>(instance);
+	if (onesix)
 	{
 		QList<QuickModRef> mods = MMC->quickmodslist()->updatedModsForInstance(onesix);
 		if (!mods.isEmpty())
@@ -1239,7 +1242,7 @@ void MainWindow::updateInstance(InstancePtr instance, AuthSessionPtr session,
 				modsToUpdate.insert(
 					ptr->uid(),
 					qMakePair(QuickModVersionRef(),
-							  onesix->getFullVersion()->quickmods[ptr->uid()].second));
+							  onesix->installedMods()->installedQuickIsHardDep(ptr->uid())));
 			}
 			int res = QMessageBox::question(
 				this, tr("Update"),
@@ -1248,7 +1251,7 @@ void MainWindow::updateInstance(InstancePtr instance, AuthSessionPtr session,
 				QMessageBox::Yes, QMessageBox::No);
 			if (res == QMessageBox::Yes)
 			{
-				onesix->setQuickModVersions(modsToUpdate);
+				onesix->installedMods()->setQuickModVersions(modsToUpdate);
 			}
 		}
 	}

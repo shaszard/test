@@ -21,8 +21,6 @@
 #include <QList>
 #include <memory>
 
-#include "logic/quickmod/QuickModMetadata.h"
-#include "logic/quickmod/QuickModVersion.h"
 #include "OneSixLibrary.h"
 #include "VersionFile.h"
 #include "JarMod.h"
@@ -141,10 +139,6 @@ public:
 	 * The applet class, for some very old minecraft releases
 	 */
 	QString appletClass;
-	
-
-	QStringList modFiles;
-	QMap<QuickModRef, QPair<QuickModVersionRef, bool>> quickmods;
 
 	/// the list of libs - both active and inactive, native and java
 	QList<OneSixLibraryPtr> libraries;

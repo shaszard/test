@@ -20,6 +20,7 @@
 #include "logic/quickmod/QuickModVersion.h"
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/QuickModsList.h"
+#include "InstalledMod.h"
 #include "logic/OneSixInstance.h"
 #include "MultiMC.h"
 #include "modutils.h"
@@ -65,22 +66,23 @@ struct DepNode
 		QMap<QuickModRef, const DepNode *> nodes;
 
 		// stage one: create nodes
-		const auto mods = instance->getFullVersion()->quickmods;
-		for (auto it = mods.constBegin(); it != mods.constEnd(); ++it)
+		auto iter = instance->installedMods()->iterateQuickMods();
+		while (iter->isValid())
 		{
-			Q_ASSERT(!nodes.contains(it.key()));
+			Q_ASSERT(!nodes.contains(iter->uid()));
 			DepNode *node = new DepNode;
-			node->uid = it.key();
-			node->isHard = it.value().second;
-			if (it.value().first.isValid())
+			node->uid = iter->uid();
+			node->isHard = !iter->asDependency();
+			if (iter->version().isValid())
 			{
-				node->version = it.value().first;
+				node->version = iter->version();
 			}
 			else
 			{
 				ok_internal = false;
 			}
-			nodes.insert(it.key(), node);
+			nodes.insert(node->uid, node);
+			iter->next();
 		}
 
 		// stage two: forward dependencies (children)
@@ -185,14 +187,17 @@ QList<QuickModRef> QuickModDependencyResolver::resolveOrphans() const
 {
 	QList<QuickModRef> orphans;
 	QList<const DepNode *> nodes = DepNode::build(m_instance);
-	for (const auto uid : m_instance->getFullVersion()->quickmods.keys())
+	auto iter = m_instance->installedMods()->iterateQuickMods();
+	while (iter->isValid())
 	{
+		auto uid = iter->uid();
 		const auto node = DepNode::findNode(nodes, uid);
 		Q_ASSERT(node);
 		if (!node->hasHardParent())
 		{
 			orphans.append(uid);
 		}
+		iter->next();
 	}
 	return orphans;
 }

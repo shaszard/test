@@ -121,24 +121,42 @@ void QuickModBaseDownloadAction::downloadFinished()
 	}
 
 	// if the download succeeded
-	if (m_status != Job_Failed)
-	{
-		const QByteArray receivedHash = m_reply->rawHeader("ETag").replace("\"", "");
-		if (!receivedHash.isEmpty())
-		{
-			MMC->quickmodslist()->database()->setChecksum(m_originalUrl, receivedHash);
-		}
-		if (receivedHash == m_expectedChecksum || handle(m_reply->readAll()))
-		{
-			// nothing went wrong...
-			m_status = Job_Finished;
-			emit succeeded(m_index_within_job);
-		}
-	}
-	// else the download failed
-	else
+	if (m_status == Job_Failed)
 	{
 		emit failed(m_index_within_job);
+		return;
 	}
-	m_reply.reset();
+	
+	if(m_reply->hasRawHeader("ETag"))
+	{
+		const QByteArray receivedHash = m_reply->rawHeader("ETag").replace("\"", "");
+		MMC->quickmodslist()->database()->setChecksum(m_originalUrl, receivedHash);
+		// cache hit? success!
+		if(m_expectedChecksum == receivedHash)
+		{
+			m_status = Job_Finished;
+			emit succeeded(m_index_within_job);
+			m_reply.reset();
+			return;
+		}
+	}
+
+	// FIXME: handle also time based cache expiration.
+
+	if (handle(m_reply->readAll()))
+	{
+		// nothing went wrong...
+		m_status = Job_Finished;
+		emit succeeded(m_index_within_job);
+		m_reply.reset();
+		return;
+	}
+	else
+	{
+		// everything went wrong.
+		m_status = Job_Failed;
+		emit failed(m_index_within_job);
+		m_reply.reset();
+		return;
+	}
 }

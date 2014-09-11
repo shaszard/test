@@ -99,13 +99,19 @@ void QuickModDatabase::flushToDisk()
 	root.insert("mods", quickmods);
 	root.insert("checksums", checksums);
 
+	if(!ensureFilePathExists(m_filename))
+	{
+		QLOG_ERROR() << "Unable to create folder for QuickMod database:" << m_filename;
+		return;
+	}
+
 	QFile file(m_filename);
 	if (!file.open(QFile::WriteOnly))
 	{
 		QLOG_ERROR() << "Unable to save QuickMod Database to disk:" << file.errorString();
 		return;
 	}
-	file.write(QJsonDocument(root).toBinaryData());
+	file.write(QJsonDocument(root).toJson());
 
 	m_isDirty = false;
 }

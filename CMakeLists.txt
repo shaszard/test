@@ -654,6 +654,8 @@ SET(MULTIMC_SOURCES
 	# QuickMods
 	logic/quickmod/QuickModMetadata.cpp
 	logic/quickmod/QuickModMetadata.h
+	logic/quickmod/InstalledMod.cpp
+	logic/quickmod/InstalledMod.h
 	logic/quickmod/QuickModRef.cpp
 	logic/quickmod/QuickModRef.h
 	logic/quickmod/QuickModBuilder.cpp
@@ -662,8 +664,6 @@ SET(MULTIMC_SOURCES
 	logic/quickmod/QuickModDependencyResolver.h
 	logic/quickmod/QuickModDownload.cpp
 	logic/quickmod/QuickModDownload.h
-	logic/quickmod/QuickModInstaller.cpp
-	logic/quickmod/QuickModInstaller.h
 	logic/quickmod/QuickModLibraryInstaller.cpp
 	logic/quickmod/QuickModLibraryInstaller.h
 	logic/quickmod/QuickModUpdateMonitor.cpp

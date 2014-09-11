@@ -34,12 +34,6 @@ public:
 
 	void markModAsExists(QuickModMetadataPtr mod, const QuickModVersionRef &version,
 						 const QString &fileName);
-	void markModAsInstalled(const QuickModRef uid, const QuickModVersionRef &version,
-							const QString &fileName, InstancePtr instance);
-	void markModAsUninstalled(const QuickModRef uid, const QuickModVersionRef &version,
-							  InstancePtr instance);
-	bool isModMarkedAsInstalled(const QuickModRef uid, const QuickModVersionRef &version,
-								InstancePtr instance) const;
 	bool isModMarkedAsExists(QuickModMetadataPtr mod, const QuickModVersionRef &version) const;
 	QMap<QuickModVersionRef, QString> installedModFiles(const QuickModRef uid,
 														BaseInstance *instance) const;

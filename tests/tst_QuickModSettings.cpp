@@ -141,7 +141,7 @@ slots:
 
 		delete settings;
 	}
-
+/*
 	void testMarkAsInstalledUninstalled_data()
 	{
 		QTest::addColumn<QVector<QuickModMetadataPtr>>("mods");
@@ -227,6 +227,7 @@ slots:
 
 		delete settings;
 	}
+*/
 };
 
 QTEST_GUILESS_MAIN_MULTIMC(QuickModSettingsTest)

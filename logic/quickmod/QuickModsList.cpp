@@ -35,6 +35,7 @@
 #include "logic/settings/Setting.h"
 #include "MultiMC.h"
 #include "logic/InstanceList.h"
+#include "logic/quickmod/InstalledMod.h"
 #include "modutils.h"
 
 #include "logic/settings/INISettingsObject.h"
@@ -300,22 +301,25 @@ QList<QuickModRef>
 QuickModsList::updatedModsForInstance(std::shared_ptr<OneSixInstance> instance) const
 {
 	QList<QuickModRef> mods;
-	for (auto it = instance->getFullVersion()->quickmods.begin();
-		 it != instance->getFullVersion()->quickmods.end(); ++it)
+	auto iter = instance->installedMods()->iterateQuickMods();
+	while (iter->isValid())
 	{
-		if (!it.value().first.isValid())
+		if (!iter->version().isValid())
 		{
+			iter->next();
 			continue;
 		}
-		auto latest = latestVersion(it.key(), instance->intendedVersionId());
+		auto latest = latestVersion(iter->uid(), instance->intendedVersionId());
 		if (!latest.isValid())
 		{
+			iter->next();
 			continue;
 		}
-		if (it.value().first < latest)
+		if (iter->version() < latest)
 		{
-			mods.append(QuickModRef(it.key()));
+			mods.append(QuickModRef(iter->uid()));
 		}
+		iter->next();
 	}
 	return mods;
 }

@@ -47,8 +47,9 @@
 #include "MultiMC.h"
 #include "logic/settings/SettingsObject.h"
 #include "depends/quazip/JlCompress.h"
-#include "logic/quickmod/QuickModInstaller.h"
+#include <pathutils.h>
 #include "logic/quickmod/QuickModVersionList.h"
+#include <logic/quickmod/InstalledMod.h>
 
 Q_DECLARE_METATYPE(QTreeWidgetItem *)
 
@@ -99,8 +100,7 @@ public:
 
 QuickModInstallDialog::QuickModInstallDialog(std::shared_ptr<OneSixInstance> instance,
 											 QWidget *parent)
-	: QDialog(parent), ui(new Ui::QuickModInstallDialog),
-	  m_installer(new QuickModInstaller(this, this)), m_instance(instance)
+	: QDialog(parent), ui(new Ui::QuickModInstallDialog), m_instance(instance)
 {
 	ui->setupUi(this);
 	setWindowModality(Qt::WindowModal);
@@ -349,7 +349,7 @@ bool QuickModInstallDialog::resolveDeps()
 QuickModVersionPtr QuickModInstallDialog::getVersion(const QuickModRef &modUid,
 													 const QuickModVersionRef &filter, bool *ok)
 {
-	const QuickModVersionRef predefinedVersion = m_instance->getFullVersion()->quickmods[modUid].first;
+	auto predefinedVersion = m_instance->installedMods()->installedQuickModVersion(modUid);
 	VersionSelectDialog dialog(new QuickModVersionList(modUid, m_instance, this),
 							   tr("Choose QuickMod version for %1").arg(modUid.userFacing()),
 							   this);
@@ -379,8 +379,7 @@ void QuickModInstallDialog::processVersionList()
 		// Add a progress list entry for each download
 		addProgressListEntry(version);
 
-		if (MMC->quickmodSettings()->isModMarkedAsInstalled(version->mod->uid(),
-														 QuickModVersionRef(), m_instance))
+		if (m_instance->installedMods()->isQuickmodInstalled(version->mod->uid()))
 		{
 			QLOG_INFO() << version->mod->uid() << " is already installed";
 			setProgressListMsg(version, tr("Success: Already installed"), Qt::darkGreen);
@@ -485,7 +484,7 @@ bool QuickModInstallDialog::install(QuickModVersionPtr version)
 {
 	try
 	{
-		m_installer->install(version, m_instance);
+		m_instance->installedMods()->install(version);
 	}
 	catch (MMCError &e)
 	{
@@ -594,7 +593,7 @@ void QuickModInstallDialog::downloadCompleted()
 	bool fail = false;
 	try
 	{
-		m_installer->handleDownload(version, reply->readAll(), reply->url());
+		handleDownload(version, reply->readAll(), reply->url());
 	}
 	catch (MMCError &e)
 	{
@@ -612,5 +611,72 @@ void QuickModInstallDialog::downloadCompleted()
 
 	checkIsDone();
 }
+
+// not the place...
+static QString fileName(const QuickModVersionPtr &version, const QUrl &url)
+{
+	QString ending = QMimeDatabase().mimeTypeForUrl(url).preferredSuffix();
+	if (!ending.isEmpty())
+	{
+		ending.prepend('.');
+	}
+	if (ending == ".bin")
+	{
+		ending = ".jar";
+	}
+	if (version->installType == QuickModVersion::LiteLoaderMod)
+	{
+		ending = ".litemod";
+	}
+	return version->mod->internalUid() + "-" + version->name() + ending;
+}
+
+void QuickModInstallDialog::handleDownload(QuickModVersionPtr version, const QByteArray &data,
+									   const QUrl &url)
+{
+	QString dlpath;
+	switch (version->installType)
+	{
+	case QuickModVersion::ForgeMod:
+	case QuickModVersion::ForgeCoreMod:
+	case QuickModVersion::LiteLoaderMod:
+		dlpath = PathCombine(MMC->settings()->get("CentralModsDir").toString(), "mods");
+		break;
+	case QuickModVersion::Extract:
+	case QuickModVersion::ConfigPack:
+		dlpath = PathCombine(MMC->settings()->get("CentralModsDir").toString(), "archives");
+		break;
+	case QuickModVersion::Group:
+		return;
+	}
+
+	const QByteArray actual = QCryptographicHash::hash(data, QCryptographicHash::Sha1).toHex();
+	if (!version->sha1.isNull() && actual != version->sha1)
+	{
+		QLOG_INFO() << "Checksum missmatch for " << version->mod->uid()
+					<< ". Actual: " << actual << " Expected: " << version->sha1;
+		throw MMCError(tr("Error: Checksum mismatch"));
+	}
+
+	if(!ensureFolderPathExists(dlpath))
+	{
+		QLOG_INFO() << "Unable to create storage folder " << dlpath;
+		throw MMCError(tr("Unable to create storage folder %1").arg(dlpath));
+	}
+
+	QString filePath = PathCombine(dlpath, fileName(version, url));
+	QFile file(filePath);
+	if (!file.open(QFile::WriteOnly | QFile::Truncate))
+	{
+		throw MMCError(
+			tr("Error: Trying to save %1: %2").arg(file.fileName(), file.errorString()));
+		return;
+	}
+	file.write(data);
+	file.close();
+
+	MMC->quickmodSettings()->markModAsExists(version->mod, version, file.fileName());
+}
+
 
 #include "QuickModInstallDialog.moc"

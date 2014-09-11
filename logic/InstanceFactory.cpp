@@ -37,6 +37,7 @@
 #include "logic/InstanceList.h"
 #include "logic/auth/MojangAccountList.h"
 #include "logic/tasks/Task.h"
+#include "quickmod/InstalledMod.h"
 #include "MultiMC.h"
 
 InstanceFactory InstanceFactory::loader;
@@ -105,7 +106,7 @@ InstancePtr InstanceFactory::addInstance(const QString &name, const QString &ico
 			newInstance->settings().set("LastQuickModUrl", quickmod.updateUrl());
 			if (std::shared_ptr<OneSixInstance> onesix = std::dynamic_pointer_cast<OneSixInstance>(newInstance))
 			{
-				onesix->setQuickModVersion(quickmod, QuickModVersionRef(), true);
+				onesix->installedMods()->setQuickModVersion(quickmod, QuickModVersionRef(), true);
 			}
 		}
 		MMC->instances()->add(newInstance);

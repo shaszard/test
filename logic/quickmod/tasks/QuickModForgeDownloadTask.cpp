@@ -20,6 +20,7 @@
 #include "logic/OneSixInstance.h"
 #include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/QuickModMetadata.h"
+#include <logic/quickmod/InstalledMod.h>
 #include "MultiMC.h"
 
 QuickModForgeDownloadTask::QuickModForgeDownloadTask(std::shared_ptr<OneSixInstance> instance, Bindable *parent)
@@ -29,8 +30,8 @@ QuickModForgeDownloadTask::QuickModForgeDownloadTask(std::shared_ptr<OneSixInsta
 
 void QuickModForgeDownloadTask::executeTask()
 {
-	auto mods = m_instance->getFullVersion()->quickmods;
-	if (mods.isEmpty())
+	auto iter = m_instance->installedMods()->iterateQuickMods();
+	if (!iter->isValid())
 	{
 		emitSucceeded();
 		return;
@@ -44,17 +45,19 @@ void QuickModForgeDownloadTask::executeTask()
 	}
 
 	QStringList versionFilters;
-	for (auto it = mods.cbegin(); it != mods.cend(); ++it)
+	while (iter->isValid())
 	{
-		QuickModVersionPtr version = MMC->quickmodslist()->version(it.value().first);
+		QuickModVersionPtr version = MMC->quickmodslist()->version(iter->version());
 		if (!version)
 		{
+			iter->next();
 			continue;
 		}
 		if (!version->forgeVersionFilter.isEmpty())
 		{
 			versionFilters.append(version->forgeVersionFilter);
 		}
+		iter->next();
 	}
 	if (versionFilters.isEmpty())
 	{

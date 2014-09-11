@@ -25,6 +25,7 @@
 #include "logic/quickmod/tasks/QuickModDownloadTask.h"
 #include "logic/quickmod/tasks/QuickModForgeDownloadTask.h"
 #include "logic/quickmod/tasks/QuickModLiteLoaderDownloadTask.h"
+#include "quickmod/InstalledMod.h"
 #include "logic/tasks/SequentialTask.h"
 #include "logic/minecraft/InstanceVersion.h"
 #include "logic/minecraft/VersionBuildError.h"
@@ -79,7 +80,7 @@ QList<BasePage *> OneSixInstance::getPages()
 									tr("Loader mods"), "Loader-mods"));
 	values.append(new CoreModFolderPage(this, coreModList(), "coremods", "plugin-green",
 										tr("Core mods"), "Core-mods"));
-	values.append(new QuickModBrowsePage(getSharedPtr()));
+	values.append(new QuickModBrowsePage(shared_from_this()));
 	values.append(new ResourcePackPage(this));
 	values.append(new TexturePackPage(this));
 	values.append(new NotesPage(this));
@@ -108,9 +109,9 @@ QSet<QString> OneSixInstance::traits()
 std::shared_ptr<Task> OneSixInstance::doUpdate()
 {
 	auto task = std::shared_ptr<SequentialTask>(new SequentialTask);
-	task->addTask(std::shared_ptr<Task>(new QuickModDownloadTask(getSharedPtr(), task.get())));
-	task->addTask(std::shared_ptr<Task>(new QuickModForgeDownloadTask(getSharedPtr(), task.get())));
-	task->addTask(std::shared_ptr<Task>(new QuickModLiteLoaderDownloadTask(getSharedPtr(), task.get())));
+	task->addTask(std::shared_ptr<Task>(new QuickModDownloadTask(shared_from_this(), task.get())));
+	task->addTask(std::shared_ptr<Task>(new QuickModForgeDownloadTask(shared_from_this(), task.get())));
+	task->addTask(std::shared_ptr<Task>(new QuickModLiteLoaderDownloadTask(shared_from_this(), task.get())));
 	task->addTask(std::shared_ptr<Task>(new OneSixUpdate(this, task.get())));
 	return task;
 }
@@ -379,6 +380,17 @@ std::shared_ptr<ModList> OneSixInstance::texturePackList()
 	return d->texture_pack_list;
 }
 
+std::shared_ptr<InstalledMods> OneSixInstance::installedMods()
+{
+	I_D(OneSixInstance);
+	if (!d->installed_mods)
+	{
+		d->installed_mods.reset(new InstalledMods(shared_from_this()));
+		d->installed_mods->loadFromFile("components.json");
+	}
+	return d->installed_mods;
+}
+
 bool OneSixInstance::setIntendedVersionId(QString version)
 {
 	settings().set("IntendedVersion", version);
@@ -538,112 +550,6 @@ bool OneSixInstance::reload()
 	return false;
 }
 
-/*
- * FIXME: the stuff below will be replaced. It is still useful to track properly added
- * quickmods for things that do not have an exact mod 'file'. Like modpacks. Or things
- * that expand into many files, like a bunch of config files.
- * 
- * However, it won't be done like this and the file, if it is visible in the version
- * page at all, will actually look decent.
- *
- * What are the use cases really?
- *
- * Maybe the meta stuff could have its own kind of files inside the instance? Patch files?
- */
-
-void OneSixInstance::setQuickModVersion(const QuickModRef &uid, const QuickModVersionRef &version, const bool manualInstall)
-{
-	setQuickModVersions(QMap<QuickModRef, QPair<QuickModVersionRef, bool>>({{uid, qMakePair(version, manualInstall)}}));
-}
-void OneSixInstance::setQuickModVersions(const QMap<QuickModRef, QPair<QuickModVersionRef, bool>> &mods)
-{
-	QFile userFile(instanceRoot() + "/user.json");
-	if (!userFile.open(QFile::ReadWrite))
-	{
-		throw MMCError(tr("Couldn't open %1 for writing: %2").arg(userFile.fileName(), userFile.errorString()));
-	}
-	// TODO more error reporting
-	QJsonObject obj = QJsonDocument::fromJson(userFile.readAll()).object();
-	QJsonObject plusmods = obj.value("+mods").toObject();
-	QJsonObject minusmods = obj.value("-mods").toObject();
-	for (auto it = mods.begin(); it != mods.end(); ++it)
-	{
-		minusmods.remove(it.key().toString());
-
-		QJsonObject qmObj;
-		qmObj.insert("version", it.value().first.toString());
-		qmObj.insert("updateUrl", it.key().updateUrl().toString());
-		qmObj.insert("isManualInstall", it.value().second);
-		plusmods.insert(it.key().toString(), qmObj);
-	}
-	obj.insert("+mods", plusmods);
-	obj.insert("-mods", minusmods);
-	userFile.seek(0);
-	userFile.write(QJsonDocument(obj).toJson(QJsonDocument::Indented));
-	userFile.resize(userFile.pos());
-	userFile.close();
-	reloadVersion();
-}
-
-void OneSixInstance::removeQuickMod(const QuickModRef &uid)
-{
-	removeQuickMods(QList<QuickModRef>() << uid);
-}
-void OneSixInstance::removeQuickMods(const QList<QuickModRef> &uids)
-{
-	QFile userFile(instanceRoot() + "/user.json");
-	if (!userFile.open(QFile::ReadWrite))
-	{
-		throw MMCError(tr("Couldn't open %1 for writing: %2").arg(userFile.fileName(), userFile.errorString()));
-	}
-	// TODO more error reporting
-	QJsonObject obj = QJsonDocument::fromJson(userFile.readAll()).object();
-	QJsonObject plusmods = obj.value("+mods").toObject();
-	QJsonObject minusmods = obj.value("-mods").toObject();
-	for (const auto uid : uids)
-	{
-		if (plusmods.contains(uid.toString()))
-		{
-			plusmods.remove(uid.toString());
-		}
-		else
-		{
-			minusmods.insert(uid.toString(), QString());
-		}
-	}
-	obj.insert("+mods", plusmods);
-	obj.insert("-mods", minusmods);
-	userFile.seek(0);
-	userFile.write(QJsonDocument(obj).toJson(QJsonDocument::Indented));
-	userFile.resize(userFile.pos());
-	userFile.close();
-	reloadVersion();
-
-	QStringList failedFiles;
-
-	// remove deployed files
-	for (const auto uid : uids)
-	{
-		const QStringList filenames = MMC->quickmodSettings()->installedModFiles(uid, this).values();
-		for (const auto filename : filenames)
-		{
-			if (QFile::remove(filename))
-			{
-				MMC->quickmodSettings()->markModAsUninstalled(uid, QuickModVersionRef(), getSharedPtr());
-			}
-			else
-			{
-				failedFiles.append(filename);
-			}
-		}
-	}
-
-	if (!failedFiles.isEmpty())
-	{
-		throw MMCError(tr("Error while removing the following files: %1").arg(failedFiles.join(", ")));
-	}
-}
-
 QString OneSixInstance::loaderModsDir() const
 {
 	return PathCombine(minecraftRoot(), "mods");
@@ -693,7 +599,7 @@ QStringList OneSixInstance::extraArguments() const
 	return list;
 }
 
-std::shared_ptr<OneSixInstance> OneSixInstance::getSharedPtr()
+std::shared_ptr< OneSixInstance > OneSixInstance::shared_from_this()
 {
-	return std::dynamic_pointer_cast<OneSixInstance>(BaseInstance::getSharedPtr());
+	return std::dynamic_pointer_cast<OneSixInstance>(BaseInstance::shared_from_this());
 }

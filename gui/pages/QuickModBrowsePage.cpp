@@ -29,6 +29,7 @@
 #include "gui/dialogs/CustomMessageBox.h"
 #include "logic/InstanceFactory.h"
 #include "logic/quickmod/QuickModMetadata.h"
+#include <logic/quickmod/InstalledMod.h>
 #include "logic/OneSixInstance.h"
 
 #include "MultiMC.h"
@@ -224,8 +225,8 @@ public:
 	{
 		if (proxyIndex.isValid() && role == Qt::CheckStateRole)
 		{
-			return m_installed.contains(
-					   proxyIndex.data(QuickModsList::UidRole).value<QuickModRef>())
+			auto uid = proxyIndex.data(QuickModsList::UidRole).value<QuickModRef>();
+			return m_instance->installedMods()->isQuickmodInstalled(uid)
 					   ? Qt::Checked
 					   : Qt::Unchecked;
 		}
@@ -235,7 +236,6 @@ public:
 private slots:
 	void update()
 	{
-		m_installed = m_instance->getFullVersion()->quickmods.keys();
 		emit dataChanged(index(0, 0), index(rowCount(), columnCount()), QVector<int>() << Qt::CheckStateRole);
 	}
 
@@ -243,7 +243,6 @@ signals:
 	void checkChanged(const QModelIndex &sourceIndex, const bool checked);
 
 private:
-	QList<QuickModRef> m_installed;
 	std::shared_ptr<OneSixInstance> m_instance;
 
 	using QIdentityProxyModel::setSourceModel; // hide
@@ -361,11 +360,11 @@ void QuickModBrowsePage::checkStateChanged(const QModelIndex &index, const bool 
 	{
 		if (checked)
 		{
-			m_instance->setQuickModVersion(index.data(QuickModsList::UidRole).value<QuickModRef>(), QuickModVersionRef(), true);
+			m_instance->installedMods()->setQuickModVersion(index.data(QuickModsList::UidRole).value<QuickModRef>(), QuickModVersionRef(), true);
 		}
 		else
 		{
-			m_instance->removeQuickMod(index.data(QuickModsList::UidRole).value<QuickModRef>());
+			m_instance->installedMods()->removeQuickMod(index.data(QuickModsList::UidRole).value<QuickModRef>());
 		}
 	}
 	catch (MMCError &e)

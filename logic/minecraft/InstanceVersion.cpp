@@ -57,8 +57,6 @@ void InstanceVersion::clear()
 	tweakers.clear();
 	jarMods.clear();
 	traits.clear();
-	quickmods.clear();
-	modFiles.clear();
 }
 
 bool InstanceVersion::canRemove(const int index) const
@@ -167,8 +165,6 @@ bool InstanceVersion::isVanilla()
 	if(QFile::exists(PathCombine(m_instance->instanceRoot(), "custom.json")))
 		return false;
 	if(QFile::exists(PathCombine(m_instance->instanceRoot(), "version.json")))
-		return false;
-	if(QFile::exists(PathCombine(m_instance->instanceRoot(), "user.json")))
 		return false;
 	return true;
 }

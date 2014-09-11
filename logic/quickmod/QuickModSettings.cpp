@@ -49,59 +49,12 @@ void QuickModSettings::markModAsExists(QuickModMetadataPtr mod, const QuickModVe
 	m_settings->getSetting("AvailableMods")->set(QVariant(mods));
 }
 
-void QuickModSettings::markModAsInstalled(const QuickModRef uid,
-										  const QuickModVersionRef &version,
-										  const QString &fileName, InstancePtr instance)
-{
-	auto mods = instance->settings().get("InstalledMods").toMap();
-	auto map = mods[uid.toString()].toMap();
-	map[version.toString()] = fileName;
-	mods[uid.toString()] = map;
-	instance->settings().getSetting("InstalledMods")->set(QVariant(mods));
-}
-void QuickModSettings::markModAsUninstalled(const QuickModRef uid,
-											const QuickModVersionRef &version,
-											InstancePtr instance)
-{
-	auto mods = instance->settings().get("InstalledMods").toMap();
-	auto map = mods[uid.toString()].toMap();
-	map.remove(version.toString());
-	if (map.isEmpty())
-	{
-		mods.remove(uid.toString());
-	}
-	else
-	{
-		mods[uid.toString()] = map;
-	}
-	instance->settings().set("InstalledMods", QVariant(mods));
-}
-bool QuickModSettings::isModMarkedAsInstalled(const QuickModRef uid,
-											  const QuickModVersionRef &version,
-											  InstancePtr instance) const
-{
-	auto mods = instance->settings().get("InstalledMods").toMap();
-	return mods.contains(uid.toString()) &&
-		   mods.value(uid.toString()).toMap().contains(version.toString());
-}
 bool QuickModSettings::isModMarkedAsExists(QuickModMetadataPtr mod,
 										   const QuickModVersionRef &version) const
 {
 	auto mods = m_settings->get("AvailableMods").toMap();
 	return mods.contains(mod->internalUid()) &&
 		   mods.value(mod->internalUid()).toMap().contains(version.toString());
-}
-QMap<QuickModVersionRef, QString>
-QuickModSettings::installedModFiles(const QuickModRef uid, BaseInstance *instance) const
-{
-	auto mods = instance->settings().get("InstalledMods").toMap();
-	auto tmp = mods[uid.toString()].toMap();
-	QMap<QuickModVersionRef, QString> out;
-	for (auto it = tmp.begin(); it != tmp.end(); ++it)
-	{
-		out.insert(QuickModVersionRef(uid, it.key()), it.value().toString());
-	}
-	return out;
 }
 QString QuickModSettings::existingModFile(QuickModMetadataPtr mod,
 										  const QuickModVersionRef &version) const

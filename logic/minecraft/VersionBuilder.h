@@ -51,7 +51,6 @@ private:
 	void buildFromMultilayer();
 	
 	void readInstancePatches();
-	void readUserPatch();
 	
 	void readJsonAndApply(const QJsonObject &obj);
 };

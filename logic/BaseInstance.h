@@ -46,7 +46,7 @@ typedef std::shared_ptr<BaseInstance> InstancePtr;
  * To create a new instance type, create a new class inheriting from this class
  * and implement the pure virtual functions.
  */
-class BaseInstance : public QObject
+class BaseInstance : public QObject, public std::enable_shared_from_this<BaseInstance>
 {
 	Q_OBJECT
 protected:
@@ -166,8 +166,6 @@ public:
 	 * \return A pointer to the InstanceList containing this instance.
 	 */
 	InstanceList *instList() const;
-
-	InstancePtr getSharedPtr();
 
 	/*!
 	 * \brief Gets a pointer to this instance's version list.
