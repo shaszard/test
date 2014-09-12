@@ -38,13 +38,7 @@ private:
 	//    url   checksum
 	QHash<QUrl, QByteArray> m_checksums;
 
-	bool m_isDirty = false;
-	QTimer *m_timer;
+	class SQLiteDatabase *m_db;
 
 	static QString m_filename;
-
-public slots:
-	void delayedFlushToDisk();
-	void flushToDisk();
-	void syncFromDisk();
 };

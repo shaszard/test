@@ -58,7 +58,7 @@ QuickModsList::QuickModsList(const Flags flags, QObject *parent)
 		endResetModel();
 	});
 
-	m_storage->syncFromDisk();
+	//m_storage->syncFromDisk();
 	updateFiles();
 }
 

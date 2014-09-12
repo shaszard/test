@@ -30,6 +30,7 @@ add_unit_test(UpdateChecker tst_UpdateChecker.cpp)
 add_unit_test(DownloadUpdateTask tst_DownloadUpdateTask.cpp)
 add_unit_test(QuickMod tst_QuickMod.cpp)
 add_unit_test(QuickModSettings tst_QuickModSettings.cpp)
+add_unit_test(SQLiteDatabase tst_SQLiteDatabase.cpp)
 
 # Tests END #
 	
