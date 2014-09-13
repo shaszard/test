@@ -49,17 +49,18 @@ QuickModsList::QuickModsList(const Flags flags, QObject *parent)
 	}
 
 	connect(m_storage, &QuickModDatabase::aboutToReset, [this]()
-	{
+			{
 		beginResetModel();
 	});
 	connect(m_storage, &QuickModDatabase::reset, [this]()
-	{
+			{
 		m_mods = m_storage->metadata();
 		m_uids = m_mods.keys();
+		m_versions = m_storage->m_versions;
 		endResetModel();
 	});
 
-	m_storage->syncFromDisk();
+	m_storage->loadFromDisk();
 	updateFiles();
 }
 
@@ -217,13 +218,13 @@ Qt::DropActions QuickModsList::supportedDragActions() const
 	return 0;
 }
 
-QList<QuickModMetadataPtr> QuickModsList::mods(const QuickModRef &uid) const
+QList<QuickModMetadataPtr> QuickModsList::allModMetadata(const QuickModRef &uid) const
 {
 	return m_mods[uid];
 }
-QuickModMetadataPtr QuickModsList::mod(const QuickModRef &uid) const
+QuickModMetadataPtr QuickModsList::someModMetadata(const QuickModRef &uid) const
 {
-	const auto mods = this->mods(uid);
+	const auto mods = this->allModMetadata(uid);
 	if (mods.isEmpty())
 	{
 		return QuickModMetadataPtr();
@@ -231,21 +232,9 @@ QuickModMetadataPtr QuickModsList::mod(const QuickModRef &uid) const
 	return mods.first();
 }
 
-QuickModMetadataPtr QuickModsList::mod(const QString &internalUid) const
-{
-	for (QuickModMetadataPtr mod : allQuickMods())
-	{
-		if (mod->internalUid() == internalUid)
-		{
-			return mod;
-		}
-	}
-	return nullptr;
-}
-
 QuickModVersionPtr QuickModsList::version(const QuickModVersionRef &version) const
 {
-	for (auto verPtr : m_versions[version.mod()])
+	for (auto verPtr : m_versions[version.mod().toString()])
 	{
 		if (verPtr->version() == version)
 		{
@@ -255,20 +244,19 @@ QuickModVersionPtr QuickModsList::version(const QuickModVersionRef &version) con
 	return QuickModVersionPtr();
 }
 
-QuickModVersionRef QuickModsList::latestVersion(const QuickModRef &modUid,
-												const QString &mcVersion) const
+QuickModVersionRef QuickModsList::latestVersionForMinecraft(const QuickModRef &modUid,
+															const QString &mcVersion) const
 {
 	QuickModVersionRef latest;
-	for (auto mod : mods(modUid))
+	for (auto version : versions(modUid, mcVersion))
 	{
-		auto modLatest = latestVersion(modUid, mcVersion); // FIXME!!!!! infinite recursion
 		if (!latest.isValid())
 		{
-			latest = modLatest;
+			latest = version;
 		}
-		else if (modLatest.isValid() && modLatest > latest)
+		else if (version.isValid() && version > latest)
 		{
-			latest = modLatest;
+			latest = version;
 		}
 	}
 	return latest;
@@ -277,17 +265,20 @@ QuickModVersionRef QuickModsList::latestVersion(const QuickModRef &modUid,
 QStringList QuickModsList::minecraftVersions(const QuickModRef &uid) const
 {
 	QStringList out;
-	for (const auto version : m_versions[uid])
+	auto modVersions = m_versions[uid.toString()];
+	for (const auto version : modVersions)
 	{
 		out.append(version->compatibleVersions);
 	}
 	return out;
 }
 
-QList<QuickModVersionRef> QuickModsList::versions(const QuickModRef &uid, const QString &mcVersion) const
+QList<QuickModVersionRef> QuickModsList::versions(const QuickModRef &uid,
+												  const QString &mcVersion) const
 {
 	QSet<QuickModVersionRef> out;
-	for (const auto v : m_versions[uid])
+	auto modVersions = m_versions[uid.toString()];
+	for (const auto v : modVersions)
 	{
 		if (v->compatibleVersions.contains(mcVersion))
 		{
@@ -309,7 +300,7 @@ QuickModsList::updatedModsForInstance(std::shared_ptr<OneSixInstance> instance) 
 			iter->next();
 			continue;
 		}
-		auto latest = latestVersion(iter->uid(), instance->intendedVersionId());
+		auto latest = latestVersionForMinecraft(iter->uid(), instance->intendedVersionId());
 		if (!latest.isValid())
 		{
 			iter->next();
@@ -362,7 +353,9 @@ void QuickModsList::updateFiles()
 	NetJob *job = new NetJob("QuickMod Download");
 	for (const auto mod : allQuickMods())
 	{
-		job->addNetAction(QuickModBaseDownloadAction::make(job, mod->updateUrl(), mod->uid().toString(), m_storage->checksum(mod->updateUrl())));
+		job->addNetAction(
+			QuickModBaseDownloadAction::make(job, mod->updateUrl(), mod->uid().toString(),
+											 m_storage->checksum(mod->updateUrl())));
 	}
 	connect(job, &NetJob::succeeded, job, &NetJob::deleteLater);
 	connect(job, &NetJob::failed, job, &NetJob::deleteLater);

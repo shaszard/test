@@ -18,8 +18,8 @@
 #include <QUrl>
 #include <QString>
 #include <memory>
-
-typedef std::shared_ptr<class QuickModMetadata> QuickModMetadataPtr;
+class QuickModMetadata;
+typedef std::shared_ptr<QuickModMetadata> QuickModMetadataPtr;
 class QuickModVersionRef;
 
 class QuickModRef

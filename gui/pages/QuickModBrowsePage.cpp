@@ -138,8 +138,8 @@ protected:
 		}
 		if (!m_mcVersion.isEmpty())
 		{
-			if (!listContainsSubstring(index.data(QuickModsList::MCVersionsRole).toStringList(),
-									   m_mcVersion))
+			auto acceptedVersions = index.data(QuickModsList::MCVersionsRole).toStringList();
+			if (!listContainsSubstring(acceptedVersions, m_mcVersion))
 			{
 				return false;
 			}

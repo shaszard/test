@@ -29,7 +29,7 @@ QuickModRef::QuickModRef(const QString &uid, const QUrl &updateUrl)
 
 QString QuickModRef::userFacing() const
 {
-	const auto mod = MMC->quickmodslist()->mod(*this);
+	const auto mod = MMC->quickmodslist()->someModMetadata(*this);
 	return mod ? mod->name() : m_uid;
 }
 

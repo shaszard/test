@@ -63,7 +63,7 @@ public:
 		QUrl repo;
 	};
 
-	QuickModVersion(QuickModMetadataPtr mod = 0, bool valid = true) : mod(mod), valid(valid)
+	QuickModVersion(QuickModMetadataPtr mod, bool valid = true) : mod(mod), valid(valid)
 	{
 	}
 

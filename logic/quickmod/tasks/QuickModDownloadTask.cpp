@@ -48,9 +48,9 @@ void QuickModDownloadTask::executeTask()
 		// it.
 		QuickModMetadataPtr mod;
 		if (version.isValid())
-			mod = MMC->quickmodslist()->mod(version.mod());
+			mod = MMC->quickmodslist()->someModMetadata(version.mod());
 		else
-			mod = MMC->quickmodslist()->mods(iter->uid()).first();
+			mod = MMC->quickmodslist()->allModMetadata(iter->uid()).first();
 
 		bool processMod = false;
 		processMod |= !ptr;

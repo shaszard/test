@@ -27,7 +27,8 @@ void QuickModRepoDialog::on_removeBtn_clicked()
 	QList<QuickModMetadataPtr> mods;
 	for (const auto index : indexes)
 	{
-		mods.append(MMC->quickmodslist()->mod(index.data(Qt::UserRole).toString()));
+		auto uid = QuickModRef(index.data(Qt::UserRole).toString());
+		mods.append(MMC->quickmodslist()->someModMetadata(uid));
 	}
 	mods.removeAll(nullptr);
 	for (const auto mod : mods)

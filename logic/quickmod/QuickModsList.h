@@ -84,11 +84,11 @@ public:
 		return m_mods[m_uids[index]].first();
 	}
 
-	QList<QuickModMetadataPtr> mods(const QuickModRef &uid) const;
-	QuickModMetadataPtr mod(const QuickModRef &uid) const;
-	QuickModMetadataPtr mod(const QString &internalUid) const;
+	QList<QuickModMetadataPtr> allModMetadata(const QuickModRef &uid) const;
+	QuickModMetadataPtr someModMetadata(const QuickModRef &uid) const;
+	QuickModMetadataPtr quickmodMetadata(const QString &internalUid) const;
 	QuickModVersionPtr version(const QuickModVersionRef &version) const;
-	QuickModVersionRef latestVersion(const QuickModRef &modUid, const QString &mcVersion) const;
+	QuickModVersionRef latestVersionForMinecraft(const QuickModRef &modUid, const QString &mcVersion) const;
 	QStringList minecraftVersions(const QuickModRef &uid) const;
 	QList<QuickModVersionRef> versions(const QuickModRef &uid, const QString &mcVersion) const;
 
@@ -101,11 +101,6 @@ public:
 		return m_storage;
 	}
 
-	/// \internal
-	inline QHash<QuickModRef, QList<QuickModMetadataPtr>> quickmods() const
-	{
-		return m_mods;
-	}
 	inline QList<QuickModMetadataPtr> allQuickMods() const
 	{
 		QList<QuickModMetadataPtr> out;
@@ -143,7 +138,7 @@ private:
 
 	QHash<QuickModRef, QList<QuickModMetadataPtr>> m_mods;
 	QList<QuickModRef> m_uids; // list that stays ordered for the model
-	QHash<QuickModRef, QList<QuickModVersionPtr>> m_versions;
+	QHash<QString, QHash<QString, QuickModVersionPtr>> m_versions;
 
 	QuickModDatabase *m_storage;
 };

@@ -145,6 +145,7 @@ bool QuickModIndexList::haveUid(const QuickModRef &uid, const QString &repo) con
 // FIXME this one is bad
 void QuickModIndexList::reload()
 {
+	/*
 	QMap<QString, Repo> repos;
 	const auto indices = MMC->quickmodSettings()->settings()->get("Indices").toMap();
 	for (auto it = indices.constBegin(); it != indices.constEnd(); ++it)
@@ -165,4 +166,5 @@ void QuickModIndexList::reload()
 	beginResetModel();
 	m_repos = repos.values();
 	endResetModel();
+	*/
 }

@@ -116,11 +116,8 @@ void QuickModDatabase::flushToDisk()
 	m_isDirty = false;
 }
 
-void QuickModDatabase::syncFromDisk()
+void QuickModDatabase::loadFromDisk()
 {
-	// ensure we're not loosing data
-	flushToDisk();
-
 	using namespace MMCJson;
 	try
 	{
@@ -152,7 +149,8 @@ void QuickModDatabase::syncFromDisk()
 				const QJsonObject versions = ensureObject(obj.value("versions"));
 				for (auto versionIt = versions.constBegin(); versionIt != versions.constEnd(); ++versionIt)
 				{
-					QuickModVersionPtr ptr = std::make_shared<QuickModVersion>();
+					// FIXME: giving it a fake 'metadata', because otherwise this causes crashes
+					QuickModVersionPtr ptr = std::make_shared<QuickModVersion>(*(m_metadata[uid].begin()));
 					ptr->parse(MMCJson::ensureObject(versionIt.value()));
 					m_versions[uid][versionIt.key()] = ptr;
 				}

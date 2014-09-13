@@ -7,16 +7,20 @@
 class QuickModsList;
 class QuickModRef;
 class QTimer;
+class QuickModMetadata;
+class QuickModVersion;
 
-typedef std::shared_ptr<class QuickModMetadata> QuickModMetadataPtr;
-typedef std::shared_ptr<class QuickModVersion> QuickModVersionPtr;
+typedef std::shared_ptr<QuickModMetadata> QuickModMetadataPtr;
+typedef std::shared_ptr<QuickModVersion> QuickModVersionPtr;
 
 class QuickModDatabase : public QObject
 {
+	friend class QuickModsList;
 	Q_OBJECT
 public:
 	QuickModDatabase(QuickModsList *list);
 
+	// FIXME: use metacache.
 	void setChecksum(const QUrl &url, const QByteArray &checksum);
 	QByteArray checksum(const QUrl &url) const;
 
@@ -31,10 +35,14 @@ signals:
 
 private:
 	QuickModsList *m_list;
+
+	// FIXME: merge. there is no need for parallel structures. It only produces bugs.
 	//    uid            repo     data
 	QHash<QString, QHash<QString, QuickModMetadataPtr>> m_metadata;
 	//    uid            version  data
 	QHash<QString, QHash<QString, QuickModVersionPtr>> m_versions;
+
+	// FIXME: use metacache.
 	//    url   checksum
 	QHash<QUrl, QByteArray> m_checksums;
 
@@ -43,8 +51,8 @@ private:
 
 	static QString m_filename;
 
-public slots:
+private slots:
 	void delayedFlushToDisk();
 	void flushToDisk();
-	void syncFromDisk();
+	void loadFromDisk();
 };

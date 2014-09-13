@@ -231,7 +231,7 @@ void QuickModDependencyResolver::resolve(const QuickModVersionPtr version)
 	{
 		QuickModVersionPtr dep;
 
-		if (!MMC->quickmodslist()->mods(it.key()).isEmpty())
+		if (!MMC->quickmodslist()->allModMetadata(it.key()).isEmpty())
 		{
 			bool ok;
 			dep = getVersion(it.key(), it.value().first, &ok);

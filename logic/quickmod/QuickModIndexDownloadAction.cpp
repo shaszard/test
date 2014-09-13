@@ -28,9 +28,10 @@ bool QuickModIndexDownloadAction::handle(const QByteArray &data)
 		const QJsonObject root = MMCJson::ensureObject(MMCJson::parseDocument(data, "QuickMod Index"));
 		const QString repo = MMCJson::ensureString(root.value("repo"));
 		const QString baseUrlString = MMCJson::ensureString(root.value("baseUrl"));
-		m_indexList->setRepositoryIndexUrl(
-			repo,
-			m_url); // QUESTION use original url (not the one that has followed redirects)?
+
+		// FIXME: ALWAYS use original url (not the one that has followed redirects)?
+		m_indexList->setRepositoryIndexUrl(repo, m_url);
+
 		const QJsonArray array = MMCJson::ensureArray(root.value("index"));
 		for (const QJsonValue itemVal : array)
 		{
