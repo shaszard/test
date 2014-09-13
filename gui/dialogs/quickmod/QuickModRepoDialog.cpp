@@ -9,11 +9,12 @@ QuickModRepoDialog::QuickModRepoDialog(QWidget *parent)
 	: QDialog(parent), ui(new Ui::QuickModRepoDialog)
 {
 	ui->setupUi(this);
+	
+	m_list = new QuickModIndexList(this);
+	ui->treeView->setModel(m_list);
 	ui->treeView->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 	ui->treeView->setSelectionMode(QTreeView::MultiSelection);
 	ui->treeView->setSelectionBehavior(QTreeView::SelectRows);
-
-	m_list = new QuickModIndexList(this);
 }
 
 QuickModRepoDialog::~QuickModRepoDialog()

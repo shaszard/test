@@ -264,19 +264,10 @@ QuickModBrowsePage::QuickModBrowsePage(std::shared_ptr<OneSixInstance> instance,
 
 	m_filterModel->setSourceModel(MMC->quickmodslist().get());
 
-	if (m_instance != nullptr)
-	{
-		m_view->setModel(m_checkModel);
-		ui->createInstanceButton->hide();
-		m_checkModel->setSourceModel(m_instance, m_filterModel);
-		connect(m_checkModel, &CheckboxProxyModel::checkChanged, this, &QuickModBrowsePage::checkStateChanged);
-	}
-	else
-	{
-		m_view->setModel(m_filterModel);
-		ui->createFromInstanceBtn->hide();
-		m_isSingleSelect = true;
-	}
+	m_view->setModel(m_checkModel);
+	ui->createInstanceButton->hide();
+	m_checkModel->setSourceModel(m_instance, m_filterModel);
+	connect(m_checkModel, &CheckboxProxyModel::checkChanged, this, &QuickModBrowsePage::checkStateChanged);
 
 	connect(m_view->selectionModel(), &QItemSelectionModel::selectionChanged, this,
 			&QuickModBrowsePage::modSelectionChanged);
@@ -302,56 +293,14 @@ void QuickModBrowsePage::modLogoUpdated()
 
 void QuickModBrowsePage::setupComboBoxes()
 {
-	QStringList categories;
-	categories.append("");
-	for (int i = 0; i < MMC->quickmodslist()->numMods(); ++i)
-	{
-		categories.append(MMC->quickmodslist()->modAt(i)->categories());
-	}
-	categories.removeDuplicates();
-	ui->categoryBox->clear();
-	if (!m_isSingleSelect)
-	{
-		ui->categoryBox->addItems(categories);
-	}
-	else
-	{
-		ui->categoryBox->addItem("Modpack");
-	}
+	ui->mcVersionBox->clear();
+	ui->mcVersionBox->addItem(m_instance->intendedVersionId());
+	ui->mcVersionBox->setCurrentIndex(0);
 
-	if (m_instance == nullptr)
-	{
-		QStringList versions;
-		versions.append("");
-		for (int i = 0; i < MMC->quickmodslist()->numMods(); ++i)
-		{
-			// this'll be removed either way
-			//versions.append(MMC->quickmodslist()->modAt(i)->mcVersions());
-		}
-		versions.removeDuplicates();
-
-		ui->mcVersionBox->clear();
-		ui->mcVersionBox->addItems(versions);
-		ui->mcVersionBox->setCurrentIndex(0);
-
-		if (ui->searchLayout->indexOf(ui->mcVersionBox) == -1)
-		{
-			ui->searchLayout->addRow(ui->mcVersionBox, ui->mcVersionLabel);
-		}
-		ui->mcVersionBox->setVisible(true);
-		ui->mcVersionLabel->setVisible(true);
-	}
-	else
-	{
-		ui->mcVersionBox->clear();
-		ui->mcVersionBox->addItem(m_instance->intendedVersionId());
-		ui->mcVersionBox->setCurrentIndex(0);
-
-		ui->searchLayout->removeWidget(ui->mcVersionBox);
-		ui->searchLayout->removeWidget(ui->mcVersionLabel);
-		ui->mcVersionBox->setVisible(false);
-		ui->mcVersionLabel->setVisible(false);
-	}
+	ui->searchLayout->removeWidget(ui->mcVersionBox);
+	ui->searchLayout->removeWidget(ui->mcVersionLabel);
+	ui->mcVersionBox->setVisible(false);
+	ui->mcVersionLabel->setVisible(false);
 }
 
 void QuickModBrowsePage::checkStateChanged(const QModelIndex &index, const bool checked)

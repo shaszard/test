@@ -78,11 +78,6 @@ public:
 	{
 		return m_mods.size();
 	}
-	QuickModMetadataPtr modAt(const int index) const
-	{
-		// TODO repository priority
-		return m_mods[m_uids[index]].first();
-	}
 
 	QList<QuickModMetadataPtr> allModMetadata(const QuickModRef &uid) const;
 	QuickModMetadataPtr someModMetadata(const QuickModRef &uid) const;

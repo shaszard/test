@@ -124,7 +124,8 @@ QVariant QuickModsList::data(const QModelIndex &index, int role) const
 		return QVariant();
 	}
 
-	QuickModMetadataPtr mod = modAt(index.row());
+	// TODO repository priority
+	QuickModMetadataPtr mod = m_mods[m_uids[index.row()]].first();
 
 	switch (role)
 	{

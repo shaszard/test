@@ -52,6 +52,13 @@ void QuickModDownloadTask::executeTask()
 		else
 			mod = MMC->quickmodslist()->allModMetadata(iter->uid()).first();
 
+		if(!mod)
+		{
+			// we don't have a mod for that in the db... no updating.
+			iter->next();
+			continue;
+		}
+
 		bool processMod = false;
 		processMod |= !ptr;
 		processMod |= !MMC->quickmodSettings()->isModMarkedAsExists(mod, version);

@@ -79,6 +79,4 @@ private:
 	QListView *m_view;
 	ModFilterProxyModel *m_filterModel;
 	CheckboxProxyModel *m_checkModel;
-
-	bool m_isSingleSelect = false;
 };

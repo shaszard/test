@@ -62,6 +62,9 @@ public:
 	// from QuickModInstaller
 	void install(const QuickModVersionPtr version);
 
+	// from QuickModLibraryInstaller
+	bool installLibrariesFrom(const QuickModVersionPtr version);
+
 	// from QuickModSettings
 	void markModAsInstalled(const QuickModVersionRef& version, QString dest);
 	void markModAsUninstalled(const QuickModRef uid);

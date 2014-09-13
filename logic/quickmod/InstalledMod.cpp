@@ -1,6 +1,5 @@
 #include "InstalledMod.h"
 #include "QuickModVersion.h"
-#include "QuickModLibraryInstaller.h"
 #include "QuickModSettings.h"
 #include "logic/MMCJson.h"
 #include <logic/OneSixInstance.h>
@@ -68,6 +67,51 @@ void InstalledMods::setQuickModVersions(const QMap<QuickModRef, QPair<QuickModVe
 void InstalledMods::removeQuickMod(const QuickModRef &uid)
 {
 	removeQuickMods(QList<QuickModRef>() << uid);
+}
+
+bool InstalledMods::installLibrariesFrom(const QuickModVersionPtr version)
+{
+	auto instance = parentInstance.lock();
+	if(!instance)
+	{
+		QLOG_ERROR() << "Unable to access instance for mod changes.";
+		throw MMCError(QObject::tr("Unable to access instance for mod changes."));
+	}
+
+	QJsonObject obj;
+	obj.insert("order", qMin(instance->getFullVersion()->getHighestOrder(), 99) + 1);
+	obj.insert("name", version->mod->name());
+	obj.insert("fileId", version->mod->uid().toString());
+	obj.insert("version", version->name());
+	obj.insert("mcVersion", instance->intendedVersionId());
+
+	QJsonArray libraries;
+	for (auto lib : version->libraries)
+	{
+		QJsonObject libObj;
+		libObj.insert("name", lib.name);
+		const QString urlString = lib.repo.toString(QUrl::FullyEncoded);
+		libObj.insert("url", urlString);
+		libObj.insert("insert", QString("prepend"));
+		libObj.insert("MMC-depend", QString("soft"));
+		libObj.insert("MMC-hint", QString("recurse"));
+		libraries.append(libObj);
+	}
+	obj.insert("+libraries", libraries);
+
+	auto filename = PathCombine(instance->instanceRoot(),"patches", QString("%1.json").arg(version->mod->uid().toString()) );
+
+	QFile file(filename);
+	if (!file.open(QFile::WriteOnly))
+	{
+		QLOG_ERROR() << "Error opening" << file.fileName()
+					 << "for reading:" << file.errorString();
+		return false;
+	}
+	file.write(QJsonDocument(obj).toJson());
+	file.close();
+
+	return true;
 }
 
 void InstalledMods::install(const QuickModVersionPtr version)
@@ -164,18 +208,20 @@ void InstalledMods::install(const QuickModVersionPtr version)
 	}
 
 	// do some things to libraries.
-	QuickModLibraryInstaller installer(version);
 	if (!version->libraries.isEmpty())
 	{
-		if (!installer.add(std::dynamic_pointer_cast<OneSixInstance>(instance).get()))
+		if(!installLibrariesFrom(version))
 		{
 			throw MMCError(QObject::tr("Error installing JSON patch"));
 		}
 	}
+	// WAT
+	/*
 	else
 	{
 		installer.remove(std::dynamic_pointer_cast<OneSixInstance>(instance).get());
 	}
+	*/
 }
 
 void InstalledMods::markModAsInstalled(const QuickModVersionRef &version, QString dest)

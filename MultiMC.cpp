@@ -18,7 +18,6 @@
 #include "logic/forge/ForgeVersionList.h"
 #include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/QuickModSettings.h"
-#include "logic/quickmod/QuickModUpdateMonitor.h"
 #include "logic/LwjglVersionList.h"
 #include "logic/minecraft/MinecraftVersionList.h"
 #include "logic/liteloader/LiteLoaderVersionList.h"
@@ -277,7 +276,6 @@ MultiMC::MultiMC(int &argc, char **argv, bool root_override) : QApplication(argc
 */
 	// ensure we always create the quickmods list
 	quickmodslist();
-	m_quickmodUpdateMonitor.reset(new QuickModUpdateMonitor(m_instances, m_quickmodslist, this));
 
 	connect(this, SIGNAL(aboutToQuit()), SLOT(onExit()));
 	m_status = MultiMC::Initialized;

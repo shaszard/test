@@ -67,7 +67,6 @@
 #include "gui/pages/global/MultiMCPage.h"
 #include "gui/pages/global/ExternalToolsPage.h"
 #include "gui/pages/global/AccountListPage.h"
-#include "gui/pages/QuickModBrowsePage.h"
 #include "gui/pages/global/ProxyPage.h"
 #include "gui/pages/global/JavaPage.h"
 #include "gui/pages/global/MinecraftPage.h"
@@ -269,7 +268,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 		m_globalSettingsProvider->addPage<ProxyPage>();
 		m_globalSettingsProvider->addPage<ExternalToolsPage>();
 		m_globalSettingsProvider->addPage<AccountListPage>();
-		m_globalSettingsProvider->addPage<QuickModBrowsePage>(nullptr);
 	}
 
 	// Update the menu when the active account changes.

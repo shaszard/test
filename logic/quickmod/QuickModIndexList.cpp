@@ -26,12 +26,14 @@ QuickModIndexList::QuickModIndexList(QObject *parent) : QAbstractItemModel(paren
 
 int QuickModIndexList::rowCount(const QModelIndex &parent) const
 {
-	if (parent.isValid())
+	if (!parent.isValid())
 	{
+		// root -> repositories
 		return m_repos.size();
 	}
 	else
 	{
+		// child -> mods
 		return m_repos.at(parent.row()).mods.size();
 	}
 }
