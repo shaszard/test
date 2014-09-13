@@ -139,11 +139,6 @@ QList<QUrl> QuickModIndexList::indices() const
 	return out;
 }
 
-bool QuickModIndexList::haveUid(const QuickModRef &uid, const QString &repo) const
-{
-	return MMC->quickmodslist()->haveUid(uid, repo);
-}
-
 // FIXME this one is bad
 void QuickModIndexList::reload()
 {

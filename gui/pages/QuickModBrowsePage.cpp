@@ -262,7 +262,8 @@ QuickModBrowsePage::QuickModBrowsePage(std::shared_ptr<OneSixInstance> instance,
 	m_view->setSelectionBehavior(QListView::SelectRows);
 	m_view->setSelectionMode(QListView::SingleSelection);
 
-	m_filterModel->setSourceModel(MMC->quickmodslist().get());
+	auto model = new QuickModsList();
+	m_filterModel->setSourceModel(model);
 
 	m_view->setModel(m_checkModel);
 	ui->createInstanceButton->hide();
@@ -365,9 +366,10 @@ void QuickModBrowsePage::on_addButton_clicked()
 {
 	QuickModAddFileDialog::run(this);
 }
+
 void QuickModBrowsePage::on_updateButton_clicked()
 {
-	MMC->quickmodslist()->updateFiles();
+	MMC->qmdb()->updateFiles();
 }
 
 void QuickModBrowsePage::on_createFromInstanceBtn_clicked()
@@ -457,7 +459,7 @@ void QuickModBrowsePage::modSelectionChanged(const QItemSelection &selected,
 		}
 		ui->tagsLabel->setText(tags.join(", "));
 		QStringList mcVersions;
-		for (const QString &mcv : MMC->quickmodslist()->minecraftVersions(m_currentMod->uid()))
+		for (const QString &mcv : MMC->qmdb()->minecraftVersions(m_currentMod->uid()))
 		{
 			mcVersions.append(QString("<a href=\"%1\">%1</a>").arg(mcv));
 		}

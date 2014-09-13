@@ -40,28 +40,23 @@
 
 #include "logic/settings/INISettingsObject.h"
 
-QuickModsList::QuickModsList(const Flags flags, QObject *parent)
-	: QAbstractListModel(parent), m_storage(new QuickModDatabase(this))
+QuickModsList::QuickModsList(QObject *parent) : QAbstractListModel(parent)
 {
-	if (!flags.testFlag(DontCleanup))
-	{
-		cleanup();
-	}
+	auto storage = MMC->qmdb();
+	m_uids = storage.get()->metadata().keys();
 
-	connect(m_storage, &QuickModDatabase::aboutToReset, [this]()
+	connect(storage.get(), &QuickModDatabase::aboutToReset, [this]()
 			{
 		beginResetModel();
 	});
-	connect(m_storage, &QuickModDatabase::reset, [this]()
+	connect(storage.get(), &QuickModDatabase::reset, [this, storage]()
 			{
-		m_mods = m_storage->metadata();
-		m_uids = m_mods.keys();
-		m_versions = m_storage->m_versions;
+		m_uids = storage->metadata().keys();
 		endResetModel();
 	});
-
-	m_storage->loadFromDisk();
-	updateFiles();
+	connect(storage.get(), SIGNAL(modIconUpdated(QuickModRef)), SLOT(modIconUpdated(QuickModRef)));
+	connect(storage.get(), SIGNAL(modLogoUpdated(QuickModRef)), SLOT(modLogoUpdated(QuickModRef)));
+	connect(storage.get(), SIGNAL(justAddedMod(QuickModRef)), SLOT(modAdded(QuickModRef)));
 }
 
 QuickModsList::~QuickModsList()
@@ -80,17 +75,43 @@ int QuickModsList::getQMIndex(QuickModMetadataPtr mod) const
 	return -1;
 }
 
-QuickModMetadataPtr QuickModsList::getQMPtr(QuickModMetadata *mod) const
+void QuickModsList::modIconUpdated(QuickModRef uid)
 {
-	for (auto m : m_mods[mod->uid()])
+	auto row = m_uids.indexOf(uid);
+	if(row != -1)
 	{
-		if (m.get() == mod)
-		{
-			return m;
-		}
+		auto modIndex = index(row, 0);
+		emit dataChanged(modIndex, modIndex, QVector<int>() << Qt::DecorationRole << IconRole);
 	}
-	return QuickModMetadataPtr();
 }
+
+void QuickModsList::modLogoUpdated(QuickModRef uid)
+{
+	auto row = m_uids.indexOf(uid);
+	if(row != -1)
+	{
+		auto modIndex = index(row, 0);
+		emit dataChanged(modIndex, modIndex, QVector<int>() << LogoRole);
+	}
+}
+
+void QuickModsList::modAdded(QuickModRef uid)
+{
+	auto row = m_uids.indexOf(uid);
+	if(row == -1)
+	{
+		beginInsertRows(QModelIndex(), 0, 0);
+		m_uids.prepend(uid);
+		endInsertRows();
+	}
+	else
+	{
+		// assume all data changed
+		auto modIndex = index(row, 0);
+		emit dataChanged(modIndex, modIndex);
+	}
+}
+
 
 QHash<int, QByteArray> QuickModsList::roleNames() const
 {
@@ -112,6 +133,7 @@ int QuickModsList::rowCount(const QModelIndex &) const
 {
 	return m_uids.size(); // <-----
 }
+
 Qt::ItemFlags QuickModsList::flags(const QModelIndex &index) const
 {
 	return Qt::ItemIsDropEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
@@ -124,8 +146,9 @@ QVariant QuickModsList::data(const QModelIndex &index, int role) const
 		return QVariant();
 	}
 
-	// TODO repository priority
-	QuickModMetadataPtr mod = m_mods[m_uids[index.row()]].first();
+	auto storage = MMC->qmdb();
+
+	QuickModMetadataPtr mod = storage->someModMetadata(m_uids[index.row()]);
 
 	switch (role)
 	{
@@ -165,7 +188,7 @@ QVariant QuickModsList::data(const QModelIndex &index, int role) const
 	case CategoriesRole:
 		return mod->categories();
 	case MCVersionsRole:
-		return minecraftVersions(mod->uid());
+		return MMC->qmdb()->minecraftVersions(mod->uid());
 	case TagsRole:
 		return mod->tags();
 	case QuickModRole:
@@ -184,6 +207,7 @@ bool QuickModsList::canDropMimeData(const QMimeData *data, Qt::DropAction action
 	}
 	return data->hasText() | data->hasUrls();
 }
+
 bool QuickModsList::dropMimeData(const QMimeData *data, Qt::DropAction action, int row,
 								 int column, const QModelIndex &parent)
 {
@@ -194,13 +218,13 @@ bool QuickModsList::dropMimeData(const QMimeData *data, Qt::DropAction action, i
 
 	if (data->hasText())
 	{
-		registerMod(QUrl(data->text()));
+		MMC->qmdb()->registerMod(QUrl(data->text()));
 	}
 	else if (data->hasUrls())
 	{
 		for (const QUrl &url : data->urls())
 		{
-			registerMod(url);
+			MMC->qmdb()->registerMod(url);
 		}
 	}
 	else
@@ -210,221 +234,13 @@ bool QuickModsList::dropMimeData(const QMimeData *data, Qt::DropAction action, i
 
 	return true;
 }
+
 Qt::DropActions QuickModsList::supportedDropActions() const
 {
 	return Qt::CopyAction;
 }
+
 Qt::DropActions QuickModsList::supportedDragActions() const
 {
 	return 0;
-}
-
-QList<QuickModMetadataPtr> QuickModsList::allModMetadata(const QuickModRef &uid) const
-{
-	return m_mods[uid];
-}
-QuickModMetadataPtr QuickModsList::someModMetadata(const QuickModRef &uid) const
-{
-	const auto mods = this->allModMetadata(uid);
-	if (mods.isEmpty())
-	{
-		return QuickModMetadataPtr();
-	}
-	return mods.first();
-}
-
-QuickModVersionPtr QuickModsList::version(const QuickModVersionRef &version) const
-{
-	for (auto verPtr : m_versions[version.mod().toString()])
-	{
-		if (verPtr->version() == version)
-		{
-			return verPtr;
-		}
-	}
-	return QuickModVersionPtr();
-}
-
-QuickModVersionRef QuickModsList::latestVersionForMinecraft(const QuickModRef &modUid,
-															const QString &mcVersion) const
-{
-	QuickModVersionRef latest;
-	for (auto version : versions(modUid, mcVersion))
-	{
-		if (!latest.isValid())
-		{
-			latest = version;
-		}
-		else if (version.isValid() && version > latest)
-		{
-			latest = version;
-		}
-	}
-	return latest;
-}
-
-QStringList QuickModsList::minecraftVersions(const QuickModRef &uid) const
-{
-	QStringList out;
-	auto modVersions = m_versions[uid.toString()];
-	for (const auto version : modVersions)
-	{
-		out.append(version->compatibleVersions);
-	}
-	return out;
-}
-
-QList<QuickModVersionRef> QuickModsList::versions(const QuickModRef &uid,
-												  const QString &mcVersion) const
-{
-	QSet<QuickModVersionRef> out;
-	auto modVersions = m_versions[uid.toString()];
-	for (const auto v : modVersions)
-	{
-		if (v->compatibleVersions.contains(mcVersion))
-		{
-			out.insert(v->version());
-		}
-	}
-	return out.toList();
-}
-
-QList<QuickModRef>
-QuickModsList::updatedModsForInstance(std::shared_ptr<OneSixInstance> instance) const
-{
-	QList<QuickModRef> mods;
-	auto iter = instance->installedMods()->iterateQuickMods();
-	while (iter->isValid())
-	{
-		if (!iter->version().isValid())
-		{
-			iter->next();
-			continue;
-		}
-		auto latest = latestVersionForMinecraft(iter->uid(), instance->intendedVersionId());
-		if (!latest.isValid())
-		{
-			iter->next();
-			continue;
-		}
-		if (iter->version() < latest)
-		{
-			mods.append(QuickModRef(iter->uid()));
-		}
-		iter->next();
-	}
-	return mods;
-}
-
-bool QuickModsList::haveUid(const QuickModRef &uid, const QString &repo) const
-{
-	if (!m_mods.contains(uid))
-	{
-		return false;
-	}
-	if (repo.isNull())
-	{
-		return true;
-	}
-	for (auto mod : m_mods[uid])
-	{
-		if (mod->repo() == repo)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-void QuickModsList::registerMod(const QString &fileName)
-{
-	registerMod(QUrl::fromLocalFile(fileName));
-}
-void QuickModsList::registerMod(const QUrl &url)
-{
-	NetJob *job = new NetJob("QuickMod Download");
-	job->addNetAction(QuickModBaseDownloadAction::make(job, url));
-	connect(job, &NetJob::succeeded, job, &NetJob::deleteLater);
-	connect(job, &NetJob::failed, job, &NetJob::deleteLater);
-	job->start();
-}
-
-void QuickModsList::updateFiles()
-{
-	NetJob *job = new NetJob("QuickMod Download");
-	QList<QuickModMetadataPtr> out;
-	// FIXME: just remove the duct tape.
-	for (const auto mods : m_mods)
-	{
-		out.append(mods);
-	}
-	for (const auto mod : out)
-	{
-		job->addNetAction(
-			QuickModBaseDownloadAction::make(job, mod->updateUrl(), mod->uid().toString(),
-											 m_storage->checksum(mod->updateUrl())));
-	}
-	connect(job, &NetJob::succeeded, job, &NetJob::deleteLater);
-	connect(job, &NetJob::failed, job, &NetJob::deleteLater);
-	job->start();
-}
-
-void QuickModsList::addMod(QuickModMetadataPtr mod)
-{
-	m_storage->add(mod);
-
-	connect(mod.get(), &QuickModMetadata::iconUpdated, this, &QuickModsList::modIconUpdated);
-	connect(mod.get(), &QuickModMetadata::logoUpdated, this, &QuickModsList::modLogoUpdated);
-
-	m_mods[mod->uid()].append(mod);
-
-	if (!m_uids.contains(mod->uid()))
-	{
-		beginInsertRows(QModelIndex(), 0, 0);
-		m_uids.prepend(mod->uid());
-		endInsertRows();
-	}
-}
-
-void QuickModsList::addVersion(QuickModVersionPtr version)
-{
-	m_storage->add(version);
-}
-
-void QuickModsList::modIconUpdated()
-{
-	auto modIndex = index(getQMIndex(getQMPtr(qobject_cast<QuickModMetadata *>(sender()))), 0);
-	emit dataChanged(modIndex, modIndex, QVector<int>() << Qt::DecorationRole << IconRole);
-}
-void QuickModsList::modLogoUpdated()
-{
-	auto modIndex = index(getQMIndex(getQMPtr(qobject_cast<QuickModMetadata *>(sender()))), 0);
-	emit dataChanged(modIndex, modIndex, QVector<int>() << LogoRole);
-}
-
-//FIXME: NUKE this abomination
-void QuickModsList::cleanup()
-{
-	// ensure that only mods that really exist on the local filesystem are marked as available
-	QDir dir;
-	auto mods = MMC->quickmodSettings()->settings()->get("AvailableMods").toMap();
-	QMutableMapIterator<QString, QVariant> modIt(mods);
-	while (modIt.hasNext())
-	{
-		auto versions = modIt.next().value().toMap();
-		QMutableMapIterator<QString, QVariant> versionIt(versions);
-		while (versionIt.hasNext())
-		{
-			if (!dir.exists(versionIt.next().value().toString()))
-			{
-				versionIt.remove();
-			}
-		}
-		modIt.setValue(versions);
-		if (modIt.value().toMap().isEmpty())
-		{
-			modIt.remove();
-		}
-	}
-	MMC->quickmodSettings()->settings()->set("AvailableMods", mods);
 }

@@ -47,7 +47,7 @@ void QuickModLiteLoaderDownloadTask::executeTask()
 	QStringList versionFilters;
 	while (iter->isValid())
 	{
-		QuickModVersionPtr version = MMC->quickmodslist()->version(iter->version());
+		QuickModVersionPtr version = MMC->qmdb()->version(iter->version());
 		if (!version)
 		{
 			iter->next();

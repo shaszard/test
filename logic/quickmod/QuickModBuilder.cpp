@@ -80,7 +80,7 @@ void QuickModBuilder::finishVersion(QuickModVersionPtr version)
 		{
 			continue;
 		}
-		const QList<QuickModMetadataPtr> ptrs = MMC->quickmodslist()->allModMetadata(dep);
+		const QList<QuickModMetadataPtr> ptrs = MMC->qmdb()->allModMetadata(dep);
 		if (ptrs.isEmpty())
 		{
 			continue;

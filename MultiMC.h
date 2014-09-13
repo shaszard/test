@@ -6,6 +6,7 @@
 #include "logger/QsLogDest.h"
 #include <QFlag>
 
+class QuickModDatabase;
 class MinecraftVersionList;
 class LWJGLVersionList;
 class HttpMetaCache;
@@ -17,7 +18,6 @@ class QNetworkAccessManager;
 class ForgeVersionList;
 class LiteLoaderVersionList;
 class JavaVersionList;
-class QuickModsList;
 class QuickModSettings;
 class UpdateChecker;
 class NotificationChecker;
@@ -133,7 +133,7 @@ public:
 		return m_tools;
 	}
 
-	std::shared_ptr<QuickModsList> quickmodslist();
+	std::shared_ptr<QuickModDatabase> qmdb();
 	std::shared_ptr<QuickModSettings> quickmodSettings();
 
 	void installUpdates(const QString updateFilesDir, UpdateFlags flags = None);
@@ -214,7 +214,7 @@ private:
 	std::shared_ptr<MinecraftVersionList> m_minecraftlist;
 	std::shared_ptr<JavaVersionList> m_javalist;
 	std::shared_ptr<URNResolver> m_resolver;
-	std::shared_ptr<QuickModsList> m_quickmodslist;
+	std::shared_ptr<QuickModDatabase> m_qmdb;
 	std::shared_ptr<QuickModSettings> m_quickmodSettings;
 
 	QMap<QString, std::shared_ptr<BaseProfilerFactory>> m_profilers;

@@ -31,7 +31,7 @@ QuickModRef::QuickModRef(const QString &uid, const QUrl &updateUrl)
 // possibly could be a static method of QuickMod (the one we don't have right one and very much NEED)
 QString QuickModRef::userFacing() const
 {
-	const auto mod = MMC->quickmodslist()->someModMetadata(*this);
+	const auto mod = MMC->qmdb()->someModMetadata(*this);
 	return mod ? mod->name() : m_uid;
 }
 

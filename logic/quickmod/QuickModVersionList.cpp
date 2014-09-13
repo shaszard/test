@@ -8,7 +8,7 @@
 QuickModVersionList::QuickModVersionList(QuickModRef mod, InstancePtr instance, QObject *parent)
 	: BaseVersionList(parent), m_mod(mod), m_instance(instance)
 {
-	m_versions = MMC->quickmodslist()->versions(mod, m_instance->intendedVersionId());
+	m_versions = MMC->qmdb()->versions(mod, m_instance->intendedVersionId());
 }
 
 Task *QuickModVersionList::getLoadTask()
@@ -24,7 +24,7 @@ const BaseVersionPtr QuickModVersionList::at(int i) const
 {
 	if(i < m_versions.size() && i >= 0)
 	{
-		return MMC->quickmodslist()->version(m_versions[i]);
+		return MMC->qmdb()->version(m_versions[i]);
 	}
 
 	QLOG_WARN() << "QuickModVersionList::at -> Index out of range (" << i << ")";

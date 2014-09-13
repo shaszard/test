@@ -22,7 +22,7 @@ QuickModVersionRef::QuickModVersionRef(const QuickModVersionPtr &ptr)
 
 QString QuickModVersionRef::userFacing() const
 {
-	const QuickModVersionPtr ptr = MMC->quickmodslist()->version(*this);
+	const QuickModVersionPtr ptr = MMC->qmdb()->version(*this);
 	return ptr ? ptr->name() : QString();
 }
 

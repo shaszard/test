@@ -39,9 +39,6 @@ public:
 	void setRepositoryIndexUrl(const QString &repository, const QUrl &url);
 	QList<QUrl> indices() const;
 
-	// FIXME: forwarding method, get rid of it.
-	bool haveUid(const QuickModRef &uid, const QString &repo) const;
-
 public slots:
 	void reload();
 

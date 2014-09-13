@@ -356,7 +356,7 @@ QuickModVersionPtr QuickModInstallDialog::getVersion(const QuickModRef &modUid,
 	dialog.setFuzzyFilter(BaseVersionList::NameColumn, filter.toString());
 	dialog.setUseLatest(MMC->settings()->get("QuickModAlwaysLatestVersion").toBool());
 	// TODO currently, if the version isn't existing anymore it will be updated
-	if (predefinedVersion.isValid() && MMC->quickmodslist()->version(predefinedVersion))
+	if (predefinedVersion.isValid() && MMC->qmdb()->version(predefinedVersion))
 	{
 		dialog.setExactFilter(BaseVersionList::NameColumn, predefinedVersion.toString());
 	}

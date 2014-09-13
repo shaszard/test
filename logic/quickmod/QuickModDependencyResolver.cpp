@@ -89,7 +89,7 @@ struct DepNode
 		for (auto it = nodes.constBegin(); it != nodes.constEnd(); ++it)
 		{
 			const DepNode *node = it.value();
-			const auto ptr = MMC->quickmodslist()->version(node->version);
+			const auto ptr = MMC->qmdb()->version(node->version);
 			if (!ptr)
 			{
 				ok_internal = false;
@@ -231,7 +231,7 @@ void QuickModDependencyResolver::resolve(const QuickModVersionPtr version)
 	{
 		QuickModVersionPtr dep;
 
-		if (!MMC->quickmodslist()->allModMetadata(it.key()).isEmpty())
+		if (!MMC->qmdb()->allModMetadata(it.key()).isEmpty())
 		{
 			bool ok;
 			dep = getVersion(it.key(), it.value().first, &ok);
@@ -244,27 +244,29 @@ void QuickModDependencyResolver::resolve(const QuickModVersionPtr version)
 		else
 		{
 			// FIXME
-//			QList<QuickModVersionRef> versions =
-//				MMC->quickmodslist()->versions(it.key(), it.value().first);
-//			if (!versions.isEmpty())
-//			{
-//				for (QuickModVersionRef providingVersion : versions)
-//				{
-//					auto providingVersionPtr = MMC->quickmodslist()->version(providingVersion);
-//					if (m_mods.values().contains(providingVersionPtr))
-//					{
-//						// found already added mod
-//						dep = providingVersionPtr;
-//						break;
-//					}
-//				}
-//				if (!dep)
-//				{
-//					// no dependency added...
-//					// TODO show a dialog to select mod and version
-//					dep = MMC->quickmodslist()->version(versions.first());
-//				}
-//			}
+			/*
+			QList<QuickModVersionRef> versions =
+				MMC->qmdb()->versions(it.key(), it.value().first);
+			if (!versions.isEmpty())
+			{
+				for (QuickModVersionRef providingVersion : versions)
+				{
+					auto providingVersionPtr = MMC->qmdb()->version(providingVersion);
+					if (m_mods.values().contains(providingVersionPtr))
+					{
+						// found already added mod
+						dep = providingVersionPtr;
+						break;
+					}
+				}
+				if (!dep)
+				{
+					// no dependency added...
+					// TODO show a dialog to select mod and version
+					dep = MMC->qmdb()->version(versions.first());
+				}
+			}
+			*/
 		}
 
 		if (!dep)

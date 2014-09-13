@@ -41,16 +41,16 @@ void QuickModDownloadTask::executeTask()
 	while (iter->isValid())
 	{
 		auto version = iter->version();
-		QuickModVersionPtr ptr = MMC->quickmodslist()->version(version);
+		QuickModVersionPtr ptr = MMC->qmdb()->version(version);
 
 		// FIXME: unify the refs and don't do this silly stuff.
 		// FIXME: this is not respecting user preferences... taking first mod and running with
 		// it.
 		QuickModMetadataPtr mod;
 		if (version.isValid())
-			mod = MMC->quickmodslist()->someModMetadata(version.mod());
+			mod = MMC->qmdb()->someModMetadata(version.mod());
 		else
-			mod = MMC->quickmodslist()->allModMetadata(iter->uid()).first();
+			mod = MMC->qmdb()->allModMetadata(iter->uid()).first();
 
 		if(!mod)
 		{

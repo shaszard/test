@@ -39,7 +39,7 @@ bool QuickModIndexDownloadAction::handle(const QByteArray &data)
 		{
 			const QJsonObject itemObj = MMCJson::ensureObject(itemVal);
 			const QString uid = MMCJson::ensureString(itemObj.value("uid"));
-			if (!m_indexList->haveUid(QuickModRef(uid), repo))
+			if (!MMC->qmdb()->haveUid(QuickModRef(uid), repo))
 			{
 				const QString urlString = MMCJson::ensureString(itemObj.value("url"));
 				QUrl url;

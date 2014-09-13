@@ -82,6 +82,7 @@
 #include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/QuickModMetadata.h"
 #include <logic/quickmod/InstalledMod.h>
+#include <logic/quickmod/QuickModDatabase.h>
 
 #include "logic/auth/flows/AuthenticateTask.h"
 #include "logic/auth/flows/RefreshTask.h"
@@ -349,7 +350,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 	// removing this looks stupid
 	view->setFocus();
 
-	connect(MMC->quickmodslist().get(), &QuickModsList::error, [this](const QString &message){ this->ui->statusBar->showMessage(message, 5 * 1000); });
+	//FIXME: huh?
+	//connect(MMC->quickmodslist().get(), &QuickModsList::error, [this](const QString &message){ this->ui->statusBar->showMessage(message, 5 * 1000); });
 }
 
 MainWindow::~MainWindow()
@@ -1228,14 +1230,14 @@ void MainWindow::updateInstance(InstancePtr instance, AuthSessionPtr session,
 	std::shared_ptr<OneSixInstance> onesix = std::dynamic_pointer_cast<OneSixInstance>(instance);
 	if (onesix)
 	{
-		QList<QuickModRef> mods = MMC->quickmodslist()->updatedModsForInstance(onesix);
+		QList<QuickModRef> mods = MMC->qmdb()->updatedModsForInstance(onesix);
 		if (!mods.isEmpty())
 		{
 			QStringList names;
 			QMap<QuickModRef, QPair<QuickModVersionRef, bool>> modsToUpdate;
 			for (auto mod : mods)
 			{
-				auto ptr = MMC->quickmodslist()->someModMetadata(mod);
+				auto ptr = MMC->qmdb()->someModMetadata(mod);
 				names.append(ptr->name());
 				modsToUpdate.insert(
 					ptr->uid(),

@@ -16,8 +16,8 @@
 #include "logic/auth/MojangAccountList.h"
 #include "logic/icons/IconList.h"
 #include "logic/forge/ForgeVersionList.h"
-#include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/QuickModSettings.h"
+#include "logic/quickmod/QuickModDatabase.h"
 #include "logic/LwjglVersionList.h"
 #include "logic/minecraft/MinecraftVersionList.h"
 #include "logic/liteloader/LiteLoaderVersionList.h"
@@ -274,8 +274,8 @@ MultiMC::MultiMC(int &argc, char **argv, bool root_override) : QApplication(argc
 		return;
 	}
 */
-	// ensure we always create the quickmods list
-	quickmodslist();
+	// ensure we always create the quickmods database
+	qmdb();
 
 	connect(this, SIGNAL(aboutToQuit()), SLOT(onExit()));
 	m_status = MultiMC::Initialized;
@@ -677,13 +677,13 @@ std::shared_ptr<JavaVersionList> MultiMC::javalist()
 	return m_javalist;
 }
 
-std::shared_ptr<QuickModsList> MultiMC::quickmodslist()
+std::shared_ptr<QuickModDatabase> MultiMC::qmdb()
 {
-	if (!m_quickmodslist)
+	if (!m_qmdb)
 	{
-		m_quickmodslist.reset(new QuickModsList());
+		m_qmdb.reset(new QuickModDatabase());
 	}
-	return m_quickmodslist;
+	return m_qmdb;
 }
 
 std::shared_ptr<QuickModSettings> MultiMC::quickmodSettings()

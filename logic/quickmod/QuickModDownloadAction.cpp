@@ -17,10 +17,10 @@ QuickModDownloadAction::QuickModDownloadAction(const QUrl &url, const QString &e
 
 void QuickModDownloadAction::add()
 {
-	MMC->quickmodslist()->addMod(m_resultMetadata);
+	MMC->qmdb()->addMod(m_resultMetadata);
 	for (const auto version : m_resultVersions)
 	{
-		MMC->quickmodslist()->addVersion(version);
+		MMC->qmdb()->add(version);
 	}
 }
 

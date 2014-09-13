@@ -36,7 +36,7 @@ void QuickModDependencyDownloadTask::executeTask()
 
 	for (const QuickModRef mod : m_mods)
 	{
-		auto mods = MMC->quickmodslist()->allModMetadata(mod);
+		auto mods = MMC->qmdb()->allModMetadata(mod);
 		if (mods.isEmpty()) // means we don't have it yet
 		{
 			if (mod.updateUrl().isValid()) // do we have the required information to fetch it?
@@ -140,7 +140,7 @@ void QuickModDependencyDownloadTask::requestDependenciesOf(const QuickModMetadat
 	for (auto it = references.begin(); it != references.end(); ++it)
 	{
 		const QuickModRef modUid = QuickModRef(it.key().toString(), it.value());
-		if (!MMC->quickmodslist()->allModMetadata(modUid).isEmpty())
+		if (!MMC->qmdb()->allModMetadata(modUid).isEmpty())
 		{
 			return;
 		}

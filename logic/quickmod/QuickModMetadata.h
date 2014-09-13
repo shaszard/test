@@ -30,7 +30,7 @@
 
 typedef std::shared_ptr<class QuickModMetadata> QuickModMetadataPtr;
 
-class QuickModMetadata : public QObject
+class QuickModMetadata : public QObject, public std::enable_shared_from_this<QuickModMetadata>
 {
 	Q_OBJECT
 public:
@@ -150,8 +150,8 @@ public:
 	static QList<UrlType> urlTypes();
 
 signals:
-	void iconUpdated();
-	void logoUpdated();
+	void iconUpdated(QuickModRef uid);
+	void logoUpdated(QuickModRef uid);
 
 private
 slots:

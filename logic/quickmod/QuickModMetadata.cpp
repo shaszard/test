@@ -262,7 +262,7 @@ void QuickModMetadata::iconDownloadFinished(int index)
 	m_icon = QIcon(download->getTargetFilepath());
 	if (!m_icon.isNull())
 	{
-		emit iconUpdated();
+		emit iconUpdated(uid());
 	}
 }
 void QuickModMetadata::logoDownloadFinished(int index)
@@ -271,7 +271,7 @@ void QuickModMetadata::logoDownloadFinished(int index)
 	m_logo = QPixmap(download->getTargetFilepath());
 	if (!m_logo.isNull())
 	{
-		emit logoUpdated();
+		emit logoUpdated(uid());
 	}
 }
 

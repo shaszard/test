@@ -97,7 +97,7 @@ InstancePtr InstanceFactory::addInstance(const QString &name, const QString &ico
 		newInstance->setIconKey(iconKey);
 		if (quickmod.isValid())
 		{
-			auto mod = MMC->quickmodslist()->someModMetadata(quickmod);
+			auto mod = MMC->qmdb()->someModMetadata(quickmod);
 			newInstance->setNotes(mod->description());
 			if (mod->categories().size() > 1)
 			{
