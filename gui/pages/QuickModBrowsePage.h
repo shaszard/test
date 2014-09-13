@@ -65,8 +65,6 @@ slots:
 
 	void modLogoUpdated();
 
-	void setupComboBoxes();
-
 	void checkStateChanged(const QModelIndex &index, const bool checked);
 
 private:

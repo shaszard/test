@@ -271,10 +271,16 @@ QuickModBrowsePage::QuickModBrowsePage(std::shared_ptr<OneSixInstance> instance,
 
 	connect(m_view->selectionModel(), &QItemSelectionModel::selectionChanged, this,
 			&QuickModBrowsePage::modSelectionChanged);
-	connect(MMC->quickmodslist().get(), &QuickModsList::modsListChanged, this,
-			&QuickModBrowsePage::setupComboBoxes);
 
-	setupComboBoxes();
+	// FIXME: remove these things in the actual UI file.
+	ui->mcVersionBox->clear();
+	ui->mcVersionBox->addItem(m_instance->intendedVersionId());
+	ui->mcVersionBox->setCurrentIndex(0);
+
+	ui->searchLayout->removeWidget(ui->mcVersionBox);
+	ui->searchLayout->removeWidget(ui->mcVersionLabel);
+	ui->mcVersionBox->setVisible(false);
+	ui->mcVersionLabel->setVisible(false);
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
 	ui->modInfoArea->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
@@ -289,18 +295,6 @@ QuickModBrowsePage::~QuickModBrowsePage()
 void QuickModBrowsePage::modLogoUpdated()
 {
 	ui->logoLabel->setPixmap(m_currentMod->logo());
-}
-
-void QuickModBrowsePage::setupComboBoxes()
-{
-	ui->mcVersionBox->clear();
-	ui->mcVersionBox->addItem(m_instance->intendedVersionId());
-	ui->mcVersionBox->setCurrentIndex(0);
-
-	ui->searchLayout->removeWidget(ui->mcVersionBox);
-	ui->searchLayout->removeWidget(ui->mcVersionLabel);
-	ui->mcVersionBox->setVisible(false);
-	ui->mcVersionLabel->setVisible(false);
 }
 
 void QuickModBrowsePage::checkStateChanged(const QModelIndex &index, const bool checked)

@@ -352,7 +352,13 @@ void QuickModsList::registerMod(const QUrl &url)
 void QuickModsList::updateFiles()
 {
 	NetJob *job = new NetJob("QuickMod Download");
-	for (const auto mod : allQuickMods())
+	QList<QuickModMetadataPtr> out;
+	// FIXME: just remove the duct tape.
+	for (const auto mods : m_mods)
+	{
+		out.append(mods);
+	}
+	for (const auto mod : out)
 	{
 		job->addNetAction(
 			QuickModBaseDownloadAction::make(job, mod->updateUrl(), mod->uid().toString(),
@@ -378,8 +384,6 @@ void QuickModsList::addMod(QuickModMetadataPtr mod)
 		m_uids.prepend(mod->uid());
 		endInsertRows();
 	}
-
-	emit modsListChanged();
 }
 
 void QuickModsList::addVersion(QuickModVersionPtr version)
@@ -398,6 +402,7 @@ void QuickModsList::modLogoUpdated()
 	emit dataChanged(modIndex, modIndex, QVector<int>() << LogoRole);
 }
 
+//FIXME: NUKE this abomination
 void QuickModsList::cleanup()
 {
 	// ensure that only mods that really exist on the local filesystem are marked as available

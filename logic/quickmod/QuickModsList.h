@@ -28,6 +28,8 @@ class Mod;
 class SettingsObject;
 class OneSixInstance;
 
+// TODO: make the database a global instead.
+//       Make this class a temporary view on top of database, only constructed when needed.
 class QuickModsList : public QAbstractListModel
 {
 	Q_OBJECT
@@ -74,11 +76,7 @@ public:
 	Qt::DropActions supportedDropActions() const;
 	Qt::DropActions supportedDragActions() const;
 
-	int numMods() const
-	{
-		return m_mods.size();
-	}
-
+	// TODO: move to database.
 	QList<QuickModMetadataPtr> allModMetadata(const QuickModRef &uid) const;
 	QuickModMetadataPtr someModMetadata(const QuickModRef &uid) const;
 	QuickModMetadataPtr quickmodMetadata(const QString &internalUid) const;
@@ -86,33 +84,23 @@ public:
 	QuickModVersionRef latestVersionForMinecraft(const QuickModRef &modUid, const QString &mcVersion) const;
 	QStringList minecraftVersions(const QuickModRef &uid) const;
 	QList<QuickModVersionRef> versions(const QuickModRef &uid, const QString &mcVersion) const;
-
 	QList<QuickModRef> updatedModsForInstance(std::shared_ptr<OneSixInstance> instance) const;
-
 	bool haveUid(const QuickModRef &uid, const QString &repo = QString()) const;
 
+	// TODO: remove this
 	inline QuickModDatabase *database() const
 	{
 		return m_storage;
 	}
 
-	inline QList<QuickModMetadataPtr> allQuickMods() const
-	{
-		QList<QuickModMetadataPtr> out;
-		for (const auto mods : m_mods)
-		{
-			out.append(mods);
-		}
-		return out;
-	}
-
+	// TODO: move to database (all of these)
 public slots:
 	void registerMod(const QString &fileName);
 	void registerMod(const QUrl &url);
-
 	void updateFiles();
 
 public:
+	// TODO: move to database (all of these)
 	// called from QuickModDownloadAction
 	void addMod(QuickModMetadataPtr mod);
 	void addVersion(QuickModVersionPtr version);
@@ -120,10 +108,10 @@ public:
 	void modIconUpdated();
 	void modLogoUpdated();
 
+	// FIXME: NUKE this abomination. Whatever it is, it has to die.
 	void cleanup();
 
 signals:
-	void modsListChanged();
 	void error(const QString &message);
 
 private:
@@ -131,8 +119,11 @@ private:
 	int getQMIndex(QuickModMetadataPtr mod) const;
 	QuickModMetadataPtr getQMPtr(QuickModMetadata *mod) const;
 
+	// FIXME: only keep the real data in database. REMOVE THIS.
 	QHash<QuickModRef, QList<QuickModMetadataPtr>> m_mods;
-	QList<QuickModRef> m_uids; // list that stays ordered for the model
+	// list that stays ordered for the model, can stay.
+	QList<QuickModRef> m_uids; 
+	// FIXME: only keep the real data in database. REMOVE THIS.
 	QHash<QString, QHash<QString, QuickModVersionPtr>> m_versions;
 
 	QuickModDatabase *m_storage;
