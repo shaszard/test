@@ -29,7 +29,9 @@ bool QuickModIndexDownloadAction::handle(const QByteArray &data)
 		const QString repo = MMCJson::ensureString(root.value("repo"));
 		const QString baseUrlString = MMCJson::ensureString(root.value("baseUrl"));
 
-		// FIXME: ALWAYS use original url (not the one that has followed redirects)?
+		// FIXME: ALWAYS use original url (not the one that has followed redirects)!
+		// The alternative is to tell redirects apart.
+		// furthest node in transitive closure of permanent moves from first URL can be used as a new URL
 		m_indexList->setRepositoryIndexUrl(repo, m_url);
 
 		const QJsonArray array = MMCJson::ensureArray(root.value("index"));

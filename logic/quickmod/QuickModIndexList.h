@@ -9,8 +9,10 @@ class SettingsObject;
 class QuickModRef;
 typedef std::shared_ptr<class QuickModMetadata> QuickModMetadataPtr;
 
-// TODO redownload index
+// FIXME: this has no business of downloading ANYTHING
 
+// FIXME: this is not representing the underlying data anymore.
+//        Rewrite from scratch once we have a solid data model.
 /**
  * @brief The QuickModIndexList class is a model for indexes, as well as an interface to the
  * Indices property in quickmod.cfg
@@ -37,12 +39,14 @@ public:
 	void setRepositoryIndexUrl(const QString &repository, const QUrl &url);
 	QList<QUrl> indices() const;
 
+	// FIXME: forwarding method, get rid of it.
 	bool haveUid(const QuickModRef &uid, const QString &repo) const;
 
 public slots:
 	void reload();
 
 private:
+	// FIXME: what is this doing here?
 	struct Repo
 	{
 		explicit Repo(const QString &name, const QString &url = QString())

@@ -27,6 +27,8 @@ QuickModRef::QuickModRef(const QString &uid, const QUrl &updateUrl)
 {
 }
 
+//FIXME: [re]move this. make the code actually go through the database to find out if UID has a nice name available.
+// possibly could be a static method of QuickMod (the one we don't have right one and very much NEED)
 QString QuickModRef::userFacing() const
 {
 	const auto mod = MMC->quickmodslist()->someModMetadata(*this);
