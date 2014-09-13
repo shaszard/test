@@ -27,13 +27,13 @@ QuickModDatabase::QuickModDatabase()
 
 void QuickModDatabase::setLastETagForURL(const QUrl &url, const QByteArray &ETag)
 {
-	m_ETags[url] = ETag;
+	m_etags[url] = ETag;
 	delayedFlushToDisk();
 }
 
 QByteArray QuickModDatabase::lastETagForURL(const QUrl &url) const
 {
-	return m_ETags[url];
+	return m_etags[url];
 }
 
 void QuickModDatabase::addMod(QuickModMetadataPtr mod)
@@ -280,7 +280,7 @@ void QuickModDatabase::flushToDisk()
 	}
 
 	QJsonObject checksums;
-	for (auto it = m_ETags.constBegin(); it != m_ETags.constEnd(); ++it)
+	for (auto it = m_etags.constBegin(); it != m_etags.constEnd(); ++it)
 	{
 		checksums.insert(it.key().toString(), QString::fromLatin1(it.value()));
 	}
@@ -314,7 +314,7 @@ void QuickModDatabase::loadFromDisk()
 		emit aboutToReset();
 		m_metadata.clear();
 		m_versions.clear();
-		m_ETags.clear();
+		m_etags.clear();
 
 		const QJsonObject root = ensureObject(MMCJson::parseFile(m_filename, "QuickMod Database"));
 		const QJsonObject quickmods = ensureObject(root.value("mods"));
@@ -350,7 +350,7 @@ void QuickModDatabase::loadFromDisk()
 		const QJsonObject checksums = ensureObject(root.value("checksums"));
 		for (auto it = checksums.constBegin(); it != checksums.constEnd(); ++it)
 		{
-			m_ETags.insert(QUrl(it.key()), ensureString(it.value()).toLatin1());
+			m_etags.insert(QUrl(it.key()), ensureString(it.value()).toLatin1());
 		}
 	}
 	catch (MMCError &e)

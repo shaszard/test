@@ -98,7 +98,6 @@ private slots:
 	void loadFromDisk();
 
 private: /* data */
-	// FIXME: merge. there is no need for parallel structures. It only produces bugs.
 	//    uid            repo     data
 	QHash<QuickModRef, QHash<QString, QuickModMetadataPtr>> m_metadata;
 	//    uid            version  data
@@ -106,7 +105,7 @@ private: /* data */
 
 	// FIXME: use metacache.
 	//    url   checksum
-	QHash<QUrl, QByteArray> m_ETags;
+	QHash<QUrl, QByteArray> m_etags;
 
 	bool m_isDirty = false;
 	std::unique_ptr<QTimer> m_timer;
