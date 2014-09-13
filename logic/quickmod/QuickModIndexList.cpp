@@ -10,12 +10,13 @@
 #include "QuickModRef.h"
 #include "QuickModMetadata.h"
 #include "QuickModsList.h"
-#include "QuickModSettings.h"
 #include "MultiMC.h"
+
+// FIXME this file is bad
 
 QuickModIndexList::QuickModIndexList(QObject *parent) : QAbstractItemModel(parent)
 {
-	connect(MMC->quickmodSettings()->settings()->getSetting("Indices").get(), &Setting::SettingChanged,
+	connect(MMC->qmdb()->settings()->getSetting("Indices").get(), &Setting::SettingChanged,
 	[this](const Setting &, QVariant)
 	{
 		reload();
@@ -116,22 +117,22 @@ QModelIndex QuickModIndexList::parent(const QModelIndex &child) const
 
 void QuickModIndexList::setRepositoryIndexUrl(const QString &repository, const QUrl &url)
 {
-	QMap<QString, QVariant> map = MMC->quickmodSettings()->settings()->get("Indices").toMap();
+	QMap<QString, QVariant> map = MMC->qmdb()->settings()->get("Indices").toMap();
 	map[repository] = url.toString(QUrl::FullyEncoded);
-	MMC->quickmodSettings()->settings()->set("Indices", map);
+	MMC->qmdb()->settings()->set("Indices", map);
 }
 QUrl QuickModIndexList::repositoryIndexUrl(const QString &repository) const
 {
-	return QUrl(MMC->quickmodSettings()->settings()->get("Indices").toMap()[repository].toString(), QUrl::StrictMode);
+	return QUrl(MMC->qmdb()->settings()->get("Indices").toMap()[repository].toString(), QUrl::StrictMode);
 }
 bool QuickModIndexList::haveRepositoryIndexUrl(const QString &repository) const
 {
-	return MMC->quickmodSettings()->settings()->get("Indices").toMap().contains(repository);
+	return MMC->qmdb()->settings()->get("Indices").toMap().contains(repository);
 }
 QList<QUrl> QuickModIndexList::indices() const
 {
 	QList<QUrl> out;
-	const auto map = MMC->quickmodSettings()->settings()->get("Indices").toMap();
+	const auto map = MMC->qmdb()->settings()->get("Indices").toMap();
 	for (const auto value : map.values())
 	{
 		out.append(QUrl(value.toString(), QUrl::StrictMode));
@@ -139,7 +140,6 @@ QList<QUrl> QuickModIndexList::indices() const
 	return out;
 }
 
-// FIXME this one is bad
 void QuickModIndexList::reload()
 {
 	/*

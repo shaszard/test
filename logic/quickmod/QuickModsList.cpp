@@ -27,7 +27,6 @@
 #include "logic/net/NetJob.h"
 #include "QuickModBaseDownloadAction.h"
 #include "QuickModVersion.h"
-#include "QuickModSettings.h"
 #include "QuickModDatabase.h"
 #include "logic/Mod.h"
 #include "logic/BaseInstance.h"

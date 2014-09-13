@@ -16,7 +16,6 @@
 #include <QTest>
 #include <QDir>
 
-#include "logic/quickmod/QuickModSettings.h"
 #include "logic/quickmod/QuickModVersion.h"
 #include "logic/InstanceFactory.h"
 #include "logic/minecraft/MinecraftVersionList.h"
@@ -89,7 +88,7 @@ slots:
 		version->sha1 = "a68b86df2f3fff44";
 		return QuickModVersionPtr(version);
 	}
-
+/*
 	void testMarkAsExisting_data()
 	{
 		QTest::addColumn<QVector<QuickModMetadataPtr>>("mods");
@@ -141,6 +140,7 @@ slots:
 
 		delete settings;
 	}
+	*/
 /*
 	void testMarkAsInstalledUninstalled_data()
 	{

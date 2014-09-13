@@ -38,7 +38,6 @@
 #include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/QuickModVersion.h"
-#include "logic/quickmod/QuickModSettings.h"
 #include "logic/quickmod/tasks/QuickModDependencyDownloadTask.h"
 #include "logic/quickmod/QuickModDependencyResolver.h"
 #include "logic/OneSixInstance.h"
@@ -387,7 +386,7 @@ void QuickModInstallDialog::processVersionList()
 			continue;
 		}
 
-		if (MMC->quickmodSettings()->isModMarkedAsExists(version->mod, version))
+		if (MMC->qmdb()->isModMarkedAsExists(version->mod, version))
 		{
 			QLOG_INFO() << version->mod->uid() << "exists already. Only installing.";
 			install(version);
@@ -675,7 +674,7 @@ void QuickModInstallDialog::handleDownload(QuickModVersionPtr version, const QBy
 	file.write(data);
 	file.close();
 
-	MMC->quickmodSettings()->markModAsExists(version->mod, version, file.fileName());
+	MMC->qmdb()->markModAsExists(version->mod, version, file.fileName());
 }
 
 

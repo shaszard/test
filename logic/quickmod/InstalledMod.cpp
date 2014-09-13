@@ -1,6 +1,6 @@
 #include "InstalledMod.h"
 #include "QuickModVersion.h"
-#include "QuickModSettings.h"
+#include "QuickModDatabase.h"
 #include "logic/MMCJson.h"
 #include <logic/OneSixInstance.h>
 #include <QString>
@@ -136,7 +136,7 @@ void InstalledMods::install(const QuickModVersionPtr version)
 
 	// figure out what we will be actually installing
 	// FIXME: get rid of this. SRSLY
-	const QString file = MMC->quickmodSettings()->existingModFile(version->mod, version);
+	const QString file = MMC->qmdb()->existingModFile(version->mod, version);
 
 	// decide where to install the mod
 	QString finalDirPath;

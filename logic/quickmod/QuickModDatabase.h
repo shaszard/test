@@ -5,6 +5,7 @@
 #include <memory>
 #include "QuickModVersionRef.h"
 
+class SettingsObject;
 class MultiMC;
 class QuickModsList;
 class QTimer;
@@ -34,9 +35,6 @@ private: /* methods */
 
 	/// add a separately constructed version
 	void addVersion(QuickModVersionPtr version);
-
-	/// ensure that only mods that really exist on the local filesystem are marked as available
-	void checkFileCache();
 
 	/**
 	 * retrieve ETag from last download of url.
@@ -85,6 +83,28 @@ public: /* methods */
 	/// update quickmod files
 	void updateFiles();
 
+private: /* garbage from QuickModSettings */
+	/**
+	 * ensure that only mods that really exist on the local filesystem are marked as available
+	 */
+	void checkFileCache();
+
+public: /* garbage from QuickModSettings */
+	/// declare that we have downloaded and cached a file
+	void markModAsExists(QuickModMetadataPtr mod, const QuickModVersionRef &version, const QString &fileName);
+
+	/// have we in the past declared a file as downloaded?
+	bool isModMarkedAsExists(QuickModMetadataPtr mod, const QuickModVersionRef &version) const;
+
+	/// get where a file is actually stored?
+	QString existingModFile(QuickModMetadataPtr mod, const QuickModVersionRef &version) const;
+
+	/// general purpose garbage dump for things that didn't fit in.
+	std::shared_ptr<SettingsObject> settings() const
+	{
+		return m_settings;
+	}
+	
 signals:
 	void aboutToReset();
 	void reset();
@@ -111,4 +131,7 @@ private: /* data */
 	std::unique_ptr<QTimer> m_timer;
 
 	static QString m_filename;
+	
+	// FIXME: get rid of this.
+	std::shared_ptr<SettingsObject> m_settings;
 };

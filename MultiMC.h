@@ -18,7 +18,6 @@ class QNetworkAccessManager;
 class ForgeVersionList;
 class LiteLoaderVersionList;
 class JavaVersionList;
-class QuickModSettings;
 class UpdateChecker;
 class NotificationChecker;
 class NewsChecker;
@@ -134,7 +133,6 @@ public:
 	}
 
 	std::shared_ptr<QuickModDatabase> qmdb();
-	std::shared_ptr<QuickModSettings> quickmodSettings();
 
 	void installUpdates(const QString updateFilesDir, UpdateFlags flags = None);
 
@@ -215,7 +213,6 @@ private:
 	std::shared_ptr<JavaVersionList> m_javalist;
 	std::shared_ptr<URNResolver> m_resolver;
 	std::shared_ptr<QuickModDatabase> m_qmdb;
-	std::shared_ptr<QuickModSettings> m_quickmodSettings;
 
 	QMap<QString, std::shared_ptr<BaseProfilerFactory>> m_profilers;
 	QMap<QString, std::shared_ptr<BaseDetachedToolFactory>> m_tools;

@@ -11,12 +11,18 @@
 #include "QuickModBaseDownloadAction.h"
 #include "logic/MMCJson.h"
 #include <logic/OneSixInstance.h>
+#include <logic/settings/INISettingsObject.h>
 
 QString QuickModDatabase::m_filename = QDir::current().absoluteFilePath("quickmods/quickmods.json");
 
 QuickModDatabase::QuickModDatabase()
-	: QObject(), m_timer(new QTimer(this))
+	: QObject(), m_timer(new QTimer(this)),
+	m_settings(new INISettingsObject(QDir::current().absoluteFilePath("quickmod.cfg")))
 {
+	m_settings->registerSetting("AvailableMods",
+								QVariant::fromValue(QMap<QString, QMap<QString, QString>>()));
+	m_settings->registerSetting("TrustedWebsites", QVariantList());
+	m_settings->registerSetting("Indices", QVariantMap());
 	ensureFolderPathExists(QDir::current().absoluteFilePath("quickmods/"));
 	loadFromDisk();
 	checkFileCache();
@@ -210,9 +216,49 @@ void QuickModDatabase::updateFiles()
 	job->start();
 }
 
+// FIXME: rewrite.
+void QuickModDatabase::markModAsExists(QuickModMetadataPtr mod, const QuickModVersionRef &version,
+									   const QString &fileName)
+{
+	/*
+	auto mods = m_settings->get("AvailableMods").toMap();
+	auto map = mods[mod->internalUid()].toMap();
+	map[version.toString()] = fileName;
+	mods[mod->internalUid()] = map;
+	m_settings->getSetting("AvailableMods")->set(QVariant(mods));
+	*/
+}
+
+// FIXME: rewrite.
+bool QuickModDatabase::isModMarkedAsExists(QuickModMetadataPtr mod,
+										   const QuickModVersionRef &version) const
+{
+	return false;
+	/*
+	auto mods = m_settings->get("AvailableMods").toMap();
+	return mods.contains(mod->internalUid()) &&
+		   mods.value(mod->internalUid()).toMap().contains(version.toString());
+	*/
+}
+
+// FIXME: rewrite.
+QString QuickModDatabase::existingModFile(QuickModMetadataPtr mod,
+										  const QuickModVersionRef &version) const
+{
+	return QString();
+	/*
+	if (!isModMarkedAsExists(mod, version))
+	{
+		return QString();
+	}
+	auto mods = m_settings->get("AvailableMods").toMap();
+	return mods[mod->internalUid()].toMap()[version.toString()].toString();
+	*/
+}
+
+// FIXME: rewrite.
 void QuickModDatabase::checkFileCache()
 {
-	// FIXME: rewrite.
 	/*
 	QDir dir;
 	auto mods = MMC->quickmodSettings()->settings()->get("AvailableMods").toMap();

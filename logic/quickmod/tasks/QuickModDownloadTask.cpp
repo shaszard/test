@@ -19,7 +19,6 @@
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/QuickModVersion.h"
 #include "logic/quickmod/QuickModsList.h"
-#include "logic/quickmod/QuickModSettings.h"
 #include "logic/quickmod/QuickModDependencyResolver.h"
 #include <logic/quickmod/InstalledMod.h>
 #include "logic/OneSixInstance.h"
@@ -61,7 +60,7 @@ void QuickModDownloadTask::executeTask()
 
 		bool processMod = false;
 		processMod |= !ptr;
-		processMod |= !MMC->quickmodSettings()->isModMarkedAsExists(mod, version);
+		processMod |= !MMC->qmdb()->isModMarkedAsExists(mod, version);
 		processMod |= hasResolveError;
 		processMod |= ptr->needsDeploy() && !modManager->isQuickmodInstalled(mod->uid());
 		if (processMod)

@@ -16,7 +16,6 @@
 #include "logic/auth/MojangAccountList.h"
 #include "logic/icons/IconList.h"
 #include "logic/forge/ForgeVersionList.h"
-#include "logic/quickmod/QuickModSettings.h"
 #include "logic/quickmod/QuickModDatabase.h"
 #include "logic/LwjglVersionList.h"
 #include "logic/minecraft/MinecraftVersionList.h"
@@ -684,15 +683,6 @@ std::shared_ptr<QuickModDatabase> MultiMC::qmdb()
 		m_qmdb.reset(new QuickModDatabase());
 	}
 	return m_qmdb;
-}
-
-std::shared_ptr<QuickModSettings> MultiMC::quickmodSettings()
-{
-	if (!m_quickmodSettings)
-	{
-		m_quickmodSettings.reset(new QuickModSettings());
-	}
-	return m_quickmodSettings;
 }
 
 std::shared_ptr<URNResolver> MultiMC::resolver()
