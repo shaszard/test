@@ -103,7 +103,7 @@ InstancePtr InstanceFactory::addInstance(const QString &name, const QString &ico
 			{
 				newInstance->setGroupInitial(mod->categories().at(1));
 			}
-			newInstance->settings().set("LastQuickModUrl", quickmod.updateUrl());
+			newInstance->settings().set("LastQuickModUrl", mod->updateUrl());
 			if (std::shared_ptr<OneSixInstance> onesix = std::dynamic_pointer_cast<OneSixInstance>(newInstance))
 			{
 				onesix->installedMods()->setQuickModVersion(quickmod, QuickModVersionRef(), true);

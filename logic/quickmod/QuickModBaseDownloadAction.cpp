@@ -131,7 +131,7 @@ void QuickModBaseDownloadAction::downloadFinished()
 	{
 		const QByteArray receivedHash = m_reply->rawHeader("ETag").replace("\"", "");
 		//FIXME: use metacache, not this.
-		MMC->qmdb()->setChecksum(m_originalUrl, receivedHash);
+		MMC->qmdb()->setLastETagForURL(m_originalUrl, receivedHash);
 		// cache hit? success!
 		if(m_expectedChecksum == receivedHash)
 		{

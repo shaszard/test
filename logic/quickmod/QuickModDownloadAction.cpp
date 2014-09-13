@@ -20,7 +20,7 @@ void QuickModDownloadAction::add()
 	MMC->qmdb()->addMod(m_resultMetadata);
 	for (const auto version : m_resultVersions)
 	{
-		MMC->qmdb()->add(version);
+		MMC->qmdb()->addVersion(version);
 	}
 }
 

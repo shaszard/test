@@ -43,7 +43,7 @@
 QuickModsList::QuickModsList(QObject *parent) : QAbstractListModel(parent)
 {
 	auto storage = MMC->qmdb();
-	m_uids = storage.get()->metadata().keys();
+	m_uids = storage->getModUIDs();
 
 	connect(storage.get(), &QuickModDatabase::aboutToReset, [this]()
 			{
@@ -51,7 +51,7 @@ QuickModsList::QuickModsList(QObject *parent) : QAbstractListModel(parent)
 	});
 	connect(storage.get(), &QuickModDatabase::reset, [this, storage]()
 			{
-		m_uids = storage->metadata().keys();
+		m_uids = storage->getModUIDs();
 		endResetModel();
 	});
 	connect(storage.get(), SIGNAL(modIconUpdated(QuickModRef)), SLOT(modIconUpdated(QuickModRef)));

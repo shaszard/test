@@ -19,57 +19,67 @@ QuickModDatabase::QuickModDatabase()
 {
 	ensureFolderPathExists(QDir::current().absoluteFilePath("quickmods/"));
 	loadFromDisk();
-	cleanup();
+	checkFileCache();
 	connect(qApp, &QCoreApplication::aboutToQuit, this, &QuickModDatabase::flushToDisk);
-	connect(m_timer, &QTimer::timeout, this, &QuickModDatabase::flushToDisk);
+	connect(m_timer.get(), &QTimer::timeout, this, &QuickModDatabase::flushToDisk);
 	updateFiles();
 }
 
-void QuickModDatabase::setChecksum(const QUrl &url, const QByteArray &checksum)
+void QuickModDatabase::setLastETagForURL(const QUrl &url, const QByteArray &ETag)
 {
-	m_checksums[url] = checksum;
+	m_ETags[url] = ETag;
 	delayedFlushToDisk();
 }
 
-QByteArray QuickModDatabase::checksum(const QUrl &url) const
+QByteArray QuickModDatabase::lastETagForURL(const QUrl &url) const
 {
-	return m_checksums[url];
+	return m_ETags[url];
 }
 
-void QuickModDatabase::add(QuickModMetadataPtr metadata)
+void QuickModDatabase::addMod(QuickModMetadataPtr mod)
 {
-	m_metadata[metadata->uid().toString()][metadata->repo()] = metadata;
-
+	m_metadata[mod->uid()][mod->repo()] = mod;
+	connect(mod.get(), SIGNAL(iconUpdated(QString)), this, SIGNAL(modIconUpdated(QString)));
+	connect(mod.get(), SIGNAL(logoUpdated(QString)), this, SIGNAL(modLogoUpdated(QString)));
 	delayedFlushToDisk();
+	emit justAddedMod(mod->uid());
 }
 
-void QuickModDatabase::add(QuickModVersionPtr version)
+void QuickModDatabase::addVersion(QuickModVersionPtr version)
 {
 	// TODO merge versions
-	m_versions[version->mod->uid().toString()][version->version().toString()] = version;
+	m_versions[version->mod->uid()][version->version().toString()] = version;
 
 	delayedFlushToDisk();
 }
 
 QList<QuickModMetadataPtr> QuickModDatabase::allModMetadata(const QuickModRef &uid) const
 {
-	auto m_mods = metadata();
-	return m_mods[uid];
+	auto iter = m_metadata.find(uid);
+	if(iter == m_metadata.end())
+	{
+		return {};
+	}
+	return (*iter).values();
 }
 
 QuickModMetadataPtr QuickModDatabase::someModMetadata(const QuickModRef &uid) const
 {
-	const auto mods = allModMetadata(uid);
-	if (mods.isEmpty())
+	auto iter = m_metadata.find(uid);
+	if(iter == m_metadata.end())
 	{
-		return QuickModMetadataPtr();
+		return nullptr;
 	}
-	return mods.first();
+	if((*iter).isEmpty())
+	{
+		return nullptr;
+	}
+	return *((*iter).begin());
 }
 
 QuickModVersionPtr QuickModDatabase::version(const QuickModVersionRef &version) const
 {
-	for (auto verPtr : m_versions[version.mod().toString()])
+	for (auto verPtr : m_versions[version.mod()])
 	{
 		if (verPtr->version() == version)
 		{
@@ -99,21 +109,19 @@ QuickModVersionRef QuickModDatabase::latestVersionForMinecraft(const QuickModRef
 
 QStringList QuickModDatabase::minecraftVersions(const QuickModRef &uid) const
 {
-	QStringList out;
-	auto modVersions = m_versions[uid.toString()];
-	for (const auto version : modVersions)
+	QSet<QString> out;
+	for (const auto version : m_versions[uid])
 	{
-		out.append(version->compatibleVersions);
+		out.unite(version->compatibleVersions.toSet());
 	}
-	return out;
+	return out.toList();
 }
 
 QList<QuickModVersionRef> QuickModDatabase::versions(const QuickModRef &uid,
 												  const QString &mcVersion) const
 {
 	QSet<QuickModVersionRef> out;
-	auto modVersions = m_versions[uid.toString()];
-	for (const auto v : modVersions)
+	for (const auto v : m_versions[uid])
 	{
 		if (v->compatibleVersions.contains(mcVersion))
 		{
@@ -152,8 +160,8 @@ QList<QuickModRef> QuickModDatabase::updatedModsForInstance(std::shared_ptr<OneS
 
 bool QuickModDatabase::haveUid(const QuickModRef &uid, const QString &repo) const
 {
-	auto m_mods = metadata();
-	if (!m_mods.contains(uid))
+	auto iter = m_metadata.find(uid);
+	if (iter == m_metadata.end())
 	{
 		return false;
 	}
@@ -161,7 +169,7 @@ bool QuickModDatabase::haveUid(const QuickModRef &uid, const QString &repo) cons
 	{
 		return true;
 	}
-	for (auto mod : m_mods[uid])
+	for (auto mod : *iter)
 	{
 		if (mod->repo() == repo)
 		{
@@ -188,43 +196,21 @@ void QuickModDatabase::registerMod(const QUrl &url)
 void QuickModDatabase::updateFiles()
 {
 	NetJob *job = new NetJob("QuickMod Download");
-	QList<QuickModMetadataPtr> out;
-	// FIXME: just remove the duct tape.
-	auto m_mods = metadata();
-	for (const auto mods : m_mods)
+	for(auto mod: m_metadata)
 	{
-		out.append(mods);
-	}
-	for (const auto mod : out)
-	{
-		job->addNetAction(
-			QuickModBaseDownloadAction::make(job, mod->updateUrl(), mod->uid().toString(),
-											 checksum(mod->updateUrl())));
+		for(auto meta: mod)
+		{
+			auto lastETag = lastETagForURL(meta->updateUrl());
+			auto download = QuickModBaseDownloadAction::make(job, meta->updateUrl(), meta->uid().toString(), lastETag);
+			job->addNetAction(download);
+		}
 	}
 	connect(job, &NetJob::succeeded, job, &NetJob::deleteLater);
 	connect(job, &NetJob::failed, job, &NetJob::deleteLater);
 	job->start();
 }
 
-void QuickModDatabase::addMod(QuickModMetadataPtr mod)
-{
-	add(mod);
-
-	connect(mod.get(), SIGNAL(iconUpdated(QuickModRef)), this, SIGNAL(modIconUpdated(QuickModRef)));
-	connect(mod.get(), SIGNAL(logoUpdated(QuickModRef)), this, SIGNAL(modLogoUpdated(QuickModRef)));
-
-	auto m_mods = metadata();
-	m_mods[mod->uid()].append(mod);
-
-	emit justAddedMod(mod->uid());
-}
-
-void QuickModDatabase::addVersion(QuickModVersionPtr version)
-{
-	add(version);
-}
-
-void QuickModDatabase::cleanup()
+void QuickModDatabase::checkFileCache()
 {
 	// FIXME: rewrite.
 	/*
@@ -252,15 +238,9 @@ void QuickModDatabase::cleanup()
 	*/
 }
 
-
-QHash<QuickModRef, QList<QuickModMetadataPtr>> QuickModDatabase::metadata() const
+QList<QuickModRef> QuickModDatabase::getModUIDs() const
 {
-	QHash<QuickModRef, QList<QuickModMetadataPtr>> out;
-	for (auto uidIt = m_metadata.constBegin(); uidIt != m_metadata.constEnd(); ++uidIt)
-	{
-		out.insert(QuickModRef(uidIt.key()), uidIt.value().values());
-	}
-	return out;
+	return m_metadata.keys();
 }
 
 void QuickModDatabase::delayedFlushToDisk()
@@ -296,11 +276,11 @@ void QuickModDatabase::flushToDisk()
 		QJsonObject obj;
 		obj.insert("metadata", metadata);
 		obj.insert("versions", versions);
-		quickmods.insert(it.key(), obj);
+		quickmods.insert(it.key().toString(), obj);
 	}
 
 	QJsonObject checksums;
-	for (auto it = m_checksums.constBegin(); it != m_checksums.constEnd(); ++it)
+	for (auto it = m_ETags.constBegin(); it != m_ETags.constEnd(); ++it)
 	{
 		checksums.insert(it.key().toString(), QString::fromLatin1(it.value()));
 	}
@@ -334,7 +314,7 @@ void QuickModDatabase::loadFromDisk()
 		emit aboutToReset();
 		m_metadata.clear();
 		m_versions.clear();
-		m_checksums.clear();
+		m_ETags.clear();
 
 		const QJsonObject root = ensureObject(MMCJson::parseFile(m_filename, "QuickMod Database"));
 		const QJsonObject quickmods = ensureObject(root.value("mods"));
@@ -350,7 +330,7 @@ void QuickModDatabase::loadFromDisk()
 				{
 					QuickModMetadataPtr ptr = std::make_shared<QuickModMetadata>();
 					ptr->parse(MMCJson::ensureObject(metaIt.value()));
-					m_metadata[uid][metaIt.key()] = ptr;
+					m_metadata[QuickModRef(uid)][metaIt.key()] = ptr;
 				}
 			}
 
@@ -360,9 +340,9 @@ void QuickModDatabase::loadFromDisk()
 				for (auto versionIt = versions.constBegin(); versionIt != versions.constEnd(); ++versionIt)
 				{
 					// FIXME: giving it a fake 'metadata', because otherwise this causes crashes
-					QuickModVersionPtr ptr = std::make_shared<QuickModVersion>(*(m_metadata[uid].begin()));
+					QuickModVersionPtr ptr = std::make_shared<QuickModVersion>(*(m_metadata[QuickModRef(uid)].begin()));
 					ptr->parse(MMCJson::ensureObject(versionIt.value()));
-					m_versions[uid][versionIt.key()] = ptr;
+					m_versions[QuickModRef(uid)][versionIt.key()] = ptr;
 				}
 			}
 		}
@@ -370,7 +350,7 @@ void QuickModDatabase::loadFromDisk()
 		const QJsonObject checksums = ensureObject(root.value("checksums"));
 		for (auto it = checksums.constBegin(); it != checksums.constEnd(); ++it)
 		{
-			m_checksums.insert(QUrl(it.key()), ensureString(it.value()).toLatin1());
+			m_ETags.insert(QUrl(it.key()), ensureString(it.value()).toLatin1());
 		}
 	}
 	catch (MMCError &e)

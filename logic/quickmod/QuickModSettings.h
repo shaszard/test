@@ -24,7 +24,6 @@ class QuickModVersionRef;
 class QuickModRef;
 class BaseInstance;
 class SettingsObject;
-typedef std::shared_ptr<class BaseInstance> InstancePtr;
 
 class QuickModSettings
 {
@@ -35,8 +34,7 @@ public:
 	void markModAsExists(QuickModMetadataPtr mod, const QuickModVersionRef &version,
 						 const QString &fileName);
 	bool isModMarkedAsExists(QuickModMetadataPtr mod, const QuickModVersionRef &version) const;
-	QMap<QuickModVersionRef, QString> installedModFiles(const QuickModRef uid,
-														BaseInstance *instance) const;
+	QMap<QuickModVersionRef, QString> installedModFiles(const QuickModRef uid, BaseInstance *instance) const;
 	QString existingModFile(QuickModMetadataPtr mod, const QuickModVersionRef &version) const;
 
 	SettingsObject *settings() const
