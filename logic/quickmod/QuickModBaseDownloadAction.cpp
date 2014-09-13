@@ -6,7 +6,7 @@
 #include "QuickModDownloadAction.h"
 #include "QuickModIndexDownloadAction.h"
 #include "QuickModsList.h"
-#include "QuickModDatabase.h"
+#include "db/QuickModDatabase.h"
 
 /*
  * FIXME: this actually fixes some kind of Qt bug that we should report.

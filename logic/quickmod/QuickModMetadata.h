@@ -159,7 +159,6 @@ slots:
 	void logoDownloadFinished(int index);
 
 private:
-	friend class QuickModFilesUpdater;
 	friend class QuickModTest;
 	friend class QuickModsListTest;
 	friend class QuickModBuilder;

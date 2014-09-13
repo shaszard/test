@@ -4,9 +4,17 @@
 #include <QHash>
 #include <memory>
 
+#include "logic/db/Schema.h"
+
 class QuickModsList;
 class QuickModRef;
-class QTimer;
+class SQLiteDatabase;
+class MetadataSchema;
+class VersionSchema;
+class IndexSchema;
+class Checksum;
+class Index;
+class ChecksumSchema;
 
 typedef std::shared_ptr<class QuickModMetadata> QuickModMetadataPtr;
 typedef std::shared_ptr<class QuickModVersion> QuickModVersionPtr;
@@ -15,7 +23,7 @@ class QuickModDatabase : public QObject
 {
 	Q_OBJECT
 public:
-	QuickModDatabase(QuickModsList *list);
+	QuickModDatabase();
 
 	void setChecksum(const QUrl &url, const QByteArray &checksum);
 	QByteArray checksum(const QUrl &url) const;
@@ -30,15 +38,11 @@ signals:
 	void reset();
 
 private:
-	QuickModsList *m_list;
-	//    uid            repo     data
-	QHash<QString, QHash<QString, QuickModMetadataPtr>> m_metadata;
-	//    uid            version  data
-	QHash<QString, QHash<QString, QuickModVersionPtr>> m_versions;
-	//    url   checksum
-	QHash<QUrl, QByteArray> m_checksums;
-
-	class SQLiteDatabase *m_db;
+	SQLiteDatabase *m_db;
+	SchemaRegistry<QuickModMetadataPtr, MetadataSchema> *m_metadataRegistry;
+	SchemaRegistry<QuickModVersionPtr, VersionSchema> *m_versionRegistry;
+	SchemaRegistry<Index, IndexSchema> *m_indexRegistry;
+	SchemaRegistry<Checksum, ChecksumSchema> *m_checksumRegistry;
 
 	static QString m_filename;
 };

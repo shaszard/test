@@ -2,7 +2,7 @@
 
 #include <sqlite3.h>
 
-#include "logic/SQLiteDatabase.h"
+#include "logic/db/SQLiteDatabase.h"
 #include "logger/QsLog.h"
 #include "logger/QsLogDest.h"
 

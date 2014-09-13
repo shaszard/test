@@ -28,7 +28,7 @@
 #include "QuickModBaseDownloadAction.h"
 #include "QuickModVersion.h"
 #include "QuickModSettings.h"
-#include "QuickModDatabase.h"
+#include "db/QuickModDatabase.h"
 #include "logic/Mod.h"
 #include "logic/BaseInstance.h"
 #include "logic/OneSixInstance.h"
@@ -40,25 +40,15 @@
 #include "logic/settings/INISettingsObject.h"
 
 QuickModsList::QuickModsList(const Flags flags, QObject *parent)
-	: QAbstractListModel(parent), m_storage(new QuickModDatabase(this))
+	: QAbstractListModel(parent), m_storage(new QuickModDatabase())
 {
 	if (!flags.testFlag(DontCleanup))
 	{
 		cleanup();
 	}
 
-	connect(m_storage, &QuickModDatabase::aboutToReset, [this]()
-	{
-		beginResetModel();
-	});
-	connect(m_storage, &QuickModDatabase::reset, [this]()
-	{
-		m_mods = m_storage->metadata();
-		m_uids = m_mods.keys();
-		endResetModel();
-	});
-
-	//m_storage->syncFromDisk();
+	m_mods = m_storage->metadata();
+	m_uids = m_mods.keys();
 	updateFiles();
 }
 

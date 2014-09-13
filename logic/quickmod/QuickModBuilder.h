@@ -97,10 +97,20 @@ public:
 		return *this;
 	}
 
+	QuickModBuilder addReference(const QuickModRef &uid, const QUrl &url)
+	{
+		m_mod->m_references[uid] = url;
+		return *this;
+	}
+
 	QuickModVersionBuilder addVersion();
 	QuickModBuilder addVersion(const QuickModVersionPtr ptr);
 
 	QJsonObject build() const;
+	QuickModMetadataPtr buildPtr() const
+	{
+		return m_mod;
+	}
 
 private:
 	friend class QuickModVersionBuilder;

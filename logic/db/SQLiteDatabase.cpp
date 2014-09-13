@@ -82,20 +82,37 @@ void SQLiteDatabase::finalize(SQLiteStatement *stmt)
 {
 	sqlite3_finalize(stmt);
 }
-void SQLiteDatabase::execute(const QString &statement)
+
+QList<QVariantList> SQLiteDatabase::all(const QString &statement)
+{
+	SQLiteStatement *stmt = prepare(statement);
+	QList<QVariantList> out;
+	QVariantList row = next(stmt);
+	while (!row.isEmpty())
+	{
+		out.append(row);
+		row = next(stmt);
+	}
+	finalize(stmt);
+	return out;
+}
+
+bool SQLiteDatabase::execute(const QString &statement)
 {
 	if (!isOpen())
 	{
 		QLOG_ERROR() << "Trying to execute a query on a non-open database";
-		return;
+		return false;
 	}
 	char *error = nullptr;
 	sqlite3_exec(m_db, statement.toUtf8().constData(), nullptr, nullptr, &error);
 	if (error)
 	{
-		QLOG_ERROR() << "Error while executing query:" << error;
+		QLOG_ERROR() << "Error while executing " << statement << ":" << error;
 		sqlite3_free(error);
+		return false;
 	}
+	return true;
 }
 QVariantList SQLiteDatabase::executeWithReturn(const QString &statement)
 {
@@ -104,6 +121,12 @@ QVariantList SQLiteDatabase::executeWithReturn(const QString &statement)
 	finalize(stmt);
 	return out;
 }
+
+int SQLiteDatabase::lastInsertId() const
+{
+	return sqlite3_last_insert_rowid(m_db);
+}
+
 QVariantList SQLiteDatabase::next(SQLiteStatement *stmt)
 {
 	int res = sqlite3_step(stmt);

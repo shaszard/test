@@ -105,9 +105,12 @@ public:
 	SQLiteStatement *prepare(const QString &statement);
 	QVariantList next(SQLiteStatement *stmt);
 	void finalize(SQLiteStatement *stmt);
+	QList<QVariantList> all(const QString &statement);
 
-	void execute(const QString &statement);
+	bool execute(const QString &statement);
 	QVariantList executeWithReturn(const QString &statement);
+
+	int lastInsertId() const;
 
 	template <typename... Params> void bind(SQLiteStatement *stmt, Params... params)
 	{

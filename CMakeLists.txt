@@ -470,9 +470,11 @@ SET(MULTIMC_SOURCES
 	logic/MMCJson.h
 	logic/MMCJson.cpp
 
-	# SQLite database wrapper
-	logic/SQLiteDatabase.h
-	logic/SQLiteDatabase.cpp
+	# database stuff
+	logic/db/SQLiteDatabase.h
+	logic/db/SQLiteDatabase.cpp
+	logic/db/Schema.h
+	logic/db/Schema.cpp
 
 	# RW lock protected map
 	logic/RWStorage.h
@@ -687,8 +689,16 @@ SET(MULTIMC_SOURCES
 	logic/quickmod/QuickModIndexList.h
 	logic/quickmod/QuickModSettings.cpp
 	logic/quickmod/QuickModSettings.h
-	logic/quickmod/QuickModDatabase.cpp
-	logic/quickmod/QuickModDatabase.h
+	logic/quickmod/db/QuickModDatabase.cpp
+	logic/quickmod/db/QuickModDatabase.h
+	logic/quickmod/db/VersionSchema.cpp
+	logic/quickmod/db/VersionSchema.h
+	logic/quickmod/db/MetadataSchema.cpp
+	logic/quickmod/db/MetadataSchema.h
+	logic/quickmod/db/IndexSchema.cpp
+	logic/quickmod/db/IndexSchema.h
+	logic/quickmod/db/ChecksumSchema.cpp
+	logic/quickmod/db/ChecksumSchema.h
 	logic/quickmod/QuickModBaseDownloadAction.cpp
 	logic/quickmod/QuickModBaseDownloadAction.h
 	logic/quickmod/QuickModDownloadAction.cpp
