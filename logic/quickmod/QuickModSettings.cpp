@@ -1,3 +1,7 @@
+// FIXME: REMOVE.
+// FIXME: REMOVE.
+// FIXME: REMOVE.
+
 /* Copyright 2013 MultiMC Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +29,7 @@
 #include "QuickModRef.h"
 #include "logic/BaseInstance.h"
 
+// FIXME: REMOVE.
 QuickModSettings::QuickModSettings()
 	: m_settings(new INISettingsObject(QDir::current().absoluteFilePath("quickmod.cfg")))
 {
@@ -34,11 +39,13 @@ QuickModSettings::QuickModSettings()
 	m_settings->registerSetting("Indices", QVariantMap());
 }
 
+// FIXME: REMOVE.
 QuickModSettings::~QuickModSettings()
 {
 	delete m_settings;
 }
 
+// FIXME: REMOVE.
 void QuickModSettings::markModAsExists(QuickModMetadataPtr mod, const QuickModVersionRef &version,
 									   const QString &fileName)
 {
@@ -49,6 +56,7 @@ void QuickModSettings::markModAsExists(QuickModMetadataPtr mod, const QuickModVe
 	m_settings->getSetting("AvailableMods")->set(QVariant(mods));
 }
 
+// FIXME: REMOVE.
 bool QuickModSettings::isModMarkedAsExists(QuickModMetadataPtr mod,
 										   const QuickModVersionRef &version) const
 {
@@ -56,6 +64,8 @@ bool QuickModSettings::isModMarkedAsExists(QuickModMetadataPtr mod,
 	return mods.contains(mod->internalUid()) &&
 		   mods.value(mod->internalUid()).toMap().contains(version.toString());
 }
+
+// FIXME: REMOVE.
 QString QuickModSettings::existingModFile(QuickModMetadataPtr mod,
 										  const QuickModVersionRef &version) const
 {
@@ -66,3 +76,5 @@ QString QuickModSettings::existingModFile(QuickModMetadataPtr mod,
 	auto mods = m_settings->get("AvailableMods").toMap();
 	return mods[mod->internalUid()].toMap()[version.toString()].toString();
 }
+
+// I hope this is a clear message :)
