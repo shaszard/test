@@ -40,6 +40,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Werror=return-type")
 
 ################################ 3rd Party Libs ################################
 
+find_package(Sqlite3 REQUIRED)
+
 # Find the required Qt parts
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
@@ -57,6 +59,7 @@ include_directories(
 	${Qt5Test_INCLUDE_DIRS}
 	${Qt5Network_INCLUDE_DIRS}
 	${Qt5Xml_INCLUDE_DIRS}
+	${SQLite3_INCLUDE_DIRS}
 )
 
 # The Qt5 cmake files don't provide its install paths, so ask qmake.
@@ -449,6 +452,10 @@ SET(MULTIMC_SOURCES
 	logic/MMCJson.h
 	logic/MMCJson.cpp
 
+	# DB related
+	logic/db/SQLiteDatabase.h
+	logic/db/SQLiteDatabase.cpp
+
 	# RW lock protected map
 	logic/RWStorage.h
 
@@ -755,7 +762,7 @@ add_executable(MultiMC MACOSX_BUNDLE WIN32 main.cpp ${MULTIMC_RCS})
 
 # Link
 target_link_libraries(MultiMC MultiMC_common)
-target_link_libraries(MultiMC_common xz-embedded unpack200 quazip libUtil LogicalGui ${MultiMC_LINK_ADDITIONAL_LIBS})
+target_link_libraries(MultiMC_common xz-embedded unpack200 quazip libUtil LogicalGui ${SQLite3_LIBRARIES} ${MultiMC_LINK_ADDITIONAL_LIBS})
 qt5_use_modules(MultiMC Core Widgets Network Xml Concurrent WebKitWidgets ${MultiMC_QT_ADDITIONAL_MODULES})
 qt5_use_modules(MultiMC_common Core Widgets Network Xml Concurrent WebKitWidgets ${MultiMC_QT_ADDITIONAL_MODULES})
 
