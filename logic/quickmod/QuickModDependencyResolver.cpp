@@ -151,8 +151,9 @@ QList<QuickModVersionPtr> QuickModDependencyResolver::resolve(const QList<QuickM
 {
 	for (QuickModRef mod : mods)
 	{
-		bool ok;
-		resolve(getVersion(mod, QuickModVersionRef(), &ok));
+		bool ok = false;
+		auto version = getVersion(mod, QuickModVersionRef(), &ok);
+		resolve(version);
 		if (!ok)
 		{
 			emit error(tr("Didn't select a version for %1").arg(mod.userFacing()));

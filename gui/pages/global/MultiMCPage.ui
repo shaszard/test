@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>545</width>
+    <width>557</width>
     <height>609</height>
    </rect>
   </property>
@@ -369,16 +369,6 @@
        <string>QuickMods</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QCheckBox" name="quickmodAlwaysLatestBtn">
-         <property name="text">
-          <string>Always use latest version</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
        <item>
         <widget class="QPushButton" name="quickmodRepoBtn">
          <property name="text">

@@ -528,7 +528,6 @@ void MultiMC::initGlobalSettings()
 	m_settings->registerSetting("SettingsGeometry", "");
 
 	// QuickMods
-	m_settings->registerSetting("QuickModAlwaysLatestVersion", true);
 	m_settings->registerSetting("QuickModDownloadSelection", "priority");
 
 	m_settings->registerSetting("PagedGeometry", "");

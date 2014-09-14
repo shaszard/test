@@ -19,13 +19,9 @@
 
 #include "logic/minecraft/InstanceVersion.h"
 #include "logic/ModList.h"
-#include "logic/quickmod/QuickModRef.h"
-#include "logic/quickmod/QuickModVersionRef.h"
 #include "gui/pages/BasePageProvider.h"
 
 class InstalledMods;
-class QuickModRef;
-
 class OneSixInstance : public BaseInstance, public BasePageProvider
 {
 	Q_OBJECT
@@ -102,7 +98,6 @@ public:
 	virtual bool providesVersionFile() const;
 
 	bool reload() override;
-
 	virtual QStringList extraArguments() const override;
 
 	std::shared_ptr<OneSixInstance> shared_from_this();
@@ -114,5 +109,3 @@ private:
 	QStringList processMinecraftArgs(AuthSessionPtr account);
 	QDir reconstructAssets(std::shared_ptr<InstanceVersion> version);
 };
-
-Q_DECLARE_METATYPE(std::shared_ptr<OneSixInstance>)

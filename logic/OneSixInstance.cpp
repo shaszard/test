@@ -13,28 +13,22 @@
  * limitations under the License.
  */
 
+#include <QIcon>
+#include <pathutils.h>
+#include "logger/QsLog.h"
+#include "MultiMC.h"
+#include "MMCError.h"
+
 #include "OneSixInstance.h"
 
-#include <QIcon>
-
-#include <pathutils.h>
-
-#include "logic/quickmod/QuickModsList.h"
-#include "logic/quickmod/QuickModMetadata.h"
-#include "logic/quickmod/tasks/QuickModDownloadTask.h"
-#include "logic/quickmod/tasks/QuickModForgeDownloadTask.h"
-#include "logic/quickmod/tasks/QuickModLiteLoaderDownloadTask.h"
-#include "quickmod/InstalledMod.h"
-#include "logic/tasks/SequentialTask.h"
-#include "logic/minecraft/InstanceVersion.h"
-#include "logic/minecraft/VersionBuildError.h"
-#include "logic/assets/AssetsUtils.h"
-#include "logic/icons/IconList.h"
 #include "logic/OneSixInstance_p.h"
 #include "logic/OneSixUpdate.h"
-#include "logic/MinecraftProcess.h"
-#include "logic/InstanceList.h"
+#include "logic/minecraft/InstanceVersion.h"
+#include "logic/minecraft/VersionBuildError.h"
 
+#include "logic/assets/AssetsUtils.h"
+#include "logic/icons/IconList.h"
+#include "logic/MinecraftProcess.h"
 #include "gui/pagedialog/PageDialog.h"
 #include "gui/pages/VersionPage.h"
 #include "gui/pages/ModFolderPage.h"
@@ -44,11 +38,9 @@
 #include "gui/pages/NotesPage.h"
 #include "gui/pages/ScreenshotsPage.h"
 #include "gui/pages/OtherLogsPage.h"
-#include "gui/pages/QuickModBrowsePage.h"
 
-#include "logger/QsLog.h"
-#include "MultiMC.h"
-#include "MMCError.h"
+#include "gui/pages/QuickModBrowsePage.h"
+#include "quickmod/InstalledMod.h"
 
 OneSixInstance::OneSixInstance(const QString &rootDir, SettingsObject *settings,
 							   QObject *parent)
@@ -107,12 +99,7 @@ QSet<QString> OneSixInstance::traits()
 
 std::shared_ptr<Task> OneSixInstance::doUpdate()
 {
-	auto task = std::shared_ptr<SequentialTask>(new SequentialTask);
-	task->addTask(std::shared_ptr<Task>(new QuickModDownloadTask(shared_from_this(), task.get())));
-	task->addTask(std::shared_ptr<Task>(new QuickModForgeDownloadTask(shared_from_this(), task.get())));
-	task->addTask(std::shared_ptr<Task>(new QuickModLiteLoaderDownloadTask(shared_from_this(), task.get())));
-	task->addTask(std::shared_ptr<Task>(new OneSixUpdate(this, task.get())));
-	return task;
+	return std::shared_ptr<Task>(new OneSixUpdate(this));
 }
 
 QString replaceTokensIn(QString text, QMap<QString, QString> with)

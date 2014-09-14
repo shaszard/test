@@ -348,17 +348,10 @@ bool QuickModInstallDialog::resolveDeps()
 QuickModVersionPtr QuickModInstallDialog::getVersion(const QuickModRef &modUid,
 													 const QuickModVersionRef &filter, bool *ok)
 {
-	auto predefinedVersion = m_instance->installedMods()->installedQuickModVersion(modUid);
 	VersionSelectDialog dialog(new QuickModVersionList(modUid, m_instance, this),
 							   tr("Choose QuickMod version for %1").arg(modUid.userFacing()),
 							   this);
 	dialog.setFuzzyFilter(BaseVersionList::NameColumn, filter.toString());
-	dialog.setUseLatest(MMC->settings()->get("QuickModAlwaysLatestVersion").toBool());
-	// TODO currently, if the version isn't existing anymore it will be updated
-	if (predefinedVersion.isValid() && MMC->qmdb()->version(predefinedVersion))
-	{
-		dialog.setExactFilter(BaseVersionList::NameColumn, predefinedVersion.toString());
-	}
 	if (dialog.exec() == QDialog::Rejected)
 	{
 		*ok = false;

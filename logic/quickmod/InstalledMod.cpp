@@ -111,6 +111,8 @@ bool InstalledMods::installLibrariesFrom(const QuickModVersionPtr version)
 	file.write(QJsonDocument(obj).toJson());
 	file.close();
 
+	instance->reloadVersion();
+
 	return true;
 }
 

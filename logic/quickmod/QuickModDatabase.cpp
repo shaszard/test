@@ -12,6 +12,7 @@
 #include "logic/MMCJson.h"
 #include <logic/OneSixInstance.h>
 #include <logic/settings/INISettingsObject.h>
+#include <logic/settings/Setting.h>
 
 QString QuickModDatabase::m_filename = QDir::current().absoluteFilePath("quickmods/quickmods.json");
 
@@ -220,48 +221,39 @@ void QuickModDatabase::updateFiles()
 void QuickModDatabase::markModAsExists(QuickModMetadataPtr mod, const QuickModVersionRef &version,
 									   const QString &fileName)
 {
-	/*
 	auto mods = m_settings->get("AvailableMods").toMap();
 	auto map = mods[mod->internalUid()].toMap();
 	map[version.toString()] = fileName;
 	mods[mod->internalUid()] = map;
 	m_settings->getSetting("AvailableMods")->set(QVariant(mods));
-	*/
 }
 
 // FIXME: rewrite.
 bool QuickModDatabase::isModMarkedAsExists(QuickModMetadataPtr mod,
 										   const QuickModVersionRef &version) const
 {
-	return false;
-	/*
 	auto mods = m_settings->get("AvailableMods").toMap();
 	return mods.contains(mod->internalUid()) &&
 		   mods.value(mod->internalUid()).toMap().contains(version.toString());
-	*/
 }
 
 // FIXME: rewrite.
 QString QuickModDatabase::existingModFile(QuickModMetadataPtr mod,
 										  const QuickModVersionRef &version) const
 {
-	return QString();
-	/*
 	if (!isModMarkedAsExists(mod, version))
 	{
 		return QString();
 	}
 	auto mods = m_settings->get("AvailableMods").toMap();
 	return mods[mod->internalUid()].toMap()[version.toString()].toString();
-	*/
 }
 
 // FIXME: rewrite.
 void QuickModDatabase::checkFileCache()
 {
-	/*
 	QDir dir;
-	auto mods = MMC->quickmodSettings()->settings()->get("AvailableMods").toMap();
+	auto mods = m_settings->get("AvailableMods").toMap();
 	QMutableMapIterator<QString, QVariant> modIt(mods);
 	while (modIt.hasNext())
 	{
@@ -280,8 +272,7 @@ void QuickModDatabase::checkFileCache()
 			modIt.remove();
 		}
 	}
-	MMC->quickmodSettings()->settings()->set("AvailableMods", mods);
-	*/
+	m_settings->set("AvailableMods", mods);
 }
 
 QList<QuickModRef> QuickModDatabase::getModUIDs() const

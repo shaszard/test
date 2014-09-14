@@ -301,7 +301,6 @@ void MultiMCPage::applySettings()
 	s->set("IconsDir", ui->iconsDirTextBox->text());
 
 	// QuickMods
-	s->set("QuickModAlwaysLatestVersion", ui->quickmodAlwaysLatestBtn->isChecked());
 	if (ui->qmPriorityBtn->isChecked())
 	{
 		s->set("QuickModDownloadSelection", "priority");
@@ -375,7 +374,6 @@ void MultiMCPage::loadSettings()
 	ui->iconsDirTextBox->setText(s->get("IconsDir").toString());
 
 	// QuickMods
-	ui->quickmodAlwaysLatestBtn->setChecked(s->get("QuickModAlwaysLatestVersion").toBool());
 	const QString downloadSelect = s->get("QuickModDownloadSelection").toString();
 	if (downloadSelect == "priority")
 	{

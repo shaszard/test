@@ -89,7 +89,7 @@ protected:
 
 VersionSelectDialog::VersionSelectDialog(BaseVersionList *vlist, QString title, QWidget *parent,
 										 bool cancelable)
-	: QDialog(parent), ui(new Ui::VersionSelectDialog), m_useLatest(false)
+	: QDialog(parent), ui(new Ui::VersionSelectDialog)
 {
 	MultiMCPlatform::fixWM_CLASS(this);
 	ui->setupUi(this);
@@ -128,11 +128,6 @@ void VersionSelectDialog::setResizeOn(int column)
 	ui->listView->header()->setSectionResizeMode(resizeOnColumn, QHeaderView::Stretch);
 }
 
-void VersionSelectDialog::setUseLatest(const bool useLatest)
-{
-	m_useLatest = useLatest;
-}
-
 int VersionSelectDialog::exec()
 {
 	QDialog::open();
@@ -146,7 +141,7 @@ int VersionSelectDialog::exec()
 		QLOG_DEBUG() << "No rows in version list";
 		return QDialog::Rejected;
 	}
-	if (m_proxyModel->rowCount() == 1 || m_useLatest)
+	if (m_proxyModel->rowCount() == 1)
 	{
 		ui->listView->selectionModel()->setCurrentIndex(m_proxyModel->index(0, 0),
 														QItemSelectionModel::ClearAndSelect);

@@ -1226,42 +1226,13 @@ void MainWindow::doLaunch(bool online, BaseProfilerFactory *profiler)
 void MainWindow::updateInstance(InstancePtr instance, AuthSessionPtr session,
 								BaseProfilerFactory *profiler)
 {
-	// FIXME: replace. This is logic in GUI, and even in the wrong place in the GUI.
-	std::shared_ptr<OneSixInstance> onesix = std::dynamic_pointer_cast<OneSixInstance>(instance);
-	if (onesix)
-	{
-		QList<QuickModRef> mods = MMC->qmdb()->updatedModsForInstance(onesix);
-		if (!mods.isEmpty())
-		{
-			QStringList names;
-			QMap<QuickModRef, QPair<QuickModVersionRef, bool>> modsToUpdate;
-			for (auto mod : mods)
-			{
-				auto ptr = MMC->qmdb()->someModMetadata(mod);
-				names.append(ptr->name());
-				modsToUpdate.insert(
-					ptr->uid(),
-					qMakePair(QuickModVersionRef(),
-							  onesix->installedMods()->installedQuickIsHardDep(ptr->uid())));
-			}
-			int res = QMessageBox::question(
-				this, tr("Update"),
-				tr("The following mods have new updates:\n\n%1\n\n Update now?")
-					.arg(names.join(", ")),
-				QMessageBox::Yes, QMessageBox::No);
-			if (res == QMessageBox::Yes)
-			{
-				onesix->installedMods()->setQuickModVersions(modsToUpdate);
-			}
-		}
-	}
-
 	auto updateTask = instance->doUpdate();
 	if (!updateTask)
 	{
 		launchInstance(instance, session, profiler);
 		return;
 	}
+	// FIXME: likely not needed.
 	QuickModGuiUtil::setup(updateTask.get(), this);
 	connect(updateTask.get(), &Task::succeeded, [this, instance, session, profiler]
 	{ launchInstance(instance, session, profiler); });
@@ -1422,11 +1393,6 @@ void MainWindow::selectionBad()
 
 	// ...and then see if we can enable the previously selected instance
 	setSelectedInstanceById(MMC->settings()->get("SelectedInstance").toString());
-}
-
-void MainWindow::on_actionBrowseQuickMods_triggered()
-{
-	ShowPageDialog(m_globalSettingsProvider, this, "quickmod-browse");
 }
 
 void MainWindow::instanceEnded()
