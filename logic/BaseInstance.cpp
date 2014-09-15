@@ -92,9 +92,6 @@ BaseInstance::BaseInstance(BaseInstancePrivate *d_in, const QString &rootDir,
 	settings().registerSetting("LastQuickModFile", QDir::currentPath());
 	settings().registerSetting("UploadUsername", "");
 	settings().registerSetting("UploadPassword", "");
-
-	// Mods
-	settings().registerSetting("InstalledMods", QVariant::fromValue(QMap<QString, QMap<QString, QString> >()));
 }
 
 void BaseInstance::iconUpdated(QString key)

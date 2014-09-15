@@ -48,7 +48,7 @@
 #include "depends/quazip/JlCompress.h"
 #include <pathutils.h>
 #include "logic/quickmod/QuickModVersionList.h"
-#include <logic/quickmod/InstalledMod.h>
+#include "logic/quickmod/InstanceModManager.h"
 
 Q_DECLARE_METATYPE(QTreeWidgetItem *)
 

@@ -1,11 +1,11 @@
-#include "InstalledMod.h"
-#include "QuickModVersion.h"
-#include "QuickModDatabase.h"
+#include "logic/quickmod/InstanceModManager.h"
+#include "logic/quickmod/QuickModVersion.h"
+#include "logic/quickmod/QuickModDatabase.h"
 #include "logic/MMCJson.h"
 #include <logic/OneSixInstance.h>
 #include <QString>
 #include <QMimeDatabase>
-#include "pathutils.h"
+#include <pathutils.h>
 #include <JlCompress.h>
 #include "MultiMC.h"
 
@@ -14,12 +14,12 @@ using namespace MMCJson;
 // current version of the file format
 const int currentVersion = 1;
 
-InstalledMods::InstalledMods(std::shared_ptr< OneSixInstance > parent)
+InstanceModManager::InstanceModManager(std::shared_ptr< OneSixInstance > parent)
 {
 	parentInstance = parent;
 }
 
-QuickModVersionRef InstalledMods::installedQuickModVersion(const QuickModRef& mod)
+QuickModVersionRef InstanceModManager::installedQuickModVersion(const QuickModRef& mod)
 {
 	auto moditer = installedMods_index.find(mod.toString());
 	if(moditer != installedMods_index.end())
@@ -29,7 +29,7 @@ QuickModVersionRef InstalledMods::installedQuickModVersion(const QuickModRef& mo
 	return QuickModVersionRef();
 }
 
-bool InstalledMods::installedQuickIsHardDep(const QuickModRef& mod)
+bool InstanceModManager::installedQuickIsHardDep(const QuickModRef& mod)
 {
 	auto moditer = installedMods_index.find(mod.toString());
 	if(moditer != installedMods_index.end())
@@ -39,17 +39,17 @@ bool InstalledMods::installedQuickIsHardDep(const QuickModRef& mod)
 	return false;
 }
 
-bool InstalledMods::isQuickmodInstalled(const QuickModRef& mod)
+bool InstanceModManager::isQuickmodInstalled(const QuickModRef& mod)
 {
 	return installedMods_index.contains(mod.toString());
 }
 
-void InstalledMods::setQuickModVersion(const QuickModRef &uid, const QuickModVersionRef &version, const bool manualInstall)
+void InstanceModManager::setQuickModVersion(const QuickModRef &uid, const QuickModVersionRef &version, const bool manualInstall)
 {
 	setQuickModVersions(QMap<QuickModRef, QPair<QuickModVersionRef, bool>>({{uid, qMakePair(version, manualInstall)}}));
 }
 
-void InstalledMods::setQuickModVersions(const QMap<QuickModRef, QPair<QuickModVersionRef, bool>> &mods)
+void InstanceModManager::setQuickModVersions(const QMap<QuickModRef, QPair<QuickModVersionRef, bool>> &mods)
 {
 	// FIXME: this is obviously nonsense
 	/*
@@ -64,12 +64,12 @@ void InstalledMods::setQuickModVersions(const QMap<QuickModRef, QPair<QuickModVe
 	// save file... ?
 }
 
-void InstalledMods::removeQuickMod(const QuickModRef &uid)
+void InstanceModManager::removeQuickMod(const QuickModRef &uid)
 {
 	removeQuickMods(QList<QuickModRef>() << uid);
 }
 
-bool InstalledMods::installLibrariesFrom(const QuickModVersionPtr version)
+bool InstanceModManager::installLibrariesFrom(const QuickModVersionPtr version)
 {
 	auto instance = parentInstance.lock();
 	if(!instance)
@@ -116,7 +116,7 @@ bool InstalledMods::installLibrariesFrom(const QuickModVersionPtr version)
 	return true;
 }
 
-void InstalledMods::install(const QuickModVersionPtr version)
+void InstanceModManager::install(const QuickModVersionPtr version)
 {
 	auto instance = parentInstance.lock();
 	if(!instance)
@@ -226,25 +226,25 @@ void InstalledMods::install(const QuickModVersionPtr version)
 	*/
 }
 
-void InstalledMods::markModAsInstalled(const QuickModVersionRef &version, QString dest)
+void InstanceModManager::markModAsInstalled(const QuickModVersionRef &version, QString dest)
 {
 	// insert entry into structures
 	// save file
 }
 
-void InstalledMods::markModAsUninstalled(const QuickModRef uid)
+void InstanceModManager::markModAsUninstalled(const QuickModRef uid)
 {
 	// remove entry from structures
 	// save file
 }
 
-bool InstalledMods::isModMarkedAsInstalled(const QuickModRef uid) const
+bool InstanceModManager::isModMarkedAsInstalled(const QuickModRef uid) const
 {
 	// query structures
 	return false;
 }
 
-QList<InstalledMod::File> InstalledMods::installedModFiles(const QuickModRef uid) const
+QList<InstalledMod::File> InstanceModManager::installedModFiles(const QuickModRef uid) const
 {
 	if(installedMods_index.contains(uid.toString()))
 	{
@@ -253,7 +253,7 @@ QList<InstalledMod::File> InstalledMods::installedModFiles(const QuickModRef uid
 	return QList<InstalledMod::File>();
 }
 
-void InstalledMods::removeQuickMods(const QList<QuickModRef> &uids)
+void InstanceModManager::removeQuickMods(const QList<QuickModRef> &uids)
 {
 	auto instance = parentInstance.lock();
 	if(!instance)
@@ -296,19 +296,19 @@ void InstalledMods::removeQuickMods(const QList<QuickModRef> &uids)
 	}
 }
 
-std::unique_ptr< QuickModView > InstalledMods::iterateQuickMods()
+std::unique_ptr< QuickModView > InstanceModManager::iterateQuickMods()
 {
 	return std::unique_ptr<QuickModView>(new QuickModView(installedMods));
 }
 
-void InstalledMods::insert(InstalledModRef mod)
+void InstanceModManager::insert(InstalledModRef mod)
 {
 	Q_ASSERT(!installedMods_index.contains(mod->qm_uid));
 	installedMods.push_back(mod);
 	installedMods_index[mod->qm_uid] = mod;
 }
 
-bool InstalledMods::loadFromFile(QString filename)
+bool InstanceModManager::loadFromFile(QString filename)
 {
 	auto instance = parentInstance.lock();
 	if(!instance)
@@ -342,7 +342,7 @@ bool InstalledMods::loadFromFile(QString filename)
 	return true;
 }
 
-bool InstalledMods::saveToFile(QString filename)
+bool InstanceModManager::saveToFile(QString filename)
 {
 	auto instance = parentInstance.lock();
 	if(!instance)
@@ -365,7 +365,7 @@ bool InstalledMods::saveToFile(QString filename)
 }
 
 
-void InstalledMods::parse(const QJsonDocument& document)
+void InstanceModManager::parse(const QJsonDocument& document)
 {
 	auto obj = document.object();
 
@@ -383,7 +383,7 @@ void InstalledMods::parse(const QJsonDocument& document)
 	}
 }
 
-QJsonDocument InstalledMods::serialize()
+QJsonDocument InstanceModManager::serialize()
 {
 	QJsonObject root;
 	root.insert("formatVersion", currentVersion);
@@ -407,6 +407,7 @@ std::shared_ptr<InstalledMod> InstalledMod::parse(const QJsonObject &valueObject
 	mod->name = ensureString(valueObject.value("name"));
 	mod->version = ensureString(valueObject.value("version"));
 	mod->qm_uid = ensureString(valueObject.value("qm_uid"));
+	mod->qm_repo = ensureString(valueObject.value("qm_repo"));
 	mod->qm_updateUrl = ensureString(valueObject.value("qm_updateUrl"));
 	mod->asDependency = valueObject.value("asDependency").toBool();
 	mod->installedPatch = valueObject.value("installedPatch").toString();
@@ -431,6 +432,7 @@ QJsonObject InstalledMod::serialize()
 	QJsonObject obj;
 
 	obj.insert("qm_uid", qm_uid);
+	obj.insert("qm_repo", qm_repo);
 	obj.insert("name", name);
 	obj.insert("version", version);
 	obj.insert("qm_updateUrl", qm_updateUrl);

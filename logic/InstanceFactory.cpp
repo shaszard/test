@@ -37,7 +37,7 @@
 #include "logic/InstanceList.h"
 #include "logic/auth/MojangAccountList.h"
 #include "logic/tasks/Task.h"
-#include "quickmod/InstalledMod.h"
+#include "logic/quickmod/InstanceModManager.h"
 #include "MultiMC.h"
 
 InstanceFactory InstanceFactory::loader;

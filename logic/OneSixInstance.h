@@ -21,7 +21,7 @@
 #include "logic/ModList.h"
 #include "gui/pages/BasePageProvider.h"
 
-class InstalledMods;
+class InstanceModManager;
 class OneSixInstance : public BaseInstance, public BasePageProvider
 {
 	Q_OBJECT
@@ -41,7 +41,7 @@ public:
 	std::shared_ptr<ModList> coreModList();
 	std::shared_ptr<ModList> resourcePackList() override;
 	std::shared_ptr<ModList> texturePackList() override;
-	std::shared_ptr<InstalledMods> installedMods();
+	std::shared_ptr<InstanceModManager> installedMods();
 
 	virtual QSet<QString> traits();
 	

@@ -652,10 +652,12 @@ SET(MULTIMC_SOURCES
 	logic/tools/JVisualVM.cpp
 
 	# QuickMods
+	logic/quickmod/InstanceModManager.cpp
+	logic/quickmod/InstanceModManager.h
+	logic/quickmod/Transaction.cpp
+	logic/quickmod/Transaction.h
 	logic/quickmod/QuickModMetadata.cpp
 	logic/quickmod/QuickModMetadata.h
-	logic/quickmod/InstalledMod.cpp
-	logic/quickmod/InstalledMod.h
 	logic/quickmod/QuickModRef.cpp
 	logic/quickmod/QuickModRef.h
 	logic/quickmod/QuickModBuilder.cpp

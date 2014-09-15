@@ -18,7 +18,7 @@
 #include "logic/BaseInstance_p.h"
 
 class ModList;
-class InstalledMods;
+class InstanceModManager;
 class InstanceVersion;
 
 class OneSixInstancePrivate : public BaseInstancePrivate
@@ -31,5 +31,5 @@ public:
 	std::shared_ptr<ModList> core_mod_list;
 	std::shared_ptr<ModList> resource_pack_list;
 	std::shared_ptr<ModList> texture_pack_list;
-	std::shared_ptr<InstalledMods> installed_mods;
+	std::shared_ptr<InstanceModManager> installed_mods;
 };

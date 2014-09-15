@@ -17,7 +17,7 @@ typedef std::shared_ptr<InstalledMod> InstalledModRef;
 
 class InstalledMod
 {
-	friend class InstalledMods;
+	friend class InstanceModManager;
 	friend class QuickModView;
 
 private: /* variables */
@@ -32,6 +32,7 @@ private: /* variables */
 	QString version;
 	bool asDependency = false;
 	QString qm_uid;
+	QString qm_repo;
 	QString qm_updateUrl;
 	QString installedPatch;
 	QList<File> installedFiles;
@@ -41,12 +42,13 @@ private: /* methods */
 	QJsonObject serialize();
 };
 
-class InstalledMods
+class InstanceModManager
 {
 	friend class QuickModView;
+
 public:
-	InstalledMods(std::shared_ptr<OneSixInstance> parent);
-	virtual ~InstalledMods(){};
+	InstanceModManager(std::shared_ptr<OneSixInstance> parent);
+	virtual ~InstanceModManager(){};
 
 	typedef QList<InstalledModRef> storage_type;
 
@@ -55,7 +57,7 @@ public:
 
 	bool isQuickmodInstalled(const QuickModRef &mod);
 	QuickModVersionRef installedQuickModVersion(const QuickModRef &mod);
-	bool installedQuickIsHardDep(const QuickModRef& mod);
+	bool installedQuickIsHardDep(const QuickModRef &mod);
 
 	std::unique_ptr<QuickModView> iterateQuickMods();
 
@@ -66,14 +68,15 @@ public:
 	bool installLibrariesFrom(const QuickModVersionPtr version);
 
 	// from QuickModSettings
-	void markModAsInstalled(const QuickModVersionRef& version, QString dest);
+	void markModAsInstalled(const QuickModVersionRef &version, QString dest);
 	void markModAsUninstalled(const QuickModRef uid);
-	QList< InstalledMod::File > installedModFiles(const QuickModRef uid) const;
+	QList<InstalledMod::File> installedModFiles(const QuickModRef uid) const;
 	bool isModMarkedAsInstalled(const QuickModRef uid) const;
 
 	// from OneSixInstance
-	void setQuickModVersion(const QuickModRef &uid, const QuickModVersionRef &version, const bool manualInstall = false);
-	void setQuickModVersions(const QMap<QuickModRef, QPair<QuickModVersionRef, bool> > &mods);
+	void setQuickModVersion(const QuickModRef &uid, const QuickModVersionRef &version,
+							const bool manualInstall = false);
+	void setQuickModVersions(const QMap<QuickModRef, QPair<QuickModVersionRef, bool>> &mods);
 	void removeQuickMod(const QuickModRef &uid);
 	void removeQuickMods(const QList<QuickModRef> &uids);
 
@@ -93,7 +96,7 @@ private: /* methods */
 class QuickModView
 {
 public:
-	QuickModView(const InstalledMods::storage_type &storage, int index = 0)
+	QuickModView(const InstanceModManager::storage_type &storage, int index = 0)
 		: m_storage(storage), i(storage.cbegin() + index)
 	{
 	}
@@ -122,7 +125,7 @@ public:
 	}
 
 private:
-	// FIXME: what if is InstalledMods destroyed while we use this?
-	const InstalledMods::storage_type &m_storage;
-	InstalledMods::storage_type::const_iterator i;
+	// FIXME: what if is InstanceModManager destroyed while we use this?
+	const InstanceModManager::storage_type &m_storage;
+	InstanceModManager::storage_type::const_iterator i;
 };

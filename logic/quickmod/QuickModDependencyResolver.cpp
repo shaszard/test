@@ -20,7 +20,7 @@
 #include "logic/quickmod/QuickModVersion.h"
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/QuickModsList.h"
-#include "InstalledMod.h"
+#include "logic/quickmod/InstanceModManager.h"
 #include "logic/OneSixInstance.h"
 #include "MultiMC.h"
 #include "modutils.h"

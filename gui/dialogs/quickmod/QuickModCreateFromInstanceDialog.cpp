@@ -36,7 +36,7 @@
 #include "logic/net/NetJob.h"
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/QuickModBuilder.h"
-#include <logic/quickmod/InstalledMod.h>
+#include "logic/quickmod/InstanceModManager.h"
 #include "MultiMC.h"
 
 static int addRowToTableWidget(QTableWidget *widget)

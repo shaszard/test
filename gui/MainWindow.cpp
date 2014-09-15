@@ -81,8 +81,8 @@
 #include "logic/java/JavaVersionList.h"
 #include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/QuickModMetadata.h"
-#include <logic/quickmod/InstalledMod.h>
-#include <logic/quickmod/QuickModDatabase.h>
+#include "logic/quickmod/InstanceModManager.h"
+#include "logic/quickmod/QuickModDatabase.h"
 
 #include "logic/auth/flows/AuthenticateTask.h"
 #include "logic/auth/flows/RefreshTask.h"
@@ -109,9 +109,9 @@
 
 #include "logic/assets/AssetsUtils.h"
 #include "logic/assets/AssetsMigrateTask.h"
-#include <logic/updater/UpdateChecker.h>
-#include <logic/updater/NotificationChecker.h>
-#include <logic/tasks/ThreadTask.h>
+#include "logic/updater/UpdateChecker.h"
+#include "logic/updater/NotificationChecker.h"
+#include "logic/tasks/ThreadTask.h"
 
 #include "logic/tools/BaseProfiler.h"
 

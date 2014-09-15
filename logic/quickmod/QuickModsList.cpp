@@ -34,7 +34,7 @@
 #include "logic/settings/Setting.h"
 #include "MultiMC.h"
 #include "logic/InstanceList.h"
-#include "logic/quickmod/InstalledMod.h"
+#include "logic/quickmod/InstanceModManager.h"
 #include "modutils.h"
 
 #include "logic/settings/INISettingsObject.h"
