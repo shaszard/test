@@ -1,9 +1,12 @@
 #pragma once
 
-#include "QuickModBaseDownloadAction.h"
+#include "logic/quickmod/net/QuickModBaseDownloadAction.h"
 
-typedef std::shared_ptr<class QuickModMetadata> QuickModMetadataPtr;
-typedef std::shared_ptr<class QuickModVersion> QuickModVersionPtr;
+class QuickModMetadata;
+class QuickModVersion;
+
+typedef std::shared_ptr<QuickModMetadata> QuickModMetadataPtr;
+typedef std::shared_ptr<QuickModVersion> QuickModVersionPtr;
 
 class QuickModDownloadAction : public QuickModBaseDownloadAction
 {

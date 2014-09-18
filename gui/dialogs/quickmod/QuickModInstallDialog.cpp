@@ -38,7 +38,7 @@
 #include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/QuickModVersion.h"
-#include "logic/quickmod/tasks/QuickModDependencyDownloadTask.h"
+#include "logic/quickmod/net/QuickModDependencyDownloadTask.h"
 #include "logic/quickmod/QuickModDependencyResolver.h"
 #include "logic/OneSixInstance.h"
 #include "logic/net/ByteArrayDownload.h"

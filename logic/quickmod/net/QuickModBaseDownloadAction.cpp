@@ -1,12 +1,12 @@
-#include "QuickModBaseDownloadAction.h"
+#include "logic/quickmod/net/QuickModBaseDownloadAction.h"
 
 #include "MultiMC.h"
 #include "logger/QsLog.h"
 
-#include "QuickModDownloadAction.h"
-#include "QuickModIndexDownloadAction.h"
-#include "QuickModsList.h"
-#include "QuickModDatabase.h"
+#include "logic/quickmod/net/QuickModDownloadAction.h"
+#include "logic/quickmod/net/QuickModIndexDownloadAction.h"
+#include "logic/quickmod/QuickModsList.h"
+#include "logic/quickmod/QuickModDatabase.h"
 
 /*
  * FIXME: this actually fixes some kind of Qt bug that we should report.

@@ -678,20 +678,16 @@ SET(MULTIMC_SOURCES
 	logic/quickmod/QuickModIndexList.h
 	logic/quickmod/QuickModDatabase.cpp
 	logic/quickmod/QuickModDatabase.h
-	logic/quickmod/QuickModBaseDownloadAction.cpp
-	logic/quickmod/QuickModBaseDownloadAction.h
-	logic/quickmod/QuickModDownloadAction.cpp
-	logic/quickmod/QuickModDownloadAction.h
-	logic/quickmod/QuickModIndexDownloadAction.cpp
-	logic/quickmod/QuickModIndexDownloadAction.h
-	logic/quickmod/tasks/QuickModDependencyDownloadTask.cpp
-	logic/quickmod/tasks/QuickModDependencyDownloadTask.h
-	logic/quickmod/tasks/QuickModDownloadTask.cpp
-	logic/quickmod/tasks/QuickModDownloadTask.h
-	logic/quickmod/tasks/QuickModForgeDownloadTask.cpp
-	logic/quickmod/tasks/QuickModForgeDownloadTask.h
-	logic/quickmod/tasks/QuickModLiteLoaderDownloadTask.cpp
-	logic/quickmod/tasks/QuickModLiteLoaderDownloadTask.h
+	logic/quickmod/net/QuickModBaseDownloadAction.cpp
+	logic/quickmod/net/QuickModBaseDownloadAction.h
+	logic/quickmod/net/QuickModDownloadAction.cpp
+	logic/quickmod/net/QuickModDownloadAction.h
+	logic/quickmod/net/QuickModIndexDownloadAction.cpp
+	logic/quickmod/net/QuickModIndexDownloadAction.h
+	logic/quickmod/net/QuickModDependencyDownloadTask.cpp
+	logic/quickmod/net/QuickModDependencyDownloadTask.h
+	logic/quickmod/net/QuickModDownloadTask.cpp
+	logic/quickmod/net/QuickModDownloadTask.h
 	
 	# Forge and all things forge related
 	logic/forge/ForgeVersion.h

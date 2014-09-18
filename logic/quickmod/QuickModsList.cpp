@@ -25,9 +25,9 @@
 
 #include "logic/net/CacheDownload.h"
 #include "logic/net/NetJob.h"
-#include "QuickModBaseDownloadAction.h"
-#include "QuickModVersion.h"
-#include "QuickModDatabase.h"
+#include "logic/quickmod/net/QuickModBaseDownloadAction.h"
+#include "logic/quickmod/QuickModVersion.h"
+#include "logic/quickmod/QuickModDatabase.h"
 #include "logic/Mod.h"
 #include "logic/BaseInstance.h"
 #include "logic/OneSixInstance.h"

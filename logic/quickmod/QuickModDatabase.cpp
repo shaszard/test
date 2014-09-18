@@ -8,7 +8,7 @@
 
 #include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/InstanceModManager.h"
-#include "QuickModBaseDownloadAction.h"
+#include "logic/quickmod/net/QuickModBaseDownloadAction.h"
 #include "logic/MMCJson.h"
 #include "logic/OneSixInstance.h"
 #include "logic/settings/INISettingsObject.h"
