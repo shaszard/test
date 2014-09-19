@@ -4,16 +4,16 @@
 #include <QString>
 #include <QMap>
 
-class InstanceModManager;
+class InstancePackageList;
 struct TransactionPrivate;
 
 class Transaction : public QObject
 {
-	friend class InstanceModManager;
+	friend class InstancePackageList;
 	friend class QuickModDependencyResolver;
 
 private:
-	/// You can get one from InstanceModManager
+	/// You can get one from InstancePackageList
 	Transaction(){};
 
 	/// initial insert, for construction

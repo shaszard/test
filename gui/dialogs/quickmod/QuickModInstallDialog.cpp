@@ -48,7 +48,7 @@
 #include "depends/quazip/JlCompress.h"
 #include <pathutils.h>
 #include "logic/quickmod/QuickModVersionList.h"
-#include "logic/quickmod/InstanceModManager.h"
+#include "logic/quickmod/InstancePackageList.h"
 
 Q_DECLARE_METATYPE(QTreeWidgetItem *)
 
@@ -371,7 +371,7 @@ void QuickModInstallDialog::processVersionList()
 		// Add a progress list entry for each download
 		addProgressListEntry(version);
 
-		if (m_instance->installedMods()->isQuickmodInstalled(version->mod->uid()))
+		if (m_instance->installedPackages()->isQuickmodInstalled(version->mod->uid()))
 		{
 			QLOG_INFO() << version->mod->uid() << " is already installed";
 			setProgressListMsg(version, tr("Success: Already installed"), Qt::darkGreen);
@@ -476,7 +476,8 @@ bool QuickModInstallDialog::install(QuickModVersionPtr version)
 {
 	try
 	{
-		m_instance->installedMods()->install(version);
+		#pragma message("NUKE: Removed use of install")
+		// m_instance->installedPackages()->install(version);
 	}
 	catch (MMCError &e)
 	{

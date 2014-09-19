@@ -7,7 +7,7 @@
 #include <pathutils.h>
 
 #include "logic/quickmod/QuickModsList.h"
-#include "logic/quickmod/InstanceModManager.h"
+#include "logic/quickmod/InstancePackageList.h"
 #include "logic/quickmod/net/QuickModBaseDownloadAction.h"
 #include "logic/MMCJson.h"
 #include "logic/OneSixInstance.h"
@@ -142,7 +142,7 @@ QList<QuickModVersionRef> QuickModDatabase::versions(const QuickModRef &uid,
 QList<QuickModRef> QuickModDatabase::updatedModsForInstance(std::shared_ptr<OneSixInstance> instance) const
 {
 	QList<QuickModRef> mods;
-	auto iter = instance->installedMods()->iterateQuickMods();
+	auto iter = instance->installedPackages()->iterateQuickMods();
 	while (iter->isValid())
 	{
 		if (!iter->version().isValid())

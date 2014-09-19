@@ -8,16 +8,18 @@
 #include "QuickModRef.h"
 #include "QuickModVersionRef.h"
 
+class Task;
+class Transaction;
 struct InstalledMod;
 class OneSixInstance;
-
 class InstalledMod;
 class QuickModView;
+
 typedef std::shared_ptr<InstalledMod> InstalledModRef;
 
 class InstalledMod
 {
-	friend class InstanceModManager;
+	friend class InstancePackageList;
 	friend class QuickModView;
 
 private: /* variables */
@@ -42,18 +44,21 @@ private: /* methods */
 	QJsonObject serialize();
 };
 
-class InstanceModManager
+class InstancePackageList
 {
 	friend class QuickModView;
-
+	friend class OneSixInstance;
 public:
-	InstanceModManager(std::shared_ptr<OneSixInstance> parent);
-	virtual ~InstanceModManager(){};
-
 	typedef QList<InstalledModRef> storage_type;
 
+private: /* methods */
+	InstancePackageList(std::shared_ptr<OneSixInstance> parent);
+	
 	bool loadFromFile(QString filename);
 	bool saveToFile(QString filename);
+
+public: /* methods */
+	virtual ~InstancePackageList(){};
 
 	bool isQuickmodInstalled(const QuickModRef &mod);
 	QuickModVersionRef installedQuickModVersion(const QuickModRef &mod);
@@ -61,30 +66,33 @@ public:
 
 	std::unique_ptr<QuickModView> iterateQuickMods();
 
+	/// Get or create the current transaction to work with outside of the package list
+	std::shared_ptr<Transaction> getTransaction();
+
+	/// Throw away the current transaction
+	void abortCurrentTransaction();
+
+	/// Begin to apply the current transaction
+	std::shared_ptr<Task> applyCurrentTransaction();
+
 	// from QuickModInstaller
-	void install(const QuickModVersionPtr version);
+	// void install(const QuickModVersionPtr version);
 
 	// from QuickModLibraryInstaller
-	bool installLibrariesFrom(const QuickModVersionPtr version);
+	// bool installLibrariesFrom(const QuickModVersionPtr version);
 
 	// from QuickModSettings
-	void markModAsInstalled(const QuickModVersionRef &version, QString dest);
-	void markModAsUninstalled(const QuickModRef uid);
-	QList<InstalledMod::File> installedModFiles(const QuickModRef uid) const;
-	bool isModMarkedAsInstalled(const QuickModRef uid) const;
-
-	// from OneSixInstance
-	void setQuickModVersion(const QuickModRef &uid, const QuickModVersionRef &version,
-							const bool manualInstall = false);
-	void setQuickModVersions(const QMap<QuickModRef, QPair<QuickModVersionRef, bool>> &mods);
-	void removeQuickMod(const QuickModRef &uid);
-	void removeQuickMods(const QList<QuickModRef> &uids);
+	// void markModAsInstalled(const QuickModVersionRef &version, QString dest);
+	// void markModAsUninstalled(const QuickModRef uid);
+	// QList<InstalledMod::File> installedModFiles(const QuickModRef uid) const;
+	// bool isModMarkedAsInstalled(const QuickModRef uid) const;
 
 private: /* variables */
 	std::weak_ptr<OneSixInstance> parentInstance;
 
 	QList<InstalledModRef> installedMods;
 	QMap<QString, InstalledModRef> installedMods_index;
+	std::shared_ptr<Transaction> transaction;
 
 private: /* methods */
 	void parse(const QJsonDocument &document);
@@ -96,7 +104,7 @@ private: /* methods */
 class QuickModView
 {
 public:
-	QuickModView(const InstanceModManager::storage_type &storage, int index = 0)
+	QuickModView(const InstancePackageList::storage_type &storage, int index = 0)
 		: m_storage(storage), i(storage.cbegin() + index)
 	{
 	}
@@ -125,7 +133,9 @@ public:
 	}
 
 private:
-	// FIXME: what if is InstanceModManager destroyed while we use this?
-	const InstanceModManager::storage_type &m_storage;
-	InstanceModManager::storage_type::const_iterator i;
+	// FIXME: what if is InstancePackageList destroyed while we use this?
+	const InstancePackageList::storage_type &m_storage;
+	InstancePackageList::storage_type::const_iterator i;
 };
+
+class Task;

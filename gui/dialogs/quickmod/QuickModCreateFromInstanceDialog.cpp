@@ -36,7 +36,7 @@
 #include "logic/net/NetJob.h"
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/QuickModBuilder.h"
-#include "logic/quickmod/InstanceModManager.h"
+#include "logic/quickmod/InstancePackageList.h"
 #include "MultiMC.h"
 
 static int addRowToTableWidget(QTableWidget *widget)
@@ -258,7 +258,7 @@ void QuickModCreateFromInstanceDialog::createVersion(QuickModVersionBuilder buil
 	{
 		builder.setType(ui->versionTypeEdit->text());
 	}
-	const auto iter = m_instance->installedMods()->iterateQuickMods();
+	const auto iter = m_instance->installedPackages()->iterateQuickMods();
 	while (iter->isValid())
 	{
 		if (!iter->asDependency())

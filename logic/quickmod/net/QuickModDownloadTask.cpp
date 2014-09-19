@@ -20,7 +20,7 @@
 #include "logic/quickmod/QuickModVersion.h"
 #include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/QuickModDependencyResolver.h"
-#include "logic/quickmod/InstanceModManager.h"
+#include "logic/quickmod/InstancePackageList.h"
 #include "logic/OneSixInstance.h"
 #include "MultiMC.h"
 
@@ -34,7 +34,7 @@ void QuickModDownloadTask::executeTask()
 {
 	const bool hasResolveError = QuickModDependencyResolver(m_instance).hasResolveError();
 
-	auto modManager = m_instance->installedMods();
+	auto modManager = m_instance->installedPackages();
 	auto iter = modManager->iterateQuickMods();
 	QList<QuickModRef> mods;
 	while (iter->isValid())
@@ -81,7 +81,7 @@ void QuickModDownloadTask::executeTask()
 		wait<QList<QuickModVersionPtr>>("QuickMods.InstallMods", m_instance, mods, &ok);
 	if (ok)
 	{
-		auto inst_mods = m_instance->installedMods();
+		auto inst_mods = m_instance->installedPackages();
 		QMap<QuickModRef, QPair<QuickModVersionRef, bool>> mods;
 		for (const auto version : installedVersions)
 		{
@@ -91,7 +91,8 @@ void QuickModDownloadTask::executeTask()
 		}
 		try
 		{
-			m_instance->installedMods()->setQuickModVersions(mods);
+			#pragma message("NUKE: Removed use of setQuickModVersion")
+			// m_instance->installedPackages()->setQuickModVersions(mods);
 		}
 		catch (...)
 		{

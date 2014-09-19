@@ -29,7 +29,7 @@
 #include "gui/dialogs/CustomMessageBox.h"
 #include "logic/InstanceFactory.h"
 #include "logic/quickmod/QuickModMetadata.h"
-#include "logic/quickmod/InstanceModManager.h"
+#include "logic/quickmod/InstancePackageList.h"
 #include "logic/OneSixInstance.h"
 
 #include "MultiMC.h"
@@ -226,7 +226,7 @@ public:
 		if (proxyIndex.isValid() && role == Qt::CheckStateRole)
 		{
 			auto uid = proxyIndex.data(QuickModsList::UidRole).value<QuickModRef>();
-			return m_instance->installedMods()->isQuickmodInstalled(uid)
+			return m_instance->installedPackages()->isQuickmodInstalled(uid)
 					   ? Qt::Checked
 					   : Qt::Unchecked;
 		}
@@ -304,11 +304,13 @@ void QuickModBrowsePage::checkStateChanged(const QModelIndex &index, const bool 
 	{
 		if (checked)
 		{
-			m_instance->installedMods()->setQuickModVersion(index.data(QuickModsList::UidRole).value<QuickModRef>(), QuickModVersionRef(), true);
+			#pragma message("NUKE: Removed use of setQuickModVersion")
+			// m_instance->installedPackages()->setQuickModVersion(index.data(QuickModsList::UidRole).value<QuickModRef>(), QuickModVersionRef(), true);
 		}
 		else
 		{
-			m_instance->installedMods()->removeQuickMod(index.data(QuickModsList::UidRole).value<QuickModRef>());
+			#pragma message("NUKE: Removed use of removeQuickMod")
+			// m_instance->installedPackages()->removeQuickMod(index.data(QuickModsList::UidRole).value<QuickModRef>());
 		}
 	}
 	catch (MMCError &e)

@@ -20,7 +20,7 @@
 #include "logic/quickmod/QuickModVersion.h"
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/QuickModsList.h"
-#include "logic/quickmod/InstanceModManager.h"
+#include "logic/quickmod/InstancePackageList.h"
 #include "logic/OneSixInstance.h"
 #include "MultiMC.h"
 #include "modutils.h"
@@ -66,7 +66,7 @@ struct DepNode
 		QMap<QuickModRef, const DepNode *> nodes;
 
 		// stage one: create nodes
-		auto iter = instance->installedMods()->iterateQuickMods();
+		auto iter = instance->installedPackages()->iterateQuickMods();
 		while (iter->isValid())
 		{
 			Q_ASSERT(!nodes.contains(iter->uid()));
@@ -188,7 +188,7 @@ QList<QuickModRef> QuickModDependencyResolver::resolveOrphans() const
 {
 	QList<QuickModRef> orphans;
 	QList<const DepNode *> nodes = DepNode::build(m_instance);
-	auto iter = m_instance->installedMods()->iterateQuickMods();
+	auto iter = m_instance->installedPackages()->iterateQuickMods();
 	while (iter->isValid())
 	{
 		auto uid = iter->uid();

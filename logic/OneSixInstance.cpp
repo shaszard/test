@@ -40,7 +40,7 @@
 #include "gui/pages/OtherLogsPage.h"
 
 #include "gui/pages/QuickModBrowsePage.h"
-#include "logic/quickmod/InstanceModManager.h"
+#include "logic/quickmod/InstancePackageList.h"
 
 OneSixInstance::OneSixInstance(const QString &rootDir, SettingsObject *settings,
 							   QObject *parent)
@@ -366,15 +366,15 @@ std::shared_ptr<ModList> OneSixInstance::texturePackList()
 	return d->texture_pack_list;
 }
 
-std::shared_ptr<InstanceModManager> OneSixInstance::installedMods()
+std::shared_ptr<InstancePackageList> OneSixInstance::installedPackages()
 {
 	I_D(OneSixInstance);
-	if (!d->installed_mods)
+	if (!d->installed_packages)
 	{
-		d->installed_mods.reset(new InstanceModManager(shared_from_this()));
-		d->installed_mods->loadFromFile("components.json");
+		d->installed_packages.reset(new InstancePackageList(shared_from_this()));
+		d->installed_packages->loadFromFile("components.json");
 	}
-	return d->installed_mods;
+	return d->installed_packages;
 }
 
 bool OneSixInstance::setIntendedVersionId(QString version)

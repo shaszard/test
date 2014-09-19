@@ -81,7 +81,7 @@
 #include "logic/java/JavaVersionList.h"
 #include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/QuickModMetadata.h"
-#include "logic/quickmod/InstanceModManager.h"
+#include "logic/quickmod/InstancePackageList.h"
 #include "logic/quickmod/QuickModDatabase.h"
 
 #include "logic/auth/flows/AuthenticateTask.h"

@@ -37,7 +37,7 @@
 #include "logic/InstanceList.h"
 #include "logic/auth/MojangAccountList.h"
 #include "logic/tasks/Task.h"
-#include "logic/quickmod/InstanceModManager.h"
+#include "logic/quickmod/InstancePackageList.h"
 #include "MultiMC.h"
 
 InstanceFactory InstanceFactory::loader;
@@ -106,7 +106,8 @@ InstancePtr InstanceFactory::addInstance(const QString &name, const QString &ico
 			newInstance->settings().set("LastQuickModUrl", mod->updateUrl());
 			if (std::shared_ptr<OneSixInstance> onesix = std::dynamic_pointer_cast<OneSixInstance>(newInstance))
 			{
-				onesix->installedMods()->setQuickModVersion(quickmod, QuickModVersionRef(), true);
+				#pragma message("NUKE: Removed use of setQuickModVersion")
+				// onesix->installedPackages()->setQuickModVersion(quickmod, QuickModVersionRef(), true);
 			}
 		}
 		MMC->instances()->add(newInstance);
