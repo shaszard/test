@@ -1,4 +1,4 @@
-#include "QuickModIndexList.h"
+#include "QuickModIndexModel.h"
 
 #include <QString>
 #include <QMap>
@@ -9,12 +9,12 @@
 #include "logic/settings/Setting.h"
 #include "QuickModRef.h"
 #include "QuickModMetadata.h"
-#include "QuickModsList.h"
+#include "QuickModDatabase.h"
 #include "MultiMC.h"
 
 // FIXME this file is bad
 
-QuickModIndexList::QuickModIndexList(QObject *parent) : QAbstractItemModel(parent)
+QuickModIndexModel::QuickModIndexModel(QObject *parent) : QAbstractItemModel(parent)
 {
 	connect(MMC->qmdb()->settings()->getSetting("Indices").get(), &Setting::SettingChanged,
 	[this](const Setting &, QVariant)
@@ -25,7 +25,7 @@ QuickModIndexList::QuickModIndexList(QObject *parent) : QAbstractItemModel(paren
 	QMetaObject::invokeMethod(this, "reload", Qt::QueuedConnection); // to prevent infinite loops
 }
 
-int QuickModIndexList::rowCount(const QModelIndex &parent) const
+int QuickModIndexModel::rowCount(const QModelIndex &parent) const
 {
 	if (!parent.isValid())
 	{
@@ -38,12 +38,12 @@ int QuickModIndexList::rowCount(const QModelIndex &parent) const
 		return m_repos.at(parent.row()).mods.size();
 	}
 }
-int QuickModIndexList::columnCount(const QModelIndex &parent) const
+int QuickModIndexModel::columnCount(const QModelIndex &parent) const
 {
 	return 2;
 }
 
-QVariant QuickModIndexList::data(const QModelIndex &index, int role) const
+QVariant QuickModIndexModel::data(const QModelIndex &index, int role) const
 {
 	if (index.parent().isValid())
 	{
@@ -80,7 +80,7 @@ QVariant QuickModIndexList::data(const QModelIndex &index, int role) const
 	}
 	return QVariant();
 }
-QVariant QuickModIndexList::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant QuickModIndexModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
 	if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
 	{
@@ -94,16 +94,16 @@ QVariant QuickModIndexList::headerData(int section, Qt::Orientation orientation,
 	}
 	return QVariant();
 }
-Qt::ItemFlags QuickModIndexList::flags(const QModelIndex &index) const
+Qt::ItemFlags QuickModIndexModel::flags(const QModelIndex &index) const
 {
 	return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
-QModelIndex QuickModIndexList::index(int row, int column, const QModelIndex &parent) const
+QModelIndex QuickModIndexModel::index(int row, int column, const QModelIndex &parent) const
 {
 	return createIndex(row, column, parent.isValid() ? parent.row() : -1);
 }
-QModelIndex QuickModIndexList::parent(const QModelIndex &child) const
+QModelIndex QuickModIndexModel::parent(const QModelIndex &child) const
 {
 	if (child.internalId() == (quintptr)-1)
 	{
@@ -115,21 +115,21 @@ QModelIndex QuickModIndexList::parent(const QModelIndex &child) const
 	}
 }
 
-void QuickModIndexList::setRepositoryIndexUrl(const QString &repository, const QUrl &url)
+void QuickModIndexModel::setRepositoryIndexUrl(const QString &repository, const QUrl &url)
 {
 	QMap<QString, QVariant> map = MMC->qmdb()->settings()->get("Indices").toMap();
 	map[repository] = url.toString(QUrl::FullyEncoded);
 	MMC->qmdb()->settings()->set("Indices", map);
 }
-QUrl QuickModIndexList::repositoryIndexUrl(const QString &repository) const
+QUrl QuickModIndexModel::repositoryIndexUrl(const QString &repository) const
 {
 	return QUrl(MMC->qmdb()->settings()->get("Indices").toMap()[repository].toString(), QUrl::StrictMode);
 }
-bool QuickModIndexList::haveRepositoryIndexUrl(const QString &repository) const
+bool QuickModIndexModel::haveRepositoryIndexUrl(const QString &repository) const
 {
 	return MMC->qmdb()->settings()->get("Indices").toMap().contains(repository);
 }
-QList<QUrl> QuickModIndexList::indices() const
+QList<QUrl> QuickModIndexModel::indices() const
 {
 	QList<QUrl> out;
 	const auto map = MMC->qmdb()->settings()->get("Indices").toMap();
@@ -140,7 +140,7 @@ QList<QUrl> QuickModIndexList::indices() const
 	return out;
 }
 
-void QuickModIndexList::reload()
+void QuickModIndexModel::reload()
 {
 	/*
 	QMap<QString, Repo> repos;

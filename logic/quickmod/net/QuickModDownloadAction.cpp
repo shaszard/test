@@ -4,7 +4,7 @@
 
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/QuickModVersion.h"
-#include "logic/quickmod/QuickModsList.h"
+#include "logic/quickmod/QuickModDatabase.h"
 
 #include "MultiMC.h"
 #include "logger/QsLog.h"

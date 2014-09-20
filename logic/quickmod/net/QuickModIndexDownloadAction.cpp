@@ -1,22 +1,22 @@
 #include "QuickModIndexDownloadAction.h"
 
 #include "logic/quickmod/QuickModMetadata.h"
-#include "logic/quickmod/QuickModsList.h"
-#include "logic/quickmod/QuickModIndexList.h"
+#include "logic/quickmod/QuickModDatabase.h"
+#include "logic/quickmod/QuickModIndexModel.h"
 
 #include "MultiMC.h"
 #include "logger/QsLog.h"
 #include "logic/MMCJson.h"
 #include "logic/net/NetJob.h"
 
-QuickModIndexList *QuickModIndexDownloadAction::m_indexList = nullptr;
+QuickModIndexModel *QuickModIndexDownloadAction::m_indexList = nullptr;
 
 QuickModIndexDownloadAction::QuickModIndexDownloadAction(const QUrl &url, NetJob *netjob)
 	: QuickModBaseDownloadAction(url), m_job(netjob)
 {
 	if (!m_indexList)
 	{
-		m_indexList = new QuickModIndexList;
+		m_indexList = new QuickModIndexModel;
 	}
 }
 

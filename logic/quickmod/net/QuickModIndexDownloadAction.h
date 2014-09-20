@@ -2,7 +2,7 @@
 
 #include "QuickModBaseDownloadAction.h"
 
-class QuickModIndexList;
+class QuickModIndexModel;
 
 typedef std::shared_ptr<class NetJob> NetJobPtr;
 
@@ -20,5 +20,5 @@ public:
 private:
 	bool handle(const QByteArray &data);
 
-	static QuickModIndexList *m_indexList;
+	static QuickModIndexModel *m_indexList;
 };

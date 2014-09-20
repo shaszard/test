@@ -22,17 +22,17 @@ void Transaction::setComponentVersion(QString uid, QString version, QString repo
 		// setting target version to the same as current -> no more action
 		if (newversion == components[uid].currentVersion)
 		{
-			emit actionRemoved(uid);
+			emit actionRemoved(TransactionSource, uid);
 			return;
 		}
 
 		// otherwise the action changed
-		emit actionChanged(uid);
+		emit actionChanged(TransactionSource, uid);
 	}
 	else
 	{
 		components.insert(uid, {uid, Version(), Version(repo, version)});
-		emit actionAdded(uid);
+		emit actionAdded(TransactionSource, uid);
 	}
 }
 
@@ -48,7 +48,7 @@ void Transaction::removeComponent(QString uid)
 	if (!component.currentVersion)
 	{
 		components.remove(uid);
-		emit actionRemoved(uid);
+		emit actionRemoved(TransactionSource, uid);
 	}
 
 	// if the target version is null, do nothing
@@ -57,7 +57,7 @@ void Transaction::removeComponent(QString uid)
 
 	// otherwise we remove the target version
 	component.targetVersion.remove();
-	emit actionChanged(uid);
+	emit actionChanged(TransactionSource, uid);
 }
 
 QList<Transaction::Action> Transaction::getActions() const
@@ -65,35 +65,61 @@ QList<Transaction::Action> Transaction::getActions() const
 	QList<Action> result;
 	for (auto &component : components)
 	{
-		auto &currentVersion = component.currentVersion;
-		auto &targetVersion = component.targetVersion;
-		auto &uid = component.uid;
-
-		// component started as missing
-		if (!currentVersion)
+		Action a;
+		if(component.getActionInternal(a))
 		{
-			// and we are adding a version?
-			if (targetVersion)
-			{
-				result.append(Action(uid, targetVersion.repo, targetVersion.version,
-									 Transaction::Action::Add));
-			}
-		}
-		// component started with a version
-		else
-		{
-			// and it no longer has one?
-			if (!targetVersion)
-			{
-				result.append(Action(uid, QString(), QString(), Transaction::Action::Remove));
-			}
-			// or the target version is there and different?
-			else if (targetVersion != currentVersion)
-			{
-				result.append(Action(uid, targetVersion.repo, targetVersion.version,
-									 Transaction::Action::ChangeVersion));
-			}
+			result.append(a);
 		}
 	}
 	return result;
+}
+
+bool Transaction::Component::getActionInternal(Transaction::Action &a) const
+{
+	// component started as missing
+	if (!currentVersion)
+	{
+		// and we are adding a version?
+		if (targetVersion)
+		{
+			a.type = Transaction::Action::Add;
+			a.uid = uid;
+			a.targetVersion = targetVersion.version;
+			a.targetRepo = targetVersion.repo; 
+			return true;
+		}
+	}
+	// component started with a version
+	else
+	{
+		// and it no longer has one?
+		if (!targetVersion)
+		{
+			a.type = Transaction::Action::Remove;
+			a.uid = uid;
+			a.targetVersion = QString();
+			a.targetRepo = QString(); 
+			return true;
+		}
+		// or the target version is there and different?
+		else if (targetVersion != currentVersion)
+		{
+			a.type = Transaction::Action::ChangeVersion;
+			a.uid = uid;
+			a.targetVersion = targetVersion.version;
+			a.targetRepo = targetVersion.repo;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Transaction::getAction(QString uid, Transaction::Action& action) const
+{
+	auto component = components.find(uid);
+	if(component == components.end())
+	{
+		return false;
+	}
+	return component->getActionInternal(action);
 }

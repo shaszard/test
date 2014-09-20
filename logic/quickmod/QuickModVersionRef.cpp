@@ -3,7 +3,7 @@
 #include <QString>
 
 #include "QuickModVersionRef.h"
-#include "QuickModsList.h"
+#include "QuickModDatabase.h"
 #include "MultiMC.h"
 
 QuickModVersionRef::QuickModVersionRef(const QuickModRef &mod, const QString &id,

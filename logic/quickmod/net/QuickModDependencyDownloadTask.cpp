@@ -16,8 +16,9 @@
 #include "QuickModDependencyDownloadTask.h"
 
 #include "logic/quickmod/QuickModMetadata.h"
-#include "logic/quickmod/QuickModsList.h"
+#include "logic/quickmod/QuickModDatabase.h"
 #include "logic/quickmod/net/QuickModDownloadAction.h"
+#include "logic/net/NetJob.h"
 #include "MultiMC.h"
 
 QuickModDependencyDownloadTask::QuickModDependencyDownloadTask(QList<QuickModRef> mods,

@@ -19,6 +19,7 @@
 
 #include "logic/OneSixInstance.h"
 #include "logic/net/NetJob.h"
+#include <logic/quickmod/InstancePackageModel.h>
 #include "BasePage.h"
 
 class EnabledItemFilter;
@@ -33,7 +34,7 @@ class PackagesPage : public QWidget, public BasePage
 	Q_OBJECT
 
 public:
-	explicit PackagesPage(std::shared_ptr<InstancePackageList> model, QWidget *parent = 0);
+	explicit PackagesPage(std::shared_ptr<InstancePackageList> packages, QWidget *parent = 0);
 	virtual ~PackagesPage();
 	
 	QString id() const override { return "instance-packages"; }
@@ -45,7 +46,6 @@ public:
 
 protected:
 	bool eventFilter(QObject *obj, QEvent *ev);
-	bool packageListFilter(QKeyEvent *ev);
 
 protected:
 	BaseInstance *m_inst;
@@ -53,6 +53,7 @@ protected:
 private:
 	Ui::PackagesPage *ui;
 	std::shared_ptr<InstancePackageList> m_packages;
+	InstancePackageModel * m_model;
 
 public
 slots:
@@ -64,7 +65,7 @@ slots:
 	void on_changeVersion_clicked();
 	void on_revert_clicked();
 	void on_remove_clicked();
-	
+
 	void on_applyTransaction_clicked();
 	void on_revertTransaction_clicked();
 };

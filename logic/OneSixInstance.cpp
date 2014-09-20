@@ -40,6 +40,7 @@
 #include "gui/pages/OtherLogsPage.h"
 
 #include "gui/pages/QuickModBrowsePage.h"
+#include "gui/pages/PackagesPage.h"
 #include "logic/quickmod/InstancePackageList.h"
 
 OneSixInstance::OneSixInstance(const QString &rootDir, SettingsObject *settings,
@@ -66,6 +67,7 @@ void OneSixInstance::init()
 QList<BasePage *> OneSixInstance::getPages()
 {
 	QList<BasePage *> values;
+	values.append(new PackagesPage(installedPackages()));
 	values.append(new VersionPage(this));
 	values.append(new ModFolderPage(this, loaderModList(), "mods", "plugin-blue",
 									tr("Loader mods"), "Loader-mods"));

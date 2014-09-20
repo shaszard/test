@@ -18,7 +18,7 @@
 #include "logic/net/ByteArrayDownload.h"
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/QuickModVersion.h"
-#include "logic/quickmod/QuickModsList.h"
+#include "logic/quickmod/QuickModDatabase.h"
 #include "logic/quickmod/QuickModDependencyResolver.h"
 #include "logic/quickmod/InstancePackageList.h"
 #include "logic/OneSixInstance.h"

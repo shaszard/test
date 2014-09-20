@@ -3,19 +3,21 @@
 #include <QObject>
 #include <QString>
 #include <QMap>
+#include "ChangeSource.h"
 
 class InstancePackageList;
-struct TransactionPrivate;
 
 class Transaction : public QObject
 {
 	friend class InstancePackageList;
 	friend class QuickModDependencyResolver;
+	Q_OBJECT
 
-private:
+public:
 	/// You can get one from InstancePackageList
 	Transaction(){};
-
+	
+private:
 	/// initial insert, for construction
 	void insert(QString uid, QString version, QString repo);
 
@@ -33,6 +35,7 @@ public: /* data types */
 			Remove
 		} type = Invalid;
 		Action(QString uid, QString repo, QString version, Type t);
+		Action() {};
 	};
 
 	struct Version
@@ -66,11 +69,15 @@ public: /* data types */
 		QString uid;
 		Version currentVersion;
 		Version targetVersion;
+		bool getActionInternal(Action &a) const;
 	};
 
 public: /* methods */
 	/// return the list of action this transaction results in
 	QList<Transaction::Action> getActions() const;
+
+	/// get the action for one component.
+	bool getAction(QString uid, Transaction::Action& action) const;
 
 	/// make the transaction change the version of a component
 	void setComponentVersion(QString uid, QString version, QString repo);
@@ -80,13 +87,13 @@ public: /* methods */
 
 signals:
 	/// action for uid has changed
-	void actionChanged(QString uid);
+	void actionChanged(ChangeSource source, QString uid);
 
 	/// a new action has been added for uid
-	void actionAdded(QString uid);
+	void actionAdded(ChangeSource source, QString uid);
 
 	/// an action has been removed for uid
-	void actionRemoved(QString uid);
+	void actionRemoved(ChangeSource source, QString uid);
 
 private: /* data */
 	QMap<QString, Component> components;

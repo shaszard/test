@@ -24,7 +24,6 @@
 #include "logic/net/NetJob.h"
 #include "MultiMC.h"
 #include "QuickModVersion.h"
-#include "QuickModsList.h"
 #include "modutils.h"
 #include "logic/MMCJson.h"
 

@@ -25,7 +25,7 @@
 
 #include "logic/InstanceFactory.h"
 
-#include "logic/quickmod/QuickModsList.h"
+#include "logic/quickmod/QuickModModel.h"
 #include "logic/BaseInstance.h"
 #include "logic/LegacyInstance.h"
 #include "logic/LegacyFTBInstance.h"

@@ -79,7 +79,7 @@
 #include "logic/LwjglVersionList.h"
 #include "logic/icons/IconList.h"
 #include "logic/java/JavaVersionList.h"
-#include "logic/quickmod/QuickModsList.h"
+// #include "logic/quickmod/QuickModModel.h"
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/InstancePackageList.h"
 #include "logic/quickmod/QuickModDatabase.h"
@@ -351,7 +351,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 	view->setFocus();
 
 	//FIXME: huh?
-	//connect(MMC->quickmodslist().get(), &QuickModsList::error, [this](const QString &message){ this->ui->statusBar->showMessage(message, 5 * 1000); });
+	//connect(MMC->quickmodslist().get(), &QuickModModel::error, [this](const QString &message){ this->ui->statusBar->showMessage(message, 5 * 1000); });
 }
 
 MainWindow::~MainWindow()

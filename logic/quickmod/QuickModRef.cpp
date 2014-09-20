@@ -15,7 +15,7 @@
 
 #include "QuickModRef.h"
 
-#include "QuickModsList.h"
+#include "logic/quickmod/QuickModDatabase.h"
 #include "MultiMC.h"
 
 QuickModRef::QuickModRef() : m_uid(QString()) {}

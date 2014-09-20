@@ -4,11 +4,11 @@
 #include "logic/BaseVersionList.h"
 #include "logic/BaseInstance.h"
 
-class QuickModVersionList : public BaseVersionList
+class QuickModVersionModel : public BaseVersionList
 {
 	Q_OBJECT
 public:
-	explicit QuickModVersionList(QuickModRef mod, InstancePtr instance, QObject *parent = 0);
+	explicit QuickModVersionModel(QuickModRef mod, InstancePtr instance, QObject *parent = 0);
 
 	Task *getLoadTask();
 	bool isLoaded();

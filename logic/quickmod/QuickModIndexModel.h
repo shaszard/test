@@ -14,14 +14,14 @@ typedef std::shared_ptr<class QuickModMetadata> QuickModMetadataPtr;
 // FIXME: this is not representing the underlying data anymore.
 //        Rewrite from scratch once we have a solid data model.
 /**
- * @brief The QuickModIndexList class is a model for indexes, as well as an interface to the
+ * @brief The QuickModIndexModel class is a model for indexes, as well as an interface to the
  * Indices property in quickmod.cfg
  */
-class QuickModIndexList : public QAbstractItemModel
+class QuickModIndexModel : public QAbstractItemModel
 {
 	Q_OBJECT
 public:
-	explicit QuickModIndexList(QObject *parent = nullptr);
+	explicit QuickModIndexModel(QObject *parent = nullptr);
 
 	int rowCount(const QModelIndex &parent) const override;
 	int columnCount(const QModelIndex &parent) const override;

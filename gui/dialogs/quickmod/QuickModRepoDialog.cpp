@@ -1,8 +1,8 @@
 #include "QuickModRepoDialog.h"
 #include "ui_QuickModRepoDialog.h"
 
-#include "logic/quickmod/QuickModsList.h"
-#include "logic/quickmod/QuickModIndexList.h"
+#include "logic/quickmod/QuickModModel.h"
+#include "logic/quickmod/QuickModIndexModel.h"
 #include "MultiMC.h"
 
 QuickModRepoDialog::QuickModRepoDialog(QWidget *parent)
@@ -10,7 +10,7 @@ QuickModRepoDialog::QuickModRepoDialog(QWidget *parent)
 {
 	ui->setupUi(this);
 	
-	m_list = new QuickModIndexList(this);
+	m_list = new QuickModIndexModel(this);
 	ui->treeView->setModel(m_list);
 	ui->treeView->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 	ui->treeView->setSelectionMode(QTreeView::MultiSelection);

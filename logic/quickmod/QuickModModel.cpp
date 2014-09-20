@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "QuickModsList.h"
+#include "QuickModModel.h"
 
 #include <QMimeData>
 #include <QIcon>
@@ -39,10 +39,10 @@
 
 #include "logic/settings/INISettingsObject.h"
 
-QuickModsList::QuickModsList(QObject *parent) : QAbstractListModel(parent)
+QuickModModel::QuickModModel(QObject *parent) : QAbstractListModel(parent)
 {
 	auto storage = MMC->qmdb();
-	m_uids = storage->getModUIDs();
+	m_uids = storage->getPackageUIDs();
 
 	connect(storage.get(), &QuickModDatabase::aboutToReset, [this]()
 			{
@@ -50,7 +50,7 @@ QuickModsList::QuickModsList(QObject *parent) : QAbstractListModel(parent)
 	});
 	connect(storage.get(), &QuickModDatabase::reset, [this, storage]()
 			{
-		m_uids = storage->getModUIDs();
+		m_uids = storage->getPackageUIDs();
 		endResetModel();
 	});
 	connect(storage.get(), SIGNAL(modIconUpdated(QuickModRef)), SLOT(modIconUpdated(QuickModRef)));
@@ -58,11 +58,11 @@ QuickModsList::QuickModsList(QObject *parent) : QAbstractListModel(parent)
 	connect(storage.get(), SIGNAL(justAddedMod(QuickModRef)), SLOT(modAdded(QuickModRef)));
 }
 
-QuickModsList::~QuickModsList()
+QuickModModel::~QuickModModel()
 {
 }
 
-int QuickModsList::getQMIndex(QuickModMetadataPtr mod) const
+int QuickModModel::getQMIndex(QuickModMetadataPtr mod) const
 {
 	for (int i = 0; i < m_uids.count(); i++)
 	{
@@ -74,7 +74,7 @@ int QuickModsList::getQMIndex(QuickModMetadataPtr mod) const
 	return -1;
 }
 
-void QuickModsList::modIconUpdated(QuickModRef uid)
+void QuickModModel::modIconUpdated(QuickModRef uid)
 {
 	auto row = m_uids.indexOf(uid);
 	if(row != -1)
@@ -84,7 +84,7 @@ void QuickModsList::modIconUpdated(QuickModRef uid)
 	}
 }
 
-void QuickModsList::modLogoUpdated(QuickModRef uid)
+void QuickModModel::modLogoUpdated(QuickModRef uid)
 {
 	auto row = m_uids.indexOf(uid);
 	if(row != -1)
@@ -94,7 +94,7 @@ void QuickModsList::modLogoUpdated(QuickModRef uid)
 	}
 }
 
-void QuickModsList::modAdded(QuickModRef uid)
+void QuickModModel::modAdded(QuickModRef uid)
 {
 	auto row = m_uids.indexOf(uid);
 	if(row == -1)
@@ -112,7 +112,7 @@ void QuickModsList::modAdded(QuickModRef uid)
 }
 
 
-QHash<int, QByteArray> QuickModsList::roleNames() const
+QHash<int, QByteArray> QuickModModel::roleNames() const
 {
 	QHash<int, QByteArray> roles;
 	roles[NameRole] = "name";
@@ -128,17 +128,17 @@ QHash<int, QByteArray> QuickModsList::roleNames() const
 	return roles;
 }
 
-int QuickModsList::rowCount(const QModelIndex &) const
+int QuickModModel::rowCount(const QModelIndex &) const
 {
 	return m_uids.size(); // <-----
 }
 
-Qt::ItemFlags QuickModsList::flags(const QModelIndex &index) const
+Qt::ItemFlags QuickModModel::flags(const QModelIndex &index) const
 {
 	return Qt::ItemIsDropEnabled | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
-QVariant QuickModsList::data(const QModelIndex &index, int role) const
+QVariant QuickModModel::data(const QModelIndex &index, int role) const
 {
 	if (0 > index.row() || index.row() >= m_uids.size())
 	{
@@ -197,7 +197,7 @@ QVariant QuickModsList::data(const QModelIndex &index, int role) const
 	return QVariant();
 }
 
-bool QuickModsList::canDropMimeData(const QMimeData *data, Qt::DropAction action, int row,
+bool QuickModModel::canDropMimeData(const QMimeData *data, Qt::DropAction action, int row,
 									int column, const QModelIndex &parent) const
 {
 	if (action != Qt::CopyAction)
@@ -207,7 +207,7 @@ bool QuickModsList::canDropMimeData(const QMimeData *data, Qt::DropAction action
 	return data->hasText() | data->hasUrls();
 }
 
-bool QuickModsList::dropMimeData(const QMimeData *data, Qt::DropAction action, int row,
+bool QuickModModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row,
 								 int column, const QModelIndex &parent)
 {
 	if (!canDropMimeData(data, action, row, column, parent))
@@ -234,12 +234,12 @@ bool QuickModsList::dropMimeData(const QMimeData *data, Qt::DropAction action, i
 	return true;
 }
 
-Qt::DropActions QuickModsList::supportedDropActions() const
+Qt::DropActions QuickModModel::supportedDropActions() const
 {
 	return Qt::CopyAction;
 }
 
-Qt::DropActions QuickModsList::supportedDragActions() const
+Qt::DropActions QuickModModel::supportedDragActions() const
 {
 	return 0;
 }

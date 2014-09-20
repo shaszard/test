@@ -29,12 +29,12 @@ class Mod;
 class SettingsObject;
 class OneSixInstance;
 
-class QuickModsList : public QAbstractListModel
+class QuickModModel : public QAbstractListModel
 {
 	Q_OBJECT
 public:
-	explicit QuickModsList(QObject *parent = 0);
-	~QuickModsList();
+	explicit QuickModModel(QObject *parent = 0);
+	~QuickModModel();
 
 	enum Roles
 	{

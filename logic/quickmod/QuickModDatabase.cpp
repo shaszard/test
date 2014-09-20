@@ -6,8 +6,9 @@
 
 #include <pathutils.h>
 
-#include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/InstancePackageList.h"
+#include "logic/quickmod/QuickModVersion.h"
+#include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/net/QuickModBaseDownloadAction.h"
 #include "logic/MMCJson.h"
 #include "logic/OneSixInstance.h"
@@ -275,7 +276,7 @@ void QuickModDatabase::checkFileCache()
 	m_settings->set("AvailableMods", mods);
 }
 
-QList<QuickModRef> QuickModDatabase::getModUIDs() const
+QList<QuickModRef> QuickModDatabase::getPackageUIDs() const
 {
 	return m_metadata.keys();
 }

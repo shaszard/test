@@ -5,7 +5,6 @@
 
 #include "logic/quickmod/net/QuickModDownloadAction.h"
 #include "logic/quickmod/net/QuickModIndexDownloadAction.h"
-#include "logic/quickmod/QuickModsList.h"
 #include "logic/quickmod/QuickModDatabase.h"
 
 /*

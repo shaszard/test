@@ -15,7 +15,7 @@
 
 #include <QTest>
 
-#include "logic/quickmod/QuickModsList.h"
+#include "logic/quickmod/QuickModDatabase.h"
 #include "logic/MMCJson.h"
 #include "TestUtil.h"
 

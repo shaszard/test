@@ -21,16 +21,18 @@
 #include <QListView>
 #include <QMessageBox>
 
-#include "logic/quickmod/QuickModsList.h"
 #include "gui/dialogs/quickmod/QuickModInstallDialog.h"
 #include "gui/dialogs/quickmod/QuickModAddFileDialog.h"
 #include "gui/dialogs/quickmod/QuickModCreateFromInstanceDialog.h"
 #include "gui/dialogs/NewInstanceDialog.h"
 #include "gui/dialogs/CustomMessageBox.h"
+
 #include "logic/InstanceFactory.h"
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/InstancePackageList.h"
 #include "logic/OneSixInstance.h"
+
+#include "logic/quickmod/QuickModModel.h"
 
 #include "MultiMC.h"
 
@@ -123,14 +125,14 @@ protected:
 
 		if (!m_tags.isEmpty())
 		{
-			if (!intersectLists(m_tags, index.data(QuickModsList::TagsRole).toStringList()))
+			if (!intersectLists(m_tags, index.data(QuickModModel::TagsRole).toStringList()))
 			{
 				return false;
 			}
 		}
 		if (!m_category.isEmpty())
 		{
-			if (!listContainsSubstring(index.data(QuickModsList::CategoriesRole).toStringList(),
+			if (!listContainsSubstring(index.data(QuickModModel::CategoriesRole).toStringList(),
 									   m_category))
 			{
 				return false;
@@ -138,7 +140,7 @@ protected:
 		}
 		if (!m_mcVersion.isEmpty())
 		{
-			auto acceptedVersions = index.data(QuickModsList::MCVersionsRole).toStringList();
+			auto acceptedVersions = index.data(QuickModModel::MCVersionsRole).toStringList();
 			if (!listContainsSubstring(acceptedVersions, m_mcVersion))
 			{
 				return false;
@@ -146,9 +148,9 @@ protected:
 		}
 		if (!m_fulltext.isEmpty())
 		{
-			bool inName = index.data(QuickModsList::NameRole).toString().contains(
+			bool inName = index.data(QuickModModel::NameRole).toString().contains(
 				m_fulltext, Qt::CaseInsensitive);
-			bool inDesc = index.data(QuickModsList::DescriptionRole).toString().contains(
+			bool inDesc = index.data(QuickModModel::DescriptionRole).toString().contains(
 				m_fulltext, Qt::CaseInsensitive);
 			if (!inName && !inDesc)
 			{
@@ -225,7 +227,7 @@ public:
 	{
 		if (proxyIndex.isValid() && role == Qt::CheckStateRole)
 		{
-			auto uid = proxyIndex.data(QuickModsList::UidRole).value<QuickModRef>();
+			auto uid = proxyIndex.data(QuickModModel::UidRole).value<QuickModRef>();
 			return m_instance->installedPackages()->isQuickmodInstalled(uid)
 					   ? Qt::Checked
 					   : Qt::Unchecked;
@@ -262,7 +264,7 @@ QuickModBrowsePage::QuickModBrowsePage(std::shared_ptr<OneSixInstance> instance,
 	m_view->setSelectionBehavior(QListView::SelectRows);
 	m_view->setSelectionMode(QListView::SingleSelection);
 
-	auto model = new QuickModsList();
+	auto model = new QuickModModel();
 	m_filterModel->setSourceModel(model);
 
 	m_view->setModel(m_checkModel);
@@ -305,12 +307,12 @@ void QuickModBrowsePage::checkStateChanged(const QModelIndex &index, const bool 
 		if (checked)
 		{
 			#pragma message("NUKE: Removed use of setQuickModVersion")
-			// m_instance->installedPackages()->setQuickModVersion(index.data(QuickModsList::UidRole).value<QuickModRef>(), QuickModVersionRef(), true);
+			// m_instance->installedPackages()->setQuickModVersion(index.data(QuickModModel::UidRole).value<QuickModRef>(), QuickModVersionRef(), true);
 		}
 		else
 		{
 			#pragma message("NUKE: Removed use of removeQuickMod")
-			// m_instance->installedPackages()->removeQuickMod(index.data(QuickModsList::UidRole).value<QuickModRef>());
+			// m_instance->installedPackages()->removeQuickMod(index.data(QuickModModel::UidRole).value<QuickModRef>());
 		}
 	}
 	catch (MMCError &e)
@@ -346,7 +348,7 @@ void QuickModBrowsePage::on_createInstanceButton_clicked()
 	}
 
 	NewInstanceDialog dialog(this);
-	dialog.setFromQuickMod(index.data(QuickModsList::UidRole).value<QuickModRef>());
+	dialog.setFromQuickMod(index.data(QuickModModel::UidRole).value<QuickModRef>());
 	if (dialog.exec() == QDialog::Accepted)
 	{
 
@@ -441,7 +443,7 @@ void QuickModBrowsePage::modSelectionChanged(const QItemSelection &selected,
 	else
 	{
 		m_currentMod = m_filterModel->index(selected.first().top(), 0)
-						   .data(QuickModsList::QuickModRole)
+						   .data(QuickModModel::QuickModRole)
 						   .value<QuickModMetadataPtr>();
 		ui->nameLabel->setText(m_currentMod->name());
 		ui->descriptionLabel->setText(m_currentMod->description());

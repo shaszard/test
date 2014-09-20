@@ -331,6 +331,8 @@ SET(MULTIMC_SOURCES
 	gui/pages/OtherLogsPage.h
 	gui/pages/QuickModBrowsePage.h
 	gui/pages/QuickModBrowsePage.cpp
+	gui/pages/PackagesPage.h
+	gui/pages/PackagesPage.cpp
 
 	# GUI - global settings pages
 	gui/pages/global/AccountListPage.cpp
@@ -652,8 +654,12 @@ SET(MULTIMC_SOURCES
 	logic/tools/JVisualVM.cpp
 
 	# QuickMods
+	logic/quickmod/InstancePackage.cpp
+	logic/quickmod/InstancePackage.h
 	logic/quickmod/InstancePackageList.cpp
 	logic/quickmod/InstancePackageList.h
+	logic/quickmod/InstancePackageModel.cpp
+	logic/quickmod/InstancePackageModel.h
 	logic/quickmod/Transaction.cpp
 	logic/quickmod/Transaction.h
 	logic/quickmod/QuickModMetadata.cpp
@@ -668,14 +674,14 @@ SET(MULTIMC_SOURCES
 	logic/quickmod/QuickModDownload.h
 	logic/quickmod/QuickModVersion.cpp
 	logic/quickmod/QuickModVersion.h
-	logic/quickmod/QuickModVersionList.cpp
-	logic/quickmod/QuickModVersionList.h
+	logic/quickmod/QuickModVersionModel.cpp
+	logic/quickmod/QuickModVersionModel.h
 	logic/quickmod/QuickModVersionRef.cpp
 	logic/quickmod/QuickModVersionRef.h
-	logic/quickmod/QuickModsList.cpp
-	logic/quickmod/QuickModsList.h
-	logic/quickmod/QuickModIndexList.cpp
-	logic/quickmod/QuickModIndexList.h
+	logic/quickmod/QuickModModel.cpp
+	logic/quickmod/QuickModModel.h
+	logic/quickmod/QuickModIndexModel.cpp
+	logic/quickmod/QuickModIndexModel.h
 	logic/quickmod/QuickModDatabase.cpp
 	logic/quickmod/QuickModDatabase.h
 	logic/quickmod/net/QuickModBaseDownloadAction.cpp
@@ -728,6 +734,7 @@ SET(MULTIMC_UIS
 	gui/pages/ScreenshotsPage.ui
 	gui/pages/OtherLogsPage.ui
 	gui/pages/QuickModBrowsePage.ui
+	gui/pages/PackagesPage.ui
 
 	# Global settings pages
 	gui/pages/global/AccountListPage.ui

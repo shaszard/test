@@ -161,7 +161,7 @@ slots:
 private:
 	friend class QuickModFilesUpdater;
 	friend class QuickModTest;
-	friend class QuickModsListTest;
+	friend class QuickModModelTest;
 	friend class QuickModBuilder;
 	friend class TestsInternal;
 	QuickModRef m_uid;

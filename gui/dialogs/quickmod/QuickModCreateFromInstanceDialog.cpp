@@ -241,6 +241,7 @@ bool QuickModCreateFromInstanceDialog::hasVersion(const QString &name) const
 	return false;
 }
 
+// FIXME: remove this from here.
 void QuickModCreateFromInstanceDialog::createVersion(QuickModVersionBuilder builder) const
 {
 	builder.setCompatibleMCVersions(QStringList() << m_instance->currentVersionId());

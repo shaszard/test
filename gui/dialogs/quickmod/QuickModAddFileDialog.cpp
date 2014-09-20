@@ -24,7 +24,7 @@
 
 #include "MultiMC.h"
 #include "gui/Platform.h"
-#include "logic/quickmod/QuickModsList.h"
+#include "logic/quickmod/QuickModDatabase.h"
 #include "modutils.h"
 
 class FileValidator : public QValidator

@@ -35,7 +35,7 @@
 #include "gui/dialogs/quickmod/QuickModVerifyModsDialog.h"
 #include "gui/dialogs/quickmod/QuickModDownloadSelectionDialog.h"
 #include "gui/GuiUtil.h"
-#include "logic/quickmod/QuickModsList.h"
+#include "logic/quickmod/QuickModDatabase.h"
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/QuickModVersion.h"
 #include "logic/quickmod/net/QuickModDependencyDownloadTask.h"
@@ -47,7 +47,7 @@
 #include "logic/settings/SettingsObject.h"
 #include "depends/quazip/JlCompress.h"
 #include <pathutils.h>
-#include "logic/quickmod/QuickModVersionList.h"
+#include "logic/quickmod/QuickModVersionModel.h"
 #include "logic/quickmod/InstancePackageList.h"
 
 Q_DECLARE_METATYPE(QTreeWidgetItem *)
@@ -348,7 +348,7 @@ bool QuickModInstallDialog::resolveDeps()
 QuickModVersionPtr QuickModInstallDialog::getVersion(const QuickModRef &modUid,
 													 const QuickModVersionRef &filter, bool *ok)
 {
-	VersionSelectDialog dialog(new QuickModVersionList(modUid, m_instance, this),
+	VersionSelectDialog dialog(new QuickModVersionModel(modUid, m_instance, this),
 							   tr("Choose QuickMod version for %1").arg(modUid.userFacing()),
 							   this);
 	dialog.setFuzzyFilter(BaseVersionList::NameColumn, filter.toString());

@@ -7,7 +7,7 @@
 
 class SettingsObject;
 class MultiMC;
-class QuickModsList;
+class QuickModModel;
 class QTimer;
 class QuickModMetadata;
 class QuickModVersion;
@@ -20,7 +20,7 @@ typedef std::shared_ptr<QuickModVersion> QuickModVersionPtr;
 
 class QuickModDatabase : public QObject
 {
-	friend class QuickModsList;
+	friend class QuickModModel;
 	friend class QuickModBaseDownloadAction;
 	friend class QuickModDownloadAction;
 	friend class MultiMC;
@@ -50,7 +50,7 @@ private: /* methods */
 
 public: /* methods */
 	/// get the current list of installed mod UIDs
-	QList<QuickModRef> getModUIDs() const;
+	QList<QuickModRef> getPackageUIDs() const;
 
 	/// same as above, in light blue
 	QList<QuickModMetadataPtr> allModMetadata(const QuickModRef &uid) const;

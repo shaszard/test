@@ -15,7 +15,7 @@
 
 #include "QuickModBuilder.h"
 
-#include "logic/quickmod/QuickModsList.h"
+#include "logic/quickmod/QuickModDatabase.h"
 #include "MultiMC.h"
 
 QuickModVersionBuilder::QuickModVersionBuilder(QuickModBuilder builder)

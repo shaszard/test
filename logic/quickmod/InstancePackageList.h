@@ -4,58 +4,37 @@
 #include <QJsonValue>
 #include <QList>
 #include <QJsonDocument>
+#include <QAbstractListModel>
 #include <memory>
+
 #include "QuickModRef.h"
 #include "QuickModVersionRef.h"
+#include "InstancePackage.h"
+#include "ChangeSource.h"
 
 class Task;
 class Transaction;
-struct InstalledMod;
 class OneSixInstance;
-class InstalledMod;
+class InstancePackage;
 class QuickModView;
 
-typedef std::shared_ptr<InstalledMod> InstalledModRef;
-
-class InstalledMod
+class InstancePackageList : public QObject
 {
-	friend class InstancePackageList;
-	friend class QuickModView;
-
-private: /* variables */
-	struct File
-	{
-		QString path;
-		QString sha1;
-		// TODO: implement separate mod file meta-cache
-		// int64_t last_changed_timestamp;
-	};
-	QString name;
-	QString version;
-	bool asDependency = false;
-	QString qm_uid;
-	QString qm_repo;
-	QString qm_updateUrl;
-	QString installedPatch;
-	QList<File> installedFiles;
-
-private: /* methods */
-	static InstalledModRef parse(const QJsonObject &valueObject);
-	QJsonObject serialize();
-};
-
-class InstancePackageList
-{
+	Q_OBJECT
 	friend class QuickModView;
 	friend class OneSixInstance;
+
 public:
-	typedef QList<InstalledModRef> storage_type;
+	typedef QList<InstancePackagePtr> storage_type;
 
 private: /* methods */
 	InstancePackageList(std::shared_ptr<OneSixInstance> parent);
-	
+
 	bool loadFromFile(QString filename);
 	bool saveToFile(QString filename);
+	void parse(const QJsonDocument &document);
+	QJsonDocument serialize();
+	void insert(InstancePackagePtr mod);
 
 public: /* methods */
 	virtual ~InstancePackageList(){};
@@ -64,41 +43,25 @@ public: /* methods */
 	QuickModVersionRef installedQuickModVersion(const QuickModRef &mod);
 	bool installedQuickIsHardDep(const QuickModRef &mod);
 
+	/// walk through the list from the start
 	std::unique_ptr<QuickModView> iterateQuickMods();
 
 	/// Get or create the current transaction to work with outside of the package list
 	std::shared_ptr<Transaction> getTransaction();
 
-	/// Throw away the current transaction
-	void abortCurrentTransaction();
-
 	/// Begin to apply the current transaction
 	std::shared_ptr<Task> applyCurrentTransaction();
 
-	// from QuickModInstaller
-	// void install(const QuickModVersionPtr version);
-
-	// from QuickModLibraryInstaller
-	// bool installLibrariesFrom(const QuickModVersionPtr version);
-
-	// from QuickModSettings
-	// void markModAsInstalled(const QuickModVersionRef &version, QString dest);
-	// void markModAsUninstalled(const QuickModRef uid);
-	// QList<InstalledMod::File> installedModFiles(const QuickModRef uid) const;
-	// bool isModMarkedAsInstalled(const QuickModRef uid) const;
+signals:
+	void added(ChangeSource source, QString uid);
+	void removed(ChangeSource source, QString uid);
+	void updated(ChangeSource source, QString uid);
 
 private: /* variables */
 	std::weak_ptr<OneSixInstance> parentInstance;
-
-	QList<InstalledModRef> installedMods;
-	QMap<QString, InstalledModRef> installedMods_index;
+	QList<InstancePackagePtr> installedMods;
+	QMap<QString, InstancePackagePtr> installedMods_index;
 	std::shared_ptr<Transaction> transaction;
-
-private: /* methods */
-	void parse(const QJsonDocument &document);
-	QJsonDocument serialize();
-
-	void insert(InstalledModRef mod);
 };
 
 class QuickModView

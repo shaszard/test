@@ -7,7 +7,7 @@ namespace Ui
 class QuickModRepoDialog;
 }
 
-class QuickModIndexList;
+class QuickModIndexModel;
 
 class QuickModRepoDialog : public QDialog
 {
@@ -23,5 +23,5 @@ private slots:
 private:
 	Ui::QuickModRepoDialog *ui;
 
-	QuickModIndexList *m_list;
+	QuickModIndexModel *m_list;
 };
