@@ -46,11 +46,15 @@ public: /* data types */
 		Version(QString nRepo, QString nVersion) : repo(nRepo), version(nVersion), absent(false)
 		{
 		}
-		bool operator==(const Version &rhs)
+		bool operator==(const Version &rhs) const
 		{
 			return repo == rhs.repo && version == rhs.version && absent == rhs.absent;
 		}
-		operator bool() const
+		bool operator!=(const Version & rhs) const
+		{
+			return !operator==(rhs);
+		}
+		bool isPresent() const
 		{
 			return !absent;
 		}
@@ -81,6 +85,9 @@ public: /* methods */
 
 	/// make the transaction change the version of a component
 	void setComponentVersion(QString uid, QString version, QString repo);
+	
+	/// reset the component version to original
+	void resetComponentVersion(QString uid);
 
 	/// make the transaction remove a component
 	void removeComponent(QString uid);

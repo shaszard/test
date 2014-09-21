@@ -63,7 +63,7 @@ public:
 		QUrl repo;
 	};
 
-	QuickModVersion(QuickModMetadataPtr mod, bool valid = true) : mod(mod), valid(valid)
+	QuickModVersion(QuickModMetadataPtr mod, bool valid = true) : mod(mod)
 	{
 	}
 
@@ -73,12 +73,12 @@ public:
 
 	QString descriptor()
 	{
-		return name_;
+		return m_version.toString();
 	}
 
 	QString name()
 	{
-		return name_;
+		return versionName;
 	}
 
 	QString typeString() const
@@ -88,36 +88,45 @@ public:
 
 	QuickModVersionRef version() const
 	{
-		return QuickModVersionRef(mod->uid(), versionString.isNull() ? name_ : versionString, m_version);
+		return QuickModVersionRef(mod->uid(), m_version);
 	}
 
 	bool needsDeploy() const;
 
+	/// quickmod this is associated with
 	QuickModMetadataPtr mod;
-	bool valid;
-	QString name_;
+
+	/// fluff display name for the version ('name' in the spec)
+	QString versionName;
+
+	/// actual version id ('version' in the spec)
+	Util::Version m_version;
+
+	/// a thing. idk what it is
 	QString versionString;
+
+	/// A type of the version, for example Release, Dev, Alpha or Beta.
 	QString type;
-	QStringList compatibleVersions;
-	QString forgeVersionFilter;
-	QString liteloaderVersionFilter;
+
+	// FIXME: versions of minecraft? how does that work now? TODO!
+	QStringList mcVersions;
+
 	QMap<QuickModRef, QPair<QuickModVersionRef, bool>> dependencies;
 	QMap<QuickModRef, QuickModVersionRef> recommendations;
 	QMap<QuickModRef, QuickModVersionRef> suggestions;
 	QMap<QuickModRef, QuickModVersionRef> conflicts;
 	QMap<QuickModRef, QuickModVersionRef> provides;
-	QString sha1;
-	InstallType installType;
-	QList<Library> libraries;
-	QList<QuickModDownload> downloads;
-	Util::Version m_version;
 
-	bool operator==(const QuickModVersion &other) const
-	{
-		return mod == other.mod && valid == other.valid && name_ == other.name_ &&
-			   versionString == other.versionString && compatibleVersions == other.compatibleVersions &&
-			   forgeVersionFilter == other.forgeVersionFilter &&
-			   dependencies == other.dependencies && recommendations == other.recommendations &&
-			   sha1 == other.sha1;
-	}
+	//FIXME: move these to some 'File' object
+	/// SHA1 checksum of the downloaded file.
+	QString sha1;
+
+	/// how to install the mod file?
+	InstallType installType;
+
+	/// list of libraries to add for this mod
+	QList<Library> libraries;
+
+	/// list of download locations for the file.
+	QList<QuickModDownload> downloads;
 };

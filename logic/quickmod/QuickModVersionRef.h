@@ -6,21 +6,16 @@ typedef std::shared_ptr<QuickModVersion> QuickModVersionPtr;
 class QuickModVersionRef
 {
 	QuickModRef m_mod;
-	QString m_id;
-	Util::Version m_version;
+	Util::Version m_id;
 
 public:
-	explicit QuickModVersionRef(const QuickModRef &mod, const QString &id, const Util::Version &version);
-	explicit QuickModVersionRef(const QuickModRef &mod, const QString &id);
+	explicit QuickModVersionRef(const QuickModRef &mod, const Util::Version &id);
 	QuickModVersionRef()
 	{
 	}
 	QuickModVersionRef(const QuickModVersionPtr &ptr);
 
-	bool isValid() const
-	{
-		return m_mod.isValid() && !m_id.isEmpty();
-	}
+	bool isValid() const;
 	QString userFacing() const;
 
 	bool operator<(const QuickModVersionRef &other) const;
@@ -31,7 +26,7 @@ public:
 
 	QString toString() const
 	{
-		return m_id;
+		return m_id.toString();
 	}
 	QuickModRef mod() const
 	{

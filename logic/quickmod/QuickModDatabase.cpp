@@ -120,7 +120,7 @@ QStringList QuickModDatabase::minecraftVersions(const QuickModRef &uid) const
 	QSet<QString> out;
 	for (const auto version : m_versions[uid])
 	{
-		out.unite(version->compatibleVersions.toSet());
+		out.unite(version->mcVersions.toSet());
 	}
 	return out.toList();
 }
@@ -131,7 +131,7 @@ QList<QuickModVersionRef> QuickModDatabase::versions(const QuickModRef &uid,
 	QSet<QuickModVersionRef> out;
 	for (const auto v : m_versions[uid])
 	{
-		if (v->compatibleVersions.contains(mcVersion))
+		if (v->mcVersions.contains(mcVersion))
 		{
 			out.insert(v->version());
 		}

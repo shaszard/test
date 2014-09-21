@@ -15,7 +15,14 @@ InstancePackageModel::InstancePackageModel(std::shared_ptr<InstancePackageList> 
 			SLOT(removed(ChangeSource, QString)));
 	connect(m_list.get(), SIGNAL(updated(ChangeSource, QString)),
 			SLOT(updated(ChangeSource, QString)));
-	// TODO: connect some signals...
+
+	auto t = m_list->getTransaction();
+	connect(t.get(), SIGNAL(actionAdded(ChangeSource, QString)),
+			SLOT(added(ChangeSource, QString)));
+	connect(t.get(), SIGNAL(actionChanged(ChangeSource, QString)),
+			SLOT(updated(ChangeSource, QString)));
+	connect(t.get(), SIGNAL(actionRemoved(ChangeSource, QString)),
+			SLOT(removed(ChangeSource, QString)));
 }
 
 //BEGIN: data interactions
@@ -141,6 +148,17 @@ QVariant InstancePackageModel::data(const QModelIndex &index, int role) const
 
 	int row = index.row();
 
+	// roles shared by all columns
+	switch ((Roles)role)
+	{
+	case InstancePackageModel::NameRole:
+		return nameData(row, Qt::DisplayRole);
+	case InstancePackageModel::UidRole:
+		return m_order[row];
+	default:
+		break;
+	}
+
 	switch ((Column)index.column())
 	{
 	case EnabledColumn:
@@ -257,7 +275,7 @@ QVariant InstancePackageModel::nameData(int row, int role) const
 	{
 		if (qm_mod && !qm_mod->icon().isNull())
 			return qm_mod->icon();
-		return QColor(0, 0, 0);
+		return QIcon::fromTheme("quickmod");
 	}
 	case Qt::ToolTipRole:
 	{
@@ -276,14 +294,14 @@ QVariant InstancePackageModel::nameData(int row, int role) const
 QVariant InstancePackageModel::versionData(int row, int role) const
 {
 	auto qm_uid = m_order[row];
-	auto & t = m_tracked[qm_uid];
+	auto &t = m_tracked[qm_uid];
 	switch (role)
 	{
 	case Qt::DisplayRole:
 	{
-		if(t.instance)
+		if (t.instance)
 		{
-			return m_list->installedQuickModVersion(QuickModRef(qm_uid)).toString();
+			return m_list->installedQuickModVersion(QuickModRef(qm_uid)).userFacing();
 		}
 		else
 		{
@@ -301,35 +319,27 @@ QVariant InstancePackageModel::versionData(int row, int role) const
 QVariant InstancePackageModel::newVersionData(int row, int role) const
 {
 	auto qm_uid = m_order[row];
-	auto & t = m_tracked[qm_uid];
+	auto &t = m_tracked[qm_uid];
 	switch (role)
 	{
 	case Qt::DisplayRole:
 	{
-		if(t.transaction)
+		if (t.transaction)
 		{
 			auto transaction = m_list->getTransaction();
-			if(!transaction)
-			{
-				// FIXME: ERROR, ABORT
-				return "FIXME: ERROR, ABORT";
-			}
 			Transaction::Action a;
-			if(!transaction->getAction(qm_uid, a))
+			if (transaction->getAction(qm_uid, a))
 			{
-				// FIXME: ERROR, ABORT
-				return "FIXME: ERROR, ABORT";
+				if(a.type==Transaction::Action::Remove)
+					return tr("Remove");
+				return a.targetVersion;
 			}
-			return a.targetVersion;
 		}
-		else if(t.instance)
+		if (t.instance)
 		{
-			return m_list->installedQuickModVersion(QuickModRef(qm_uid)).toString();
+			return m_list->installedQuickModVersion(QuickModRef(qm_uid)).userFacing();
 		}
-		else
-		{
-			return tr("None");
-		}
+		return tr("None");
 	}
 	default:
 	{

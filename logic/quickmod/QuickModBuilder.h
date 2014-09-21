@@ -115,7 +115,7 @@ class QuickModVersionBuilder
 public:
 	QuickModVersionBuilder setName(const QString &name)
 	{
-		m_version->name_ = name;
+		m_version->versionName = name;
 		return *this;
 	}
 	QuickModVersionBuilder setVersion(const QString &version)
@@ -131,12 +131,7 @@ public:
 	}
 	QuickModVersionBuilder setCompatibleMCVersions(const QStringList &versions)
 	{
-		m_version->compatibleVersions = versions;
-		return *this;
-	}
-	QuickModVersionBuilder setForgeVersionFilter(const QString &forgeVersionFilter)
-	{
-		m_version->forgeVersionFilter = forgeVersionFilter;
+		m_version->mcVersions = versions;
 		return *this;
 	}
 	QuickModVersionBuilder setInstallType(const QuickModVersion::InstallType &type)

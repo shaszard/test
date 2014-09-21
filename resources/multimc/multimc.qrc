@@ -187,5 +187,8 @@
 		
 		<!-- placeholder when loading screenshot images -->
 		<file>scalable/screenshot-placeholder.svg</file>
+		
+		<!-- quickmod icon, our own -->
+		<file>scalable/quickmod.svg</file>
     </qresource>
 </RCC>

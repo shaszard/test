@@ -24,14 +24,14 @@
 
 QDebug operator<<(QDebug dbg, const QuickModVersionRef &version)
 {
-	return dbg << QString("QuickModVersionRef(%1)").arg(version.toString()).toUtf8().constData();
+	return dbg
+		   << QString("QuickModVersionRef(%1)").arg(version.toString()).toUtf8().constData();
 }
 
 class QuickModSettingsTest : public QObject
 {
 	Q_OBJECT
-private
-slots:
+private slots:
 	void initTestCase()
 	{
 		Q_INIT_RESOURCE(instances);
@@ -74,160 +74,179 @@ slots:
 	QuickModVersionPtr createTestingVersion(QuickModMetadataPtr mod)
 	{
 		auto version = new QuickModVersion(mod);
-		version->name_ = "1.42";
+		version->versionName = "1.42";
 		version->versionString = "1.42";
 		version->m_version = Util::Version("1.42");
 		QuickModDownload download;
 		download.url = "http://downloads.com/deadbeaf";
 		version->downloads.append(download);
-		version->forgeVersionFilter = "(9.8.42,)";
-		version->compatibleVersions << "1.6.2"
-									<< "1.6.4";
-		version->dependencies = {{QuickModRef("stuff"), qMakePair(QuickModVersionRef(QuickModRef("stuff"), "1.0.0.0.0"), false)}};
-		version->recommendations = {{QuickModRef("OtherName"), QuickModVersionRef(QuickModRef("OtherName"), "1.2.3")}};
+		// version->forgeVersionFilter = "(9.8.42,)";
+		version->mcVersions << "1.6.2"
+							<< "1.6.4";
+		version->dependencies = {
+			{QuickModRef("stuff"),
+			 qMakePair(QuickModVersionRef(QuickModRef("stuff"), Util::Version("1.0.0.0.0")),
+					   false)}};
+		version->recommendations = {
+			{QuickModRef("OtherName"),
+			 QuickModVersionRef(QuickModRef("OtherName"), Util::Version("1.2.3"))}};
 		version->sha1 = "a68b86df2f3fff44";
 		return QuickModVersionPtr(version);
 	}
-/*
-	void testMarkAsExisting_data()
-	{
-		QTest::addColumn<QVector<QuickModMetadataPtr>>("mods");
-		QTest::addColumn<QVector<QuickModVersionPtr>>("versions");
-		QTest::addColumn<QVector<QString>>("filenames");
-
-		QuickModMetadataPtr testMod = TestsInternal::createMod("TestMod");
-		QuickModMetadataPtr testMod2 = TestsInternal::createMod("TestMod2");
-		QuickModMetadataPtr testMod3 = TestsInternal::createMod("TestMod3");
-		QTest::newRow("basic test") << (QVector<QuickModMetadataPtr>() << testMod << testMod2
-															  << testMod3)
-									<< (QVector<QuickModVersionPtr>()
-										<< createTestingVersion(testMod)
-										<< createTestingVersion(testMod2)
-										<< createTestingVersion(testMod3))
-									<< (QVector<QString>()
-										<< QDir::current().absoluteFilePath("TestMod.jar")
-										<< QDir::current().absoluteFilePath("TestMod2.jar")
-										<< QDir::current().absoluteFilePath("TestMod3.jar"));
-	}
-	void testMarkAsExisting()
-	{
-		QFETCH(QVector<QuickModMetadataPtr>, mods);
-		QFETCH(QVector<QuickModVersionPtr>, versions);
-		QFETCH(QVector<QString>, filenames);
-		Q_ASSERT(mods.size() == versions.size() && mods.size() == filenames.size());
-
-		QuickModSettings *settings = new QuickModSettings();
-
-		for (int i = 0; i < mods.size(); ++i)
+	/*
+		void testMarkAsExisting_data()
 		{
-			settings->markModAsExists(mods[i], versions[i], filenames[i]);
-		}
+			QTest::addColumn<QVector<QuickModMetadataPtr>>("mods");
+			QTest::addColumn<QVector<QuickModVersionPtr>>("versions");
+			QTest::addColumn<QVector<QString>>("filenames");
 
-		for (int i = 0; i < mods.size(); ++i)
+			QuickModMetadataPtr testMod = TestsInternal::createMod("TestMod");
+			QuickModMetadataPtr testMod2 = TestsInternal::createMod("TestMod2");
+			QuickModMetadataPtr testMod3 = TestsInternal::createMod("TestMod3");
+			QTest::newRow("basic test") << (QVector<QuickModMetadataPtr>() << testMod <<
+	   testMod2
+																  << testMod3)
+										<< (QVector<QuickModVersionPtr>()
+											<< createTestingVersion(testMod)
+											<< createTestingVersion(testMod2)
+											<< createTestingVersion(testMod3))
+										<< (QVector<QString>()
+											<< QDir::current().absoluteFilePath("TestMod.jar")
+											<< QDir::current().absoluteFilePath("TestMod2.jar")
+											<<
+	   QDir::current().absoluteFilePath("TestMod3.jar"));
+		}
+		void testMarkAsExisting()
 		{
-			QCOMPARE(settings->isModMarkedAsExists(mods[i], versions[i]), true);
-			QCOMPARE(settings->existingModFile(mods[i], versions[i]), filenames[i]);
+			QFETCH(QVector<QuickModMetadataPtr>, mods);
+			QFETCH(QVector<QuickModVersionPtr>, versions);
+			QFETCH(QVector<QString>, filenames);
+			Q_ASSERT(mods.size() == versions.size() && mods.size() == filenames.size());
+
+			QuickModSettings *settings = new QuickModSettings();
+
+			for (int i = 0; i < mods.size(); ++i)
+			{
+				settings->markModAsExists(mods[i], versions[i], filenames[i]);
+			}
+
+			for (int i = 0; i < mods.size(); ++i)
+			{
+				QCOMPARE(settings->isModMarkedAsExists(mods[i], versions[i]), true);
+				QCOMPARE(settings->existingModFile(mods[i], versions[i]), filenames[i]);
+			}
+
+			delete settings;
+			settings = new QuickModSettings();
+
+			for (int i = 0; i < mods.size(); ++i)
+			{
+				QCOMPARE(settings->isModMarkedAsExists(mods[i], versions[i]), true);
+				QCOMPARE(settings->existingModFile(mods[i], versions[i]), filenames[i]);
+			}
+
+			delete settings;
 		}
-
-		delete settings;
-		settings = new QuickModSettings();
-
-		for (int i = 0; i < mods.size(); ++i)
+		*/
+	/*
+		void testMarkAsInstalledUninstalled_data()
 		{
-			QCOMPARE(settings->isModMarkedAsExists(mods[i], versions[i]), true);
-			QCOMPARE(settings->existingModFile(mods[i], versions[i]), filenames[i]);
-		}
+			QTest::addColumn<QVector<QuickModMetadataPtr>>("mods");
+			QTest::addColumn<QVector<QuickModVersionPtr>>("versions");
+			QTest::addColumn<InstancePtr>("instance");
+			QTest::addColumn<QVector<QString>>("filenames");
 
-		delete settings;
-	}
+			InstancePtr instance;
+			InstanceFactory::get().createInstance(
+				instance, MMC->minecraftlist()->findVersion("1.5.2"),
+	   QDir::current().absoluteFilePath("instances/TestInstance"));
+			QuickModMetadataPtr testMod = TestsInternal::createMod("TestMod");
+			QuickModMetadataPtr testMod2 = TestsInternal::createMod("TestMod2");
+			QuickModMetadataPtr testMod3 = TestsInternal::createMod("TestMod3");
+			QTest::newRow("basic test") << (QVector<QuickModMetadataPtr>() << testMod <<
+	   testMod2
+																  << testMod3)
+										<< (QVector<QuickModVersionPtr>()
+											<< createTestingVersion(testMod)
+											<< createTestingVersion(testMod2)
+											<< createTestingVersion(testMod3))
+										<< instance
+										<< (QVector<QString>()
+											<< QDir::current().absoluteFilePath("TestMod.jar")
+											<< QDir::current().absoluteFilePath("TestMod2.jar")
+											<<
+	   QDir::current().absoluteFilePath("TestMod3.jar"));
+		}
+		void testMarkAsInstalledUninstalled()
+		{
+			QFETCH(QVector<QuickModMetadataPtr>, mods);
+			QFETCH(QVector<QuickModVersionPtr>, versions);
+			QFETCH(InstancePtr, instance);
+			QFETCH(QVector<QString>, filenames);
+			Q_ASSERT(mods.size() == versions.size() && mods.size() == filenames.size());
+
+			QuickModSettings *settings = new QuickModSettings();
+
+			// mark all as installed and check if it worked
+			for (int i = 0; i < mods.size(); ++i)
+			{
+				settings->markModAsInstalled(mods[i]->uid(), versions[i], filenames[i],
+	   instance);
+			}
+			for (int i = 0; i < mods.size(); ++i)
+			{
+				QCOMPARE(settings->isModMarkedAsInstalled(mods[i]->uid(), versions[i],
+	   instance), true);
+				QCOMPARE(settings->installedModFiles(mods[i]->uid(),
+	   instance.get())[versions[i]->version()], filenames[i]);
+			}
+
+			// reload
+			delete settings;
+			settings = new QuickModSettings();
+			InstancePtr newInstance;
+			InstanceFactory::get().loadInstance(newInstance, instance->instanceRoot());
+
+			// re-check after reloading
+			for (int i = 0; i < mods.size(); ++i)
+			{
+				QCOMPARE(settings->isModMarkedAsInstalled(mods[i]->uid(), versions[i],
+	   newInstance), true);
+				QCOMPARE(settings->installedModFiles(mods[i]->uid(),
+	   newInstance.get())[versions[i]->version()], filenames[i]);
+			}
+
+			// "uninstall" all of them
+			for (int i = 0; i < mods.size(); ++i)
+			{
+				settings->markModAsUninstalled(mods[i]->uid(), versions[i], newInstance);
+			}
+			for (int i = 0; i < mods.size(); ++i)
+			{
+				QCOMPARE(settings->isModMarkedAsInstalled(mods[i]->uid(), versions[i],
+	   newInstance), false);
+				QCOMPARE(settings->installedModFiles(mods[i]->uid(),
+	   newInstance.get())[versions[i]->version()], QString());
+			}
+
+			// reload again
+			delete settings;
+			settings = new QuickModSettings();
+			newInstance.reset();
+			InstanceFactory::get().loadInstance(newInstance, instance->instanceRoot());
+
+			// re-check after reloading
+			for (int i = 0; i < mods.size(); ++i)
+			{
+				QCOMPARE(settings->isModMarkedAsInstalled(mods[i]->uid(), versions[i],
+	   newInstance), false);
+				QCOMPARE(settings->installedModFiles(mods[i]->uid(),
+	   newInstance.get())[versions[i]->version()], QString());
+			}
+
+			delete settings;
+		}
 	*/
-/*
-	void testMarkAsInstalledUninstalled_data()
-	{
-		QTest::addColumn<QVector<QuickModMetadataPtr>>("mods");
-		QTest::addColumn<QVector<QuickModVersionPtr>>("versions");
-		QTest::addColumn<InstancePtr>("instance");
-		QTest::addColumn<QVector<QString>>("filenames");
-
-		InstancePtr instance;
-		InstanceFactory::get().createInstance(
-			instance, MMC->minecraftlist()->findVersion("1.5.2"), QDir::current().absoluteFilePath("instances/TestInstance"));
-		QuickModMetadataPtr testMod = TestsInternal::createMod("TestMod");
-		QuickModMetadataPtr testMod2 = TestsInternal::createMod("TestMod2");
-		QuickModMetadataPtr testMod3 = TestsInternal::createMod("TestMod3");
-		QTest::newRow("basic test") << (QVector<QuickModMetadataPtr>() << testMod << testMod2
-															  << testMod3)
-									<< (QVector<QuickModVersionPtr>()
-										<< createTestingVersion(testMod)
-										<< createTestingVersion(testMod2)
-										<< createTestingVersion(testMod3))
-									<< instance
-									<< (QVector<QString>()
-										<< QDir::current().absoluteFilePath("TestMod.jar")
-										<< QDir::current().absoluteFilePath("TestMod2.jar")
-										<< QDir::current().absoluteFilePath("TestMod3.jar"));
-	}
-	void testMarkAsInstalledUninstalled()
-	{
-		QFETCH(QVector<QuickModMetadataPtr>, mods);
-		QFETCH(QVector<QuickModVersionPtr>, versions);
-		QFETCH(InstancePtr, instance);
-		QFETCH(QVector<QString>, filenames);
-		Q_ASSERT(mods.size() == versions.size() && mods.size() == filenames.size());
-
-		QuickModSettings *settings = new QuickModSettings();
-
-		// mark all as installed and check if it worked
-		for (int i = 0; i < mods.size(); ++i)
-		{
-			settings->markModAsInstalled(mods[i]->uid(), versions[i], filenames[i], instance);
-		}
-		for (int i = 0; i < mods.size(); ++i)
-		{
-			QCOMPARE(settings->isModMarkedAsInstalled(mods[i]->uid(), versions[i], instance), true);
-			QCOMPARE(settings->installedModFiles(mods[i]->uid(), instance.get())[versions[i]->version()], filenames[i]);
-		}
-
-		// reload
-		delete settings;
-		settings = new QuickModSettings();
-		InstancePtr newInstance;
-		InstanceFactory::get().loadInstance(newInstance, instance->instanceRoot());
-
-		// re-check after reloading
-		for (int i = 0; i < mods.size(); ++i)
-		{
-			QCOMPARE(settings->isModMarkedAsInstalled(mods[i]->uid(), versions[i], newInstance), true);
-			QCOMPARE(settings->installedModFiles(mods[i]->uid(), newInstance.get())[versions[i]->version()], filenames[i]);
-		}
-
-		// "uninstall" all of them
-		for (int i = 0; i < mods.size(); ++i)
-		{
-			settings->markModAsUninstalled(mods[i]->uid(), versions[i], newInstance);
-		}
-		for (int i = 0; i < mods.size(); ++i)
-		{
-			QCOMPARE(settings->isModMarkedAsInstalled(mods[i]->uid(), versions[i], newInstance), false);
-			QCOMPARE(settings->installedModFiles(mods[i]->uid(), newInstance.get())[versions[i]->version()], QString());
-		}
-
-		// reload again
-		delete settings;
-		settings = new QuickModSettings();
-		newInstance.reset();
-		InstanceFactory::get().loadInstance(newInstance, instance->instanceRoot());
-
-		// re-check after reloading
-		for (int i = 0; i < mods.size(); ++i)
-		{
-			QCOMPARE(settings->isModMarkedAsInstalled(mods[i]->uid(), versions[i], newInstance), false);
-			QCOMPARE(settings->installedModFiles(mods[i]->uid(), newInstance.get())[versions[i]->version()], QString());
-		}
-
-		delete settings;
-	}
-*/
 };
 
 QTEST_GUILESS_MAIN_MULTIMC(QuickModSettingsTest)

@@ -44,8 +44,7 @@ QuickModBuilder QuickModBuilder::addVersion(const QuickModVersionPtr ptr)
 					   .setType(ptr->type)
 					   .setInstallType(ptr->installType)
 					   .setSha1(ptr->sha1)
-					   .setForgeVersionFilter(ptr->forgeVersionFilter)
-					   .setCompatibleMCVersions(ptr->compatibleVersions);
+					   .setCompatibleMCVersions(ptr->mcVersions);
 	builder.m_version->dependencies = ptr->dependencies;
 	builder.m_version->recommendations = ptr->recommendations;
 	builder.m_version->suggestions = ptr->suggestions;

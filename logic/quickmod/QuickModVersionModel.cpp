@@ -5,10 +5,10 @@
 #include "logger/QsLog.h"
 #include "MultiMC.h"
 
-QuickModVersionModel::QuickModVersionModel(QuickModRef mod, InstancePtr instance, QObject *parent)
-	: BaseVersionList(parent), m_mod(mod), m_instance(instance)
+QuickModVersionModel::QuickModVersionModel(QuickModRef mod, QString mcVersion, QObject *parent)
+	: BaseVersionList(parent), m_mod(mod), m_mcVersion(mcVersion)
 {
-	m_versions = MMC->qmdb()->versions(mod, m_instance->intendedVersionId());
+	m_versions = MMC->qmdb()->versions(mod, m_mcVersion);
 }
 
 Task *QuickModVersionModel::getLoadTask()

@@ -8,7 +8,7 @@ class QuickModVersionModel : public BaseVersionList
 {
 	Q_OBJECT
 public:
-	explicit QuickModVersionModel(QuickModRef mod, InstancePtr instance, QObject *parent = 0);
+	explicit QuickModVersionModel(QuickModRef mod, QString mcVersion, QObject *parent = 0);
 
 	Task *getLoadTask();
 	bool isLoaded();
@@ -25,6 +25,6 @@ protected slots:
 
 private:
 	QuickModRef m_mod;
-	InstancePtr m_instance;
+	QString m_mcVersion;
 	QList<QuickModVersionRef> m_versions;
 };

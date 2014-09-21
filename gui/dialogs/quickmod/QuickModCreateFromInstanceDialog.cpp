@@ -168,17 +168,15 @@ QuickModCreateFromInstanceDialog::QuickModCreateFromInstanceDialog(
 	ui->passwordEdit->setText(m_instance->settings().get("UploadPassword").toString());
 
 	ui->licenseEdit->setCompleter(new QCompleter(
-	{
-		"Apache 1.0", "Apache 1.1", "Apache 2.0", "Artistic 1.0", "Artistic 2.0",
-			"BSD 2 Clause", "BSD 3 Clause", "BSD 4 Clause", "CC BY 1.0", "CC BY 2.0",
-			"CC BY 2.5", "CC BY 3.0", "CC BY-ND 1.0", "CC BY ND 2.0", "CC BY ND 2.5",
-			"CC BY ND 3.0", "CC BY NC 1.0", "CC BY NC 2.0", "CC BY NC 2.5", "CC BY NC 3.0",
-			"CC BY NC ND 1.0", "CC BY NC ND 2.0", "CC BY NC ND 2.5", "CC BY NC ND 3.0",
-			"CC BY NC SA 1.0", "CC BY NC SA 2.0", "CC BY NC SA 2.5", "CC BY NC SA 3.0",
-			"CC BY SA 1.0", "CC BY SA 2.0", "CC BY SA 2.5", "CC BY SA 3.0", "CC0 1.0",
-			"AGPL 1.0", "AGPL 3.0", "GPL 1.0", "GPL 2.0", "GPL 3.0", "LGPL 2.1", "LGPL 3.0",
-			"LGPL 2.0", "MMPL-1.0"
-	}, ui->licenseEdit));
+		{"Apache 1.0", "Apache 1.1", "Apache 2.0", "Artistic 1.0", "Artistic 2.0",
+		 "BSD 2 Clause", "BSD 3 Clause", "BSD 4 Clause", "CC BY 1.0", "CC BY 2.0", "CC BY 2.5",
+		 "CC BY 3.0", "CC BY-ND 1.0", "CC BY ND 2.0", "CC BY ND 2.5", "CC BY ND 3.0",
+		 "CC BY NC 1.0", "CC BY NC 2.0", "CC BY NC 2.5", "CC BY NC 3.0", "CC BY NC ND 1.0",
+		 "CC BY NC ND 2.0", "CC BY NC ND 2.5", "CC BY NC ND 3.0", "CC BY NC SA 1.0",
+		 "CC BY NC SA 2.0", "CC BY NC SA 2.5", "CC BY NC SA 3.0", "CC BY SA 1.0",
+		 "CC BY SA 2.0", "CC BY SA 2.5", "CC BY SA 3.0", "CC0 1.0", "AGPL 1.0", "AGPL 3.0",
+		 "GPL 1.0", "GPL 2.0", "GPL 3.0", "LGPL 2.1", "LGPL 3.0", "LGPL 2.0", "MMPL-1.0"},
+		ui->licenseEdit));
 
 	connect(ui->buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked,
 			this, &QuickModCreateFromInstanceDialog::resetValues);
@@ -241,10 +239,22 @@ bool QuickModCreateFromInstanceDialog::hasVersion(const QString &name) const
 	return false;
 }
 
-// FIXME: remove this from here.
+// FIXME: remove this from here, rewrite.
 void QuickModCreateFromInstanceDialog::createVersion(QuickModVersionBuilder builder) const
 {
-	builder.setCompatibleMCVersions(QStringList() << m_instance->currentVersionId());
+	// Set basic information
+	builder.setInstallType(QuickModVersion::Group);
+	builder.setName(ui->versionEdit->text());
+	if (!ui->versionTypeEdit->text().isEmpty())
+	{
+		builder.setType(ui->versionTypeEdit->text());
+	}
+
+	// Set the rigth Minecraft version
+	// builder.setCompatibleMCVersions(QStringList() << m_instance->currentVersionId());
+
+	// Set the forge version
+	/*
 	for (const auto lib_ : m_instance->getFullVersion()->libraries)
 	{
 		OneSixLibraryPtr lib = lib_;
@@ -253,12 +263,10 @@ void QuickModCreateFromInstanceDialog::createVersion(QuickModVersionBuilder buil
 			builder.setForgeVersionFilter(lib->version());
 		}
 	}
-	builder.setInstallType(QuickModVersion::Group);
-	builder.setName(ui->versionEdit->text());
-	if (!ui->versionTypeEdit->text().isEmpty())
-	{
-		builder.setType(ui->versionTypeEdit->text());
-	}
+	*/
+
+	// Insert all the quickmods from the instance (should replace all the above messing around
+	// with forge and minecraft)
 	const auto iter = m_instance->installedPackages()->iterateQuickMods();
 	while (iter->isValid())
 	{
@@ -285,7 +293,7 @@ void QuickModCreateFromInstanceDialog::start(ProgressProvider *provider)
 	};
 
 	connect(provider, &ProgressProvider::started, [this]()
-	{
+			{
 		ui->metadataBox->setEnabled(false);
 		ui->buttonBox->setEnabled(false);
 		ui->settingsWidget->setEnabled(false);
@@ -293,15 +301,17 @@ void QuickModCreateFromInstanceDialog::start(ProgressProvider *provider)
 		ui->progressBar->show();
 	});
 	connect(provider, &ProgressProvider::progress, [this](qint64 current, qint64 total)
-	{
+			{
 		ui->progressBar->setMaximum(total);
 		ui->progressBar->setValue(current);
 	});
 	connect(provider, &ProgressProvider::status, ui->progressLabel, &QLabel::setText);
 	connect(provider, &ProgressProvider::succeeded, [this, finish]()
-	{ finish(); });
-	connect(provider, &ProgressProvider::failed, [this, finish](const QString & reason)
-	{
+			{
+		finish();
+	});
+	connect(provider, &ProgressProvider::failed, [this, finish](const QString &reason)
+			{
 		QMessageBox::critical(this, tr("Error"), reason);
 		finish();
 	});
@@ -416,8 +426,8 @@ void QuickModCreateFromInstanceDialog::on_exportBtn_clicked()
 			NetJob *job = new NetJob(tr("Upload QuickMod"));
 			auto download = ByteArrayUpload::make(url, toJson());
 			connect(MMC->qnam().get(), &QNetworkAccessManager::authenticationRequired,
-					[this, download](QNetworkReply * reply, QAuthenticator * authenticator)
-			{
+					[this, download](QNetworkReply *reply, QAuthenticator *authenticator)
+					{
 				if (download->m_reply.get() == reply)
 				{
 					authenticator->setUser(ui->usernameEdit->text());
@@ -460,8 +470,8 @@ void QuickModCreateFromInstanceDialog::on_importBtn_clicked()
 			auto download = ByteArrayDownload::make(url);
 			download->m_followRedirects = true;
 			connect(MMC->qnam().get(), &QNetworkAccessManager::authenticationRequired,
-					[this, download](QNetworkReply * reply, QAuthenticator * authenticator)
-			{
+					[this, download](QNetworkReply *reply, QAuthenticator *authenticator)
+					{
 				if (download->m_reply.get() == reply)
 				{
 					authenticator->setUser(ui->usernameEdit->text());
@@ -469,7 +479,9 @@ void QuickModCreateFromInstanceDialog::on_importBtn_clicked()
 				}
 			});
 			connect(download.get(), &ByteArrayDownload::succeeded, [this, download](int)
-			{ fromJson(download->m_data); });
+					{
+				fromJson(download->m_data);
+			});
 			job->addNetAction(download);
 			start(job);
 		}
@@ -534,8 +546,10 @@ void QuickModCreateFromInstanceDialog::on_urlsAddBtn_clicked()
 {
 	auto table = ui->urlsTable;
 	const int row = addRowToTableWidget(table);
-	table->item(row, 0)->setData(Qt::UserRole, QuickModMetadata::urlId(QuickModMetadata::Website));
-	table->item(row, 0)->setData(Qt::DisplayRole, QuickModMetadata::humanUrlId(QuickModMetadata::Website));
+	table->item(row, 0)
+		->setData(Qt::UserRole, QuickModMetadata::urlId(QuickModMetadata::Website));
+	table->item(row, 0)
+		->setData(Qt::DisplayRole, QuickModMetadata::humanUrlId(QuickModMetadata::Website));
 }
 
 void QuickModCreateFromInstanceDialog::on_urlsRemoveBtn_clicked()

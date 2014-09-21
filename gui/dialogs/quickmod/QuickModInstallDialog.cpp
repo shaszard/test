@@ -348,7 +348,7 @@ bool QuickModInstallDialog::resolveDeps()
 QuickModVersionPtr QuickModInstallDialog::getVersion(const QuickModRef &modUid,
 													 const QuickModVersionRef &filter, bool *ok)
 {
-	VersionSelectDialog dialog(new QuickModVersionModel(modUid, m_instance, this),
+	VersionSelectDialog dialog(new QuickModVersionModel(modUid, m_instance->intendedVersionId(), this),
 							   tr("Choose QuickMod version for %1").arg(modUid.userFacing()),
 							   this);
 	dialog.setFuzzyFilter(BaseVersionList::NameColumn, filter.toString());

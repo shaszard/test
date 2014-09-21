@@ -14,6 +14,43 @@ public:
 private:
 	void populate();
 
+public:
+	enum Roles
+	{
+		NameRole = Qt::UserRole,
+		UidRole/*,
+		RepoRole,
+		DescriptionRole,
+		WebsiteRole,
+		IconRole,
+		LogoRole,
+		UpdateRole,
+		ReferencesRole,
+		DependentUrlsRole,
+		ModIdRole,
+		CategoriesRole,
+		MCVersionsRole,
+		TagsRole,
+		QuickModRole*/
+	};
+
+private: /* internal types */
+	enum Column
+	{
+		EnabledColumn,
+		NameColumn,
+		VersionColumn,
+		NewVersionColumn,
+		COLUMN_COUNT
+	};
+
+	struct TrackedItem
+	{
+		QString uid;
+		bool instance = false;
+		bool transaction = false;
+	};
+
 public: /* model interface */
 	/// return the number of rows of this model
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const;
@@ -45,23 +82,6 @@ private: /* model interface, internal */
 
 	/// data for the new version column
 	QVariant newVersionData(int row, int role = Qt::DisplayRole) const;
-
-private: /* internal types */
-	enum Column
-	{
-		EnabledColumn,
-		NameColumn,
-		VersionColumn,
-		NewVersionColumn,
-		COLUMN_COUNT
-	};
-
-	struct TrackedItem
-	{
-		QString uid;
-		bool instance = false;
-		bool transaction = false;
-	};
 
 private slots: /* handled events */
 	/// a source has added a component identified by uid

@@ -32,14 +32,25 @@ class PackagesPage;
 class PackagesPage : public QWidget, public BasePage
 {
 	Q_OBJECT
+private:
+	int selectedRow();
 
 public:
-	explicit PackagesPage(std::shared_ptr<InstancePackageList> packages, QWidget *parent = 0);
+	explicit PackagesPage(std::shared_ptr<OneSixInstance> instance, QWidget *parent = 0);
 	virtual ~PackagesPage();
-	
-	QString id() const override { return "instance-packages"; }
-	QString displayName() const override { return tr("Packages"); }
-	QIcon icon() const override { return QIcon::fromTheme("plugin-red"); }
+
+	QString id() const override
+	{
+		return "instance-packages";
+	}
+	QString displayName() const override
+	{
+		return tr("Packages");
+	}
+	QIcon icon() const override
+	{
+		return QIcon::fromTheme("quickmod");
+	}
 	bool apply() override;
 	bool shouldDisplay() const override;
 	void opened() override;
@@ -52,15 +63,13 @@ protected:
 
 private:
 	Ui::PackagesPage *ui;
-	std::shared_ptr<InstancePackageList> m_packages;
-	InstancePackageModel * m_model;
+	std::shared_ptr<OneSixInstance> m_instance;
+	InstancePackageModel *m_model;
 
-public
-slots:
+public slots:
 	void packageCurrent(const QModelIndex &current, const QModelIndex &previous);
 
-private
-slots:
+private slots:
 	void on_install_clicked();
 	void on_changeVersion_clicked();
 	void on_revert_clicked();
@@ -69,4 +78,3 @@ slots:
 	void on_applyTransaction_clicked();
 	void on_revertTransaction_clicked();
 };
-

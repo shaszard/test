@@ -12,27 +12,63 @@ void Transaction::insert(QString uid, QString version, QString repo)
 	components.insert(uid, {uid, ver, ver});
 }
 
-void Transaction::setComponentVersion(QString uid, QString version, QString repo)
+void Transaction::resetComponentVersion(QString uid)
 {
-	if (components.contains(uid))
+	if (!components.contains(uid))
 	{
-		Version newversion(version, repo);
-		components[uid].targetVersion = newversion;
+		return;
+	}
+	if (components[uid].targetVersion == components[uid].currentVersion)
+	{
+		return;
+	}
 
-		// setting target version to the same as current -> no more action
-		if (newversion == components[uid].currentVersion)
-		{
-			emit actionRemoved(TransactionSource, uid);
-			return;
-		}
-
-		// otherwise the action changed
-		emit actionChanged(TransactionSource, uid);
+	if(!components[uid].currentVersion.isPresent())
+	{
+		components.remove(uid);
 	}
 	else
 	{
+		components[uid].targetVersion = components[uid].currentVersion;
+	}
+	emit actionRemoved(TransactionSource, uid);
+}
+
+
+void Transaction::setComponentVersion(QString uid, QString version, QString repo)
+{
+	// not there yet, add.
+	if (!components.contains(uid))
+	{
 		components.insert(uid, {uid, Version(), Version(repo, version)});
 		emit actionAdded(TransactionSource, uid);
+		return;
+	}
+	
+	bool was_matched = components[uid].targetVersion == components[uid].currentVersion;
+
+	Version newversion(repo, version);
+	components[uid].targetVersion = newversion;
+	// setting target version to the same as current -> no more action
+	if (newversion == components[uid].currentVersion)
+	{
+		// if it was matched, nothing happens
+		if(was_matched)
+			return;
+		// otherwise we removed the action
+		emit actionRemoved(TransactionSource, uid);
+		return;
+	}
+
+	// otherwise the action changed.
+	//if it was matched, the action is new.
+	if(was_matched)
+	{
+		emit actionAdded(TransactionSource, uid);
+	}
+	else // it was different before, and it is still different
+	{
+		emit actionChanged(TransactionSource, uid);
 	}
 }
 
@@ -45,19 +81,26 @@ void Transaction::removeComponent(QString uid)
 	auto &component = components[uid];
 
 	// if it wasn't there to start with, we remove the action and component altogether.
-	if (!component.currentVersion)
+	if (!component.currentVersion.isPresent())
 	{
 		components.remove(uid);
 		emit actionRemoved(TransactionSource, uid);
 	}
 
 	// if the target version is null, do nothing
-	if (!component.targetVersion)
+	if (!component.targetVersion.isPresent())
 		return;
 
-	// otherwise we remove the target version
-	component.targetVersion.remove();
-	emit actionChanged(TransactionSource, uid);
+	if(component.targetVersion == component.currentVersion)
+	{
+		component.targetVersion.remove();
+		emit actionAdded(TransactionSource, uid);
+	}
+	else
+	{
+		component.targetVersion.remove();
+		emit actionChanged(TransactionSource, uid);
+	}
 }
 
 QList<Transaction::Action> Transaction::getActions() const
@@ -77,10 +120,10 @@ QList<Transaction::Action> Transaction::getActions() const
 bool Transaction::Component::getActionInternal(Transaction::Action &a) const
 {
 	// component started as missing
-	if (!currentVersion)
+	if (!currentVersion.isPresent())
 	{
 		// and we are adding a version?
-		if (targetVersion)
+		if (targetVersion.isPresent())
 		{
 			a.type = Transaction::Action::Add;
 			a.uid = uid;
@@ -93,7 +136,7 @@ bool Transaction::Component::getActionInternal(Transaction::Action &a) const
 	else
 	{
 		// and it no longer has one?
-		if (!targetVersion)
+		if (!targetVersion.isPresent())
 		{
 			a.type = Transaction::Action::Remove;
 			a.uid = uid;

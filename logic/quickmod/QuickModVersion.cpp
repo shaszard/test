@@ -40,7 +40,15 @@ QList<QuickModVersionPtr> QuickModVersion::parse(const QJsonObject &object, Quic
 
 void QuickModVersion::parse(const QJsonObject &object)
 {
-	name_ = MMCJson::ensureString(object.value("name"), "name");
+	versionString = MMCJson::ensureString(object.value("version"));
+	if(object.contains("name"))
+	{
+		versionName = MMCJson::ensureString(object.value("name"), "name");
+	}
+	else
+	{
+		versionName = versionString;
+	}
 	if (object.contains("type"))
 	{
 		type = MMCJson::ensureString(object.value("type"), "type");
@@ -49,16 +57,13 @@ void QuickModVersion::parse(const QJsonObject &object)
 	{
 		type = "Release";
 	}
-	versionString =
-		object.contains("version") ? MMCJson::ensureString(object.value("version")) : name_;
+
 	m_version = Util::Version(versionString);
 	sha1 = object.value(QStringLiteral("sha1")).toString();
-	forgeVersionFilter = object.value("forgeCompat").toString();
-	liteloaderVersionFilter = object.value("liteloaderCompat").toString();
-	compatibleVersions.clear();
+	mcVersions.clear();
 	for (auto val : MMCJson::ensureArray(object.value("mcCompat"), "mcCompat"))
 	{
-		compatibleVersions.append(MMCJson::ensureString(val));
+		mcVersions.append(MMCJson::ensureString(val));
 	}
 	dependencies.clear();
 	recommendations.clear();
@@ -215,13 +220,11 @@ QJsonObject QuickModVersion::toJson() const
 	};
 
 	QJsonObject obj;
-	obj.insert("name", name_);
-	obj.insert("mcCompat", QJsonArray::fromStringList(compatibleVersions));
+	obj.insert("name", versionName);
+	obj.insert("mcCompat", QJsonArray::fromStringList(mcVersions));
 	MMCJson::writeString(obj, "version", versionString);
 	MMCJson::writeString(obj, "type", type);
 	MMCJson::writeString(obj, "sha1", sha1);
-	MMCJson::writeString(obj, "forgeCompat", forgeVersionFilter);
-	MMCJson::writeString(obj, "liteloaderCompat", liteloaderVersionFilter);
 	MMCJson::writeObjectList(obj, "libraries", libraries);
 	for (auto it = dependencies.constBegin(); it != dependencies.constEnd(); ++it)
 	{
@@ -271,3 +274,4 @@ QJsonObject QuickModVersion::Library::toJson() const
 	}
 	return obj;
 }
+
