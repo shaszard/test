@@ -61,6 +61,9 @@ public: /* methods */
 	/// get a version by version ref
 	QuickModVersionPtr version(const QuickModVersionRef &version) const;
 
+	/// get a version by uid, version and repo
+	QuickModVersionPtr version(const QString &uid, const QString &version, const QString &repo) const;
+
 	/// get the latest version by mod ref and minecraft version.
 	QuickModVersionRef latestVersionForMinecraft(const QuickModRef &modUid, const QString &mcVersion) const;
 
@@ -75,6 +78,9 @@ public: /* methods */
 
 	/// given an instance, return mods that have updates available
 	QList<QuickModRef> updatedModsForInstance(std::shared_ptr<OneSixInstance> instance) const;
+
+	/// returns the pretties possible string for displaying to the user
+	QString userFacingUid(const QString &uid) const;
 
 	/// download and insert a quickmod file or index into the database
 	void registerMod(const QString &fileName);

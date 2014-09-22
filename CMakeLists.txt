@@ -262,7 +262,7 @@ add_subdirectory(depends/util)
 include_directories(${LIBUTIL_INCLUDE_DIR})
 
 # Add the updater
-add_subdirectory(mmc_updater)
+#add_subdirectory(mmc_updater)
 
 # Add the GUI -> Logic connection header
 add_subdirectory(depends/LogicalGui)
@@ -810,10 +810,6 @@ endif()
 if(WIN32)
 	set(MultiMC_LINK_ADDITIONAL_LIBS ${MultiMC_LINK_ADDITIONAL_LIBS} Qt5::WinMain)
 endif(WIN32)
-
-# Tell CMake that MultiMCLauncher.jar is generated.
-#SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/depends/launcher/MultiMCLauncher.jar GENERATED)
-#SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/depends/javacheck/JavaCheck.jar GENERATED)
 
 # Qt 5 stuff
 qt5_wrap_ui(MULTIMC_UI ${MULTIMC_UIS})

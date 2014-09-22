@@ -22,6 +22,7 @@
 
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/QuickModVersion.h"
+#include "logic/quickmod/Transaction.h"
 
 #include "logic/BaseInstance.h"
 
@@ -48,13 +49,9 @@ public:
 	~QuickModInstallDialog();
 
 public slots:
-	virtual int exec();
+	int exec() override;
 
-	void setInitialMods(const QList<QuickModRef> mods);
-	QList<QuickModVersionPtr> modVersions() const
-	{
-		return m_resolvedVersions;
-	}
+	void setActions(const QList<Transaction::Action> &actions);
 
 private slots:
 	void on_donateFinishButton_clicked();
@@ -65,12 +62,6 @@ private slots:
 	void processReply(QNetworkReply *reply, QuickModVersionPtr version);
 	void downloadProgress(const qint64 current, const qint64 max);
 	void downloadCompleted();
-
-	/// Downloads dependency files.
-	bool downloadDeps();
-
-	/// Resolves dependencies.
-	bool resolveDeps();
 
 	/// Processes the version list. Installs any mods that are already downloaded.
 	void processVersionList();
@@ -120,11 +111,6 @@ private slots:
 	void openDonationLink(const int row) const;
 	void contextMenuRequested(const QPoint &pos);
 
-	// For binding to QuickModDependencyResolver
-	QuickModVersionPtr getVersion(const QuickModRef &modUid, const QuickModVersionRef &filter, bool *ok);
-	// For binding to QuickModDependencyDownloadTask
-	bool verifyMods(const QList<QuickModMetadataPtr> &mods);
-
 private:
 	Ui::QuickModInstallDialog *ui;
 
@@ -133,9 +119,8 @@ private:
 	bool install(QuickModVersionPtr version);
 	void handleDownload(QuickModVersionPtr version, const QByteArray &data, const QUrl &url);
 
-	QList<QuickModRef> m_initialMods;
+	QList<Transaction::Action> m_actions;
 	QList<QuickModVersionPtr> m_modVersions;
-	QList<QuickModVersionPtr> m_resolvedVersions;
 	QList<QUrl> m_downloadingUrls;
 
 	QMap<QuickModVersionPtr, QuickModDownload> m_selectedDownloadUrls;

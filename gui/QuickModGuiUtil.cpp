@@ -33,13 +33,14 @@ bool QuickModGuiUtil::modMissing(const QString &id)
 			   QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes;
 }
 
+#pragma warning("Remove?")
 QList<QuickModVersionPtr> QuickModGuiUtil::installMods(std::shared_ptr<OneSixInstance> instance,
 													   const QList<QuickModRef> &mods, bool *ok)
 {
 	QuickModInstallDialog dialog(instance, this);
-	dialog.setInitialMods(mods);
+	//dialog.setInitialMods(mods);
 	*ok = dialog.exec() == QDialog::Accepted;
-	return dialog.modVersions();
+	return QList<QuickModVersionPtr>();//dialog.modVersions();
 }
 
 ForgeVersionPtr QuickModGuiUtil::getForgeVersion(std::shared_ptr<OneSixInstance> instance,

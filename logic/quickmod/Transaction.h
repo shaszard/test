@@ -15,7 +15,7 @@ class Transaction : public QObject
 
 public:
 	/// You can get one from InstancePackageList
-	Transaction(){};
+	Transaction(){}
 	
 private:
 	/// initial insert, for construction
@@ -35,7 +35,7 @@ public: /* data types */
 			Remove
 		} type = Invalid;
 		Action(QString uid, QString repo, QString version, Type t);
-		Action() {};
+		Action() {}
 	};
 
 	struct Version

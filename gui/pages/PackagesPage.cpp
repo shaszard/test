@@ -1,12 +1,18 @@
 #include "gui/pages/PackagesPage.h"
-#include <gui/dialogs/VersionSelectDialog.h>
-#include <gui/widgets/PageContainer.h>
 #include "ui_PackagesPage.h"
 
+#include <QMessageBox>
+
+#include "gui/dialogs/VersionSelectDialog.h"
+#include "gui/widgets/PageContainer.h"
+#include "gui/dialogs/quickmod/QuickModInstallDialog.h"
+
 #include "logic/quickmod/InstancePackageList.h"
-#include <logic/quickmod/QuickModVersionModel.h>
-#include <logic/quickmod/Transaction.h>
-#include <logic/quickmod/QuickModVersion.h>
+#include "logic/quickmod/QuickModVersionModel.h"
+#include "logic/quickmod/Transaction.h"
+#include "logic/quickmod/QuickModVersion.h"
+#include "logic/quickmod/QuickModDatabase.h"
+#include "MultiMC.h"
 
 //BEGIN *struction
 PackagesPage::PackagesPage(std::shared_ptr<OneSixInstance> instance, QWidget *parent)
@@ -72,6 +78,60 @@ int PackagesPage::selectedRow()
 //BEGIN Event handling
 void PackagesPage::on_applyTransaction_clicked()
 {
+	auto transaction = m_instance->installedPackages()->getTransaction();
+
+	if (transaction->getActions().isEmpty())
+	{
+		return;
+	}
+
+	// TODO dependency resolution
+	// transaction->depres();
+
+	// user confirmation
+	{
+		QStringList installs, removals, versionChanges;
+		for (const auto action : transaction->getActions())
+		{
+			const QString uid = MMC->qmdb()->userFacingUid(action.uid);
+			if (action.type == Transaction::Action::Add)
+			{
+				installs.append(QString("%1 (%2)").arg(uid, action.targetVersion));
+			}
+			else if (action.type == Transaction::Action::ChangeVersion)
+			{
+				versionChanges.append(QString("%1 (%2 -> %3").arg(uid, m_instance->installedPackages()->installedQuickModVersion(QuickModRef(action.uid)).userFacing(),
+																  action.targetVersion));
+			}
+			else if (action.type == Transaction::Action::Remove)
+			{
+				removals.append(uid);
+			}
+		}
+
+		QString msg = tr("The following actions will be taken:");
+		if (!installs.isEmpty())
+		{
+			msg += '\n' + tr("Install: ") + installs.join(", ");
+		}
+		if (!removals.isEmpty())
+		{
+			msg += '\n' + tr("Removal: ") + removals.join(", ");
+		}
+		if (!versionChanges.isEmpty())
+		{
+			msg += '\n' + tr("Version changes: ") + versionChanges.join(", ");
+		}
+		msg += "\n\n" + tr("Proceed?");
+		if (QMessageBox::question(this, tr("QuickMod Install"), msg, QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
+		{
+			return;
+		}
+	}
+
+	QuickModInstallDialog dlg(m_instance, this);
+	dlg.setActions(transaction->getActions());
+	dlg.exec();
 }
 
 void PackagesPage::on_changeVersion_clicked()

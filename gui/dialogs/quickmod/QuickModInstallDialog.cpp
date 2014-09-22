@@ -235,11 +235,6 @@ void QuickModInstallDialog::setWebViewShown(bool shown)
 		ui->downloadSplitter->setSizes(QList<int>({100, 0}));
 }
 
-void QuickModInstallDialog::setInitialMods(const QList<QuickModRef> mods)
-{
-	m_initialMods = mods;
-}
-
 void QuickModInstallDialog::on_donateFinishButton_clicked()
 {
 	for (int i = 0; i < ui->progressList->topLevelItemCount(); ++i)
@@ -254,23 +249,17 @@ int QuickModInstallDialog::exec()
 	showMaximized();
 	ui->donateFinishButton->setVisible(false);
 
-	if (!downloadDeps())
+	// TODO removals
+
+	m_modVersions;
 	{
-		QMessageBox::critical(this, tr("Error"),
-							  tr("Failed to download QuickMod dependencies."));
-		return QDialog::Rejected;
-	}
-	if (resolveDeps())
-	{
-		// If we resolved dependencies successfully, switch to the download tab.
-		ui->tabWidget->setCurrentIndex(1);
-	}
-	else
-	{
-		// Otherwise, stop and display the dependency resolution list.
-		ui->tabWidget->setCurrentIndex(0);
-		QDialog::exec();
-		return QDialog::Rejected;
+		for (const auto action : m_actions)
+		{
+			if (action.type == Transaction::Action::Add || action.type == Transaction::Action::ChangeVersion)
+			{
+				m_modVersions.append(MMC->qmdb()->version(action.uid, action.targetVersion, action.targetRepo));
+			}
+		}
 	}
 
 	processVersionList();
@@ -293,72 +282,9 @@ int QuickModInstallDialog::exec()
 	return QDialog::exec();
 }
 
-bool QuickModInstallDialog::downloadDeps()
+void QuickModInstallDialog::setActions(const QList<Transaction::Action> &actions)
 {
-	// download all dependency files so they are ready for the dependency resolution
-	ProgressDialog dialog(this);
-	auto task = new QuickModDependencyDownloadTask(m_initialMods, this);
-	task->bind("QuickMods.VerifyMods", this, &QuickModInstallDialog::verifyMods);
-	return dialog.exec(task) !=
-		   QDialog::Rejected; // Is this really the best way to check for failure?
-}
-
-bool QuickModInstallDialog::verifyMods(const QList<QuickModMetadataPtr> &mods)
-{
-	return QuickModVerifyModsDialog(mods, this).exec() == QDialog::Accepted;
-}
-
-bool QuickModInstallDialog::resolveDeps()
-{
-	// Resolve dependencies
-	bool error = false;
-	QuickModDependencyResolver resolver(m_instance);
-
-	resolver.bind("QuickMods.GetVersion", this, &QuickModInstallDialog::getVersion);
-
-	// Error handler.
-	connect(&resolver, &QuickModDependencyResolver::error, [this, &error](const QString &msg)
-			{
-		error = true;
-		QListWidgetItem *item = new QListWidgetItem(msg);
-		item->setTextColor(Qt::red);
-		ui->dependencyListWidget->addItem(item);
-	});
-
-	// Warning handler.
-	connect(&resolver, &QuickModDependencyResolver::warning, [this](const QString &msg)
-			{
-		QListWidgetItem *item = new QListWidgetItem(msg);
-		item->setTextColor(Qt::darkYellow);
-		ui->dependencyListWidget->addItem(item);
-	});
-
-	// Success handler.
-	connect(&resolver, &QuickModDependencyResolver::success, [this](const QString &msg)
-			{
-		QListWidgetItem *item = new QListWidgetItem(msg);
-		item->setTextColor(Qt::darkGreen);
-		ui->dependencyListWidget->addItem(item);
-	});
-
-	m_modVersions = m_resolvedVersions = resolver.resolve(m_initialMods);
-	return !error;
-}
-
-QuickModVersionPtr QuickModInstallDialog::getVersion(const QuickModRef &modUid,
-													 const QuickModVersionRef &filter, bool *ok)
-{
-	VersionSelectDialog dialog(new QuickModVersionModel(modUid, m_instance->intendedVersionId(), this),
-							   tr("Choose QuickMod version for %1").arg(modUid.userFacing()),
-							   this);
-	dialog.setFuzzyFilter(BaseVersionList::NameColumn, filter.toString());
-	if (dialog.exec() == QDialog::Rejected)
-	{
-		*ok = false;
-		return QuickModVersionPtr();
-	}
-	*ok = true;
-	return std::dynamic_pointer_cast<QuickModVersion>(dialog.selectedVersion());
+	m_actions = actions;
 }
 
 void QuickModInstallDialog::processVersionList()
@@ -474,14 +400,9 @@ void QuickModInstallDialog::runWebDownload(QuickModVersionPtr version)
 
 bool QuickModInstallDialog::install(QuickModVersionPtr version)
 {
-	try
+	if (!QFile::copy(MMC->qmdb()->existingModFile(version->mod, version->version()), PathCombine(m_instance->minecraftRoot(), "mods")))
 	{
-		#pragma message("NUKE: Removed use of install")
-		// m_instance->installedPackages()->install(version);
-	}
-	catch (MMCError &e)
-	{
-		setProgressListMsg(version, e.cause(), QColor(Qt::red));
+		setProgressListMsg(version, tr("Couldn't copy mod file to destination"), Qt::red);
 		return false;
 	}
 	return true;

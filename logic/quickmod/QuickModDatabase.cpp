@@ -97,6 +97,19 @@ QuickModVersionPtr QuickModDatabase::version(const QuickModVersionRef &version) 
 	return QuickModVersionPtr();
 }
 
+// TODO fix this
+QuickModVersionPtr QuickModDatabase::version(const QString &uid, const QString &version, const QString &repo) const
+{
+	for (auto verPtr : m_versions[QuickModRef(uid)])
+	{
+		if (verPtr->versionString == version && verPtr->mod->repo() == repo)
+		{
+			return verPtr;
+		}
+	}
+	return QuickModVersionPtr();
+}
+
 QuickModVersionRef QuickModDatabase::latestVersionForMinecraft(const QuickModRef &modUid,
 															const QString &mcVersion) const
 {
@@ -164,6 +177,12 @@ QList<QuickModRef> QuickModDatabase::updatedModsForInstance(std::shared_ptr<OneS
 		iter->next();
 	}
 	return mods;
+}
+
+QString QuickModDatabase::userFacingUid(const QString &uid) const
+{
+	const auto mod = someModMetadata(QuickModRef(uid));
+	return mod ? mod->name() : uid;
 }
 
 bool QuickModDatabase::haveUid(const QuickModRef &uid, const QString &repo) const

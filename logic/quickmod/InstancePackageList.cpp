@@ -1,13 +1,17 @@
 #include "logic/quickmod/InstancePackageList.h"
+
+#include <QString>
+#include <QMimeDatabase>
+
+#include <JlCompress.h>
+#include <pathutils.h>
+
+#include "logic/MMCJson.h"
+#include "logic/OneSixInstance.h"
+#include "logic/quickmod/QuickModRef.h"
 #include "logic/quickmod/QuickModVersion.h"
 #include "logic/quickmod/QuickModDatabase.h"
 #include "Transaction.h"
-#include "logic/MMCJson.h"
-#include <logic/OneSixInstance.h>
-#include <QString>
-#include <QMimeDatabase>
-#include <pathutils.h>
-#include <JlCompress.h>
 #include "MultiMC.h"
 
 using namespace MMCJson;
