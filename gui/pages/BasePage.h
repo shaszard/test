@@ -19,6 +19,7 @@
 #include <QIcon>
 #include <memory>
 
+class PageContainer;
 class BasePage
 {
 public:
@@ -33,6 +34,7 @@ public:
 	virtual void closed() {}
 	int stackIndex = -1;
 	int listIndex = -1;
+	PageContainer * parent_container;
 };
 
 typedef std::shared_ptr<BasePage> BasePagePtr;

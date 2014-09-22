@@ -45,6 +45,19 @@ bool InstancePackageList::isQuickmodInstalled(const QuickModRef& mod)
 	return installedMods_index.contains(mod.toString());
 }
 
+bool InstancePackageList::isQuickmodWanted(const QuickModRef& mod)
+{
+	auto transaction = getTransaction();
+	Transaction::Action a;
+	if(transaction->getAction(mod.toString(), a))
+	{
+		if(a.type==Transaction::Action::Remove)
+			return false;
+		return true;
+	}
+	return isQuickmodInstalled(mod);
+}
+
 std::unique_ptr< QuickModView > InstancePackageList::iterateQuickMods()
 {
 	return std::unique_ptr<QuickModView>(new QuickModView(installedMods));

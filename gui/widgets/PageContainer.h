@@ -40,6 +40,7 @@ public:
 
 	void addButtons(QWidget * buttons);
 	void addButtons(QLayout * buttons);
+	void showPage(QString pageId);
 	bool requestClose(QCloseEvent *event);
 
 private:

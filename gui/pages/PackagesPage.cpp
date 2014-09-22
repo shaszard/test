@@ -1,5 +1,6 @@
 #include "gui/pages/PackagesPage.h"
 #include <gui/dialogs/VersionSelectDialog.h>
+#include <gui/widgets/PageContainer.h>
 #include "ui_PackagesPage.h"
 
 #include "logic/quickmod/InstancePackageList.h"
@@ -82,6 +83,7 @@ void PackagesPage::on_changeVersion_clicked()
 	auto uid = m_model->data(m_model->index(row), InstancePackageModel::UidRole);
 	auto ref = QuickModRef(uid.toString());
 
+	//FIXME: copypasta in QuickModBrowsePage!!! REMOVE!!!
 	VersionSelectDialog dialog(
 		new QuickModVersionModel(ref, m_instance->intendedVersionId(), this),
 		tr("Choose QuickMod version for %1").arg(ref.userFacing()), this);
@@ -98,6 +100,7 @@ void PackagesPage::on_changeVersion_clicked()
 
 void PackagesPage::on_install_clicked()
 {
+	parent_container->showPage("quickmod-browse");
 }
 
 void PackagesPage::on_remove_clicked()
@@ -126,6 +129,9 @@ void PackagesPage::on_revert_clicked()
 
 void PackagesPage::on_revertTransaction_clicked()
 {
+	auto transaction = m_instance->installedPackages()->getTransaction();
+
+	transaction->reset();
 }
 
 bool PackagesPage::eventFilter(QObject *obj, QEvent *ev)

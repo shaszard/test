@@ -26,6 +26,7 @@
 #include "gui/dialogs/quickmod/QuickModCreateFromInstanceDialog.h"
 #include "gui/dialogs/NewInstanceDialog.h"
 #include "gui/dialogs/CustomMessageBox.h"
+#include <gui/dialogs/VersionSelectDialog.h>
 
 #include "logic/InstanceFactory.h"
 #include "logic/quickmod/QuickModMetadata.h"
@@ -33,6 +34,8 @@
 #include "logic/OneSixInstance.h"
 
 #include "logic/quickmod/QuickModModel.h"
+#include <logic/quickmod/Transaction.h>
+#include <logic/quickmod/QuickModVersionModel.h>
 
 #include "MultiMC.h"
 
@@ -59,7 +62,7 @@ bool listContainsSubstring(const QStringList &list, const QString &str)
 	}
 	return false;
 }
-template<typename T> T *findParent(const QObject *me)
+template <typename T> T *findParent(const QObject *me)
 {
 	if (me == 0)
 	{
@@ -111,8 +114,7 @@ public:
 		invalidateFilter();
 	}
 
-private
-slots:
+private slots:
 	void resort()
 	{
 		sort(0);
@@ -196,7 +198,8 @@ public:
 	{
 		QIdentityProxyModel::setSourceModel(model);
 		m_instance = instance;
-		connect(instance.get(), &OneSixInstance::versionReloaded, this, &CheckboxProxyModel::update);
+		connect(instance.get(), &OneSixInstance::versionReloaded, this,
+				&CheckboxProxyModel::update);
 		update();
 	}
 
@@ -228,9 +231,8 @@ public:
 		if (proxyIndex.isValid() && role == Qt::CheckStateRole)
 		{
 			auto uid = proxyIndex.data(QuickModModel::UidRole).value<QuickModRef>();
-			return m_instance->installedPackages()->isQuickmodInstalled(uid)
-					   ? Qt::Checked
-					   : Qt::Unchecked;
+			return m_instance->installedPackages()->isQuickmodWanted(uid) ? Qt::Checked
+																		  : Qt::Unchecked;
 		}
 		return QIdentityProxyModel::data(proxyIndex, role);
 	}
@@ -238,7 +240,8 @@ public:
 private slots:
 	void update()
 	{
-		emit dataChanged(index(0, 0), index(rowCount(), columnCount()), QVector<int>() << Qt::CheckStateRole);
+		emit dataChanged(index(0, 0), index(rowCount(), columnCount()),
+						 QVector<int>() << Qt::CheckStateRole);
 	}
 
 signals:
@@ -250,7 +253,8 @@ private:
 	using QIdentityProxyModel::setSourceModel; // hide
 };
 
-QuickModBrowsePage::QuickModBrowsePage(std::shared_ptr<OneSixInstance> instance, QWidget *parent)
+QuickModBrowsePage::QuickModBrowsePage(std::shared_ptr<OneSixInstance> instance,
+									   QWidget *parent)
 	: QWidget(parent), ui(new Ui::QuickModBrowsePage), m_currentMod(0), m_instance(instance),
 	  m_view(new QListView(this)), m_filterModel(new ModFilterProxyModel(this)),
 	  m_checkModel(new CheckboxProxyModel(this))
@@ -270,7 +274,8 @@ QuickModBrowsePage::QuickModBrowsePage(std::shared_ptr<OneSixInstance> instance,
 	m_view->setModel(m_checkModel);
 	ui->createInstanceButton->hide();
 	m_checkModel->setSourceModel(m_instance, m_filterModel);
-	connect(m_checkModel, &CheckboxProxyModel::checkChanged, this, &QuickModBrowsePage::checkStateChanged);
+	connect(m_checkModel, &CheckboxProxyModel::checkChanged, this,
+			&QuickModBrowsePage::checkStateChanged);
 
 	connect(m_view->selectionModel(), &QItemSelectionModel::selectionChanged, this,
 			&QuickModBrowsePage::modSelectionChanged);
@@ -306,13 +311,27 @@ void QuickModBrowsePage::checkStateChanged(const QModelIndex &index, const bool 
 	{
 		if (checked)
 		{
-			#pragma message("NUKE: Removed use of setQuickModVersion")
-			// m_instance->installedPackages()->setQuickModVersion(index.data(QuickModModel::UidRole).value<QuickModRef>(), QuickModVersionRef(), true);
+			auto ref = index.data(QuickModModel::UidRole).value<QuickModRef>();
+			VersionSelectDialog dialog(
+				new QuickModVersionModel(ref, m_instance->intendedVersionId(), this),
+				tr("Choose QuickMod version for %1").arg(ref.userFacing()), this);
+
+			if (!dialog.exec())
+				return;
+			std::shared_ptr<QuickModVersion> version =
+				std::dynamic_pointer_cast<QuickModVersion>(dialog.selectedVersion());
+			if (!version)
+				return;
+			auto transaction = m_instance->installedPackages()->getTransaction();
+
+			transaction->setComponentVersion(ref.toString(), version->descriptor(),
+											 version->mod->repo());
 		}
 		else
 		{
-			#pragma message("NUKE: Removed use of removeQuickMod")
-			// m_instance->installedPackages()->removeQuickMod(index.data(QuickModModel::UidRole).value<QuickModRef>());
+			auto transaction = m_instance->installedPackages()->getTransaction();
+			auto uid = index.data(QuickModModel::UidRole).value<QuickModRef>().toString();
+			transaction->removeComponent(uid);
 		}
 	}
 	catch (MMCError &e)
@@ -355,11 +374,14 @@ void QuickModBrowsePage::on_createInstanceButton_clicked()
 		InstancePtr newInstance;
 		try
 		{
-			newInstance = InstanceFactory::get().addInstance(dialog.instName(), dialog.iconKey(), dialog.selectedVersion(), dialog.fromQuickMod());
+			newInstance = InstanceFactory::get().addInstance(
+				dialog.instName(), dialog.iconKey(), dialog.selectedVersion(),
+				dialog.fromQuickMod());
 		}
 		catch (MMCError &error)
 		{
-			CustomMessageBox::selectable(this, tr("Error"), error.cause(), QMessageBox::Warning)->show();
+			CustomMessageBox::selectable(this, tr("Error"), error.cause(), QMessageBox::Warning)
+				->show();
 			return;
 		}
 		findParent<QDialog>(this)->accept();
@@ -421,7 +443,7 @@ void QuickModBrowsePage::on_mcVersionBox_currentTextChanged()
 }
 
 void QuickModBrowsePage::modSelectionChanged(const QItemSelection &selected,
-											   const QItemSelection &deselected)
+											 const QItemSelection &deselected)
 {
 	if (m_currentMod)
 	{

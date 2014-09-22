@@ -89,6 +89,9 @@ public: /* methods */
 	/// reset the component version to original
 	void resetComponentVersion(QString uid);
 
+	/// reset the whole transaction
+	void reset();
+
 	/// make the transaction remove a component
 	void removeComponent(QString uid);
 

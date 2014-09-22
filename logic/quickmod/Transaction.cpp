@@ -34,6 +34,13 @@ void Transaction::resetComponentVersion(QString uid)
 	emit actionRemoved(TransactionSource, uid);
 }
 
+void Transaction::reset()
+{
+	for(auto key: components.keys())
+	{
+		resetComponentVersion(key);
+	}
+}
 
 void Transaction::setComponentVersion(QString uid, QString version, QString repo)
 {

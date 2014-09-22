@@ -40,6 +40,7 @@ public: /* methods */
 	virtual ~InstancePackageList(){};
 
 	bool isQuickmodInstalled(const QuickModRef &mod);
+	bool isQuickmodWanted(const QuickModRef &mod);
 	QuickModVersionRef installedQuickModVersion(const QuickModRef &mod);
 	bool installedQuickIsHardDep(const QuickModRef &mod);
 

@@ -72,6 +72,7 @@ PageContainer::PageContainer(BasePageProviderPtr pageProvider, QString defaultId
 		{
 			firstIndex = page->stackIndex;
 		}
+		page->parent_container = this;
 	}
 	m_model->setPages(pages);
 
@@ -86,19 +87,7 @@ PageContainer::PageContainer(BasePageProviderPtr pageProvider, QString defaultId
 			this, SLOT(currentChanged(QModelIndex)));
 	m_pageStack->setStackingMode(QStackedLayout::StackOne);
 	m_pageList->setFocus();
-	// now find what we want to have selected...
-	auto page = m_model->findPageEntryById(defaultId);
-	QModelIndex index;
-	if (page)
-	{
-		index = m_proxyModel->mapFromSource(m_model->index(page->listIndex));
-	}
-	else
-	{
-		index = m_proxyModel->index(0, 0);
-	}
-	if (index.isValid())
-		m_pageList->setCurrentIndex(index);
+	showPage(defaultId);
 }
 
 void PageContainer::createUI()
@@ -147,6 +136,23 @@ void PageContainer::addButtons(QWidget *buttons)
 void PageContainer::addButtons(QLayout *buttons)
 {
 	m_layout->addLayout(buttons, 2, 0, 1, 2);
+}
+
+void PageContainer::showPage(QString pageId)
+{
+	// now find what we want to have selected...
+	auto page = m_model->findPageEntryById(pageId);
+	QModelIndex index;
+	if (page)
+	{
+		index = m_proxyModel->mapFromSource(m_model->index(page->listIndex));
+	}
+	else
+	{
+		index = m_proxyModel->index(0, 0);
+	}
+	if (index.isValid())
+		m_pageList->setCurrentIndex(index);
 }
 
 void PageContainer::showPage(int row)
