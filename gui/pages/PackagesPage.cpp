@@ -160,7 +160,8 @@ void PackagesPage::on_changeVersion_clicked()
 
 void PackagesPage::on_install_clicked()
 {
-	parent_container->showPage("quickmod-browse");
+	if(parent_container)
+		parent_container->showPage("quickmod-browse");
 }
 
 void PackagesPage::on_remove_clicked()

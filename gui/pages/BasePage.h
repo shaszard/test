@@ -34,7 +34,7 @@ public:
 	virtual void closed() {}
 	int stackIndex = -1;
 	int listIndex = -1;
-	PageContainer * parent_container;
+	PageContainer * parent_container = nullptr;
 };
 
 typedef std::shared_ptr<BasePage> BasePagePtr;
