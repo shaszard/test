@@ -58,9 +58,10 @@ void QuickModDownloadTask::executeTask()
 			continue;
 		}
 
+		//FIXME: WTF DOES THIS EVEN MEAN???
 		bool processMod = false;
 		processMod |= !ptr;
-		processMod |= !MMC->qmdb()->isModMarkedAsExists(mod, version);
+		// processMod |= !MMC->qmdb()->isModMarkedAsExists(mod, version);
 		processMod |= hasResolveError;
 		processMod |= ptr->needsDeploy() && !modManager->isQuickmodInstalled(mod->uid());
 		if (processMod)

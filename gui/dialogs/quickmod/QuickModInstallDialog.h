@@ -54,8 +54,6 @@ public slots:
 	void setActions(const QList<Transaction::Action> &actions);
 
 private slots:
-	void on_donateFinishButton_clicked();
-
 	void downloadNextMod();
 
 	void urlCaught(QNetworkReply *reply, WebDownloadNavigator *navigator);
@@ -108,7 +106,6 @@ private slots:
 	/// Gets the tree widget item for the given version.
 	QTreeWidgetItem *itemForVersion(QuickModVersionPtr version) const;
 
-	void openDonationLink(const int row) const;
 	void contextMenuRequested(const QPoint &pos);
 
 private:

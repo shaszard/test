@@ -31,7 +31,7 @@ class QNetworkReply;
 class LiteLoaderVersion : public BaseVersion
 {
 public:
-	QString descriptor() override
+	QString descriptor() const override
 	{
 		if (isLatest)
 		{
@@ -43,7 +43,7 @@ public:
 	{
 		return mcVersion;
 	}
-	QString name() override
+	QString name() const override
 	{
 		return version;
 	}

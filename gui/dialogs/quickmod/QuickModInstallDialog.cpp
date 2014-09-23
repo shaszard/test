@@ -38,8 +38,6 @@
 #include "logic/quickmod/QuickModDatabase.h"
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/QuickModVersion.h"
-#include "logic/quickmod/net/QuickModDependencyDownloadTask.h"
-#include "logic/quickmod/QuickModDependencyResolver.h"
 #include "logic/OneSixInstance.h"
 #include "logic/net/ByteArrayDownload.h"
 #include "logic/net/NetJob.h"
@@ -171,12 +169,6 @@ QTreeWidgetItem *QuickModInstallDialog::itemForVersion(QuickModVersionPtr versio
 	return m_progressEntries.value(version);
 }
 
-void QuickModInstallDialog::openDonationLink(const int row) const
-{
-	const QTreeWidgetItem *item = ui->progressList->topLevelItem(row);
-	QDesktopServices::openUrl(QUrl(item->text(3)));
-}
-
 void QuickModInstallDialog::contextMenuRequested(const QPoint &pos)
 {
 	QTreeWidgetItem *item = ui->progressList->itemAt(pos);
@@ -235,30 +227,16 @@ void QuickModInstallDialog::setWebViewShown(bool shown)
 		ui->downloadSplitter->setSizes(QList<int>({100, 0}));
 }
 
-void QuickModInstallDialog::on_donateFinishButton_clicked()
-{
-	for (int i = 0; i < ui->progressList->topLevelItemCount(); ++i)
-	{
-		openDonationLink(i);
-	}
-	accept();
-}
-
 int QuickModInstallDialog::exec()
 {
 	showMaximized();
-	ui->donateFinishButton->setVisible(false);
 
-	// TODO removals
-
-	m_modVersions;
+	//TODO: remove use of m_modVersions. It is bad.
+	for (const auto action : m_actions)
 	{
-		for (const auto action : m_actions)
+		if (action.type == Transaction::Action::Add || action.type == Transaction::Action::ChangeVersion)
 		{
-			if (action.type == Transaction::Action::Add || action.type == Transaction::Action::ChangeVersion)
-			{
-				m_modVersions.append(MMC->qmdb()->version(action.uid, action.targetVersion, action.targetRepo));
-			}
+			m_modVersions.append(MMC->qmdb()->version(action.uid, action.targetVersion, action.targetRepo));
 		}
 	}
 
@@ -297,15 +275,7 @@ void QuickModInstallDialog::processVersionList()
 		// Add a progress list entry for each download
 		addProgressListEntry(version);
 
-		if (m_instance->installedPackages()->isQuickmodInstalled(version->mod->uid()))
-		{
-			QLOG_INFO() << version->mod->uid() << " is already installed";
-			setProgressListMsg(version, tr("Success: Already installed"), Qt::darkGreen);
-			it.remove();
-			continue;
-		}
-
-		if (MMC->qmdb()->isModMarkedAsExists(version->mod, version))
+		if (version->isCached())
 		{
 			QLOG_INFO() << version->mod->uid() << "exists already. Only installing.";
 			install(version);
@@ -323,8 +293,6 @@ void QuickModInstallDialog::processVersionList()
 
 void QuickModInstallDialog::selectDownloadUrls()
 {
-	bool haveDonation = false;
-
 	QMutableListIterator<QuickModVersionPtr> it(m_modVersions);
 	while (it.hasNext())
 	{
@@ -334,18 +302,8 @@ void QuickModInstallDialog::selectDownloadUrls()
 		const auto download = QuickModDownloadSelectionDialog::select(version, this);
 		m_selectedDownloadUrls.insert(version, download);
 
-		const auto url = version->mod->safeUrl(QuickModMetadata::Donation);
-		if (download.type == QuickModDownload::Direct && !url.isEmpty())
-		{
-			auto item = itemForVersion(version);
-			item->setText(3, url.toString(QUrl::PrettyDecoded));
-			haveDonation = true;
-		}
-
 		clearProgressListMsg(version);
 	}
-
-	ui->donateFinishButton->setVisible(haveDonation);
 }
 
 void QuickModInstallDialog::runDirectDownloads()
@@ -400,7 +358,9 @@ void QuickModInstallDialog::runWebDownload(QuickModVersionPtr version)
 
 bool QuickModInstallDialog::install(QuickModVersionPtr version)
 {
-	if (!QFile::copy(MMC->qmdb()->existingModFile(version->mod, version->version()), PathCombine(m_instance->minecraftRoot(), "mods")))
+	auto source = PathCombine(version->storagePath(), version->fileName());
+	auto destination = PathCombine(m_instance->minecraftRoot(), version->instancePath(), version->fileName());
+	if (!QFile::copy(source, destination))
 	{
 		setProgressListMsg(version, tr("Couldn't copy mod file to destination"), Qt::red);
 		return false;
@@ -526,44 +486,9 @@ void QuickModInstallDialog::downloadCompleted()
 	checkIsDone();
 }
 
-// not the place...
-static QString fileName(const QuickModVersionPtr &version, const QUrl &url)
-{
-	QString ending = QMimeDatabase().mimeTypeForUrl(url).preferredSuffix();
-	if (!ending.isEmpty())
-	{
-		ending.prepend('.');
-	}
-	if (ending == ".bin")
-	{
-		ending = ".jar";
-	}
-	if (version->installType == QuickModVersion::LiteLoaderMod)
-	{
-		ending = ".litemod";
-	}
-	return version->mod->internalUid() + "-" + version->name() + ending;
-}
-
 void QuickModInstallDialog::handleDownload(QuickModVersionPtr version, const QByteArray &data,
 									   const QUrl &url)
 {
-	QString dlpath;
-	switch (version->installType)
-	{
-	case QuickModVersion::ForgeMod:
-	case QuickModVersion::ForgeCoreMod:
-	case QuickModVersion::LiteLoaderMod:
-		dlpath = PathCombine(MMC->settings()->get("CentralModsDir").toString(), "mods");
-		break;
-	case QuickModVersion::Extract:
-	case QuickModVersion::ConfigPack:
-		dlpath = PathCombine(MMC->settings()->get("CentralModsDir").toString(), "archives");
-		break;
-	case QuickModVersion::Group:
-		return;
-	}
-
 	const QByteArray actual = QCryptographicHash::hash(data, QCryptographicHash::Sha1).toHex();
 	if (!version->sha1.isNull() && actual != version->sha1)
 	{
@@ -571,6 +496,8 @@ void QuickModInstallDialog::handleDownload(QuickModVersionPtr version, const QBy
 					<< ". Actual: " << actual << " Expected: " << version->sha1;
 		throw MMCError(tr("Error: Checksum mismatch"));
 	}
+	
+	QString dlpath = version->storagePath();
 
 	if(!ensureFolderPathExists(dlpath))
 	{
@@ -578,18 +505,16 @@ void QuickModInstallDialog::handleDownload(QuickModVersionPtr version, const QBy
 		throw MMCError(tr("Unable to create storage folder %1").arg(dlpath));
 	}
 
-	QString filePath = PathCombine(dlpath, fileName(version, url));
+	QString filePath = PathCombine(dlpath, version->fileName());
 	QFile file(filePath);
 	if (!file.open(QFile::WriteOnly | QFile::Truncate))
 	{
 		throw MMCError(
-			tr("Error: Trying to save %1: %2").arg(file.fileName(), file.errorString()));
+			tr("Error: Trying to save %1: %2").arg(filePath, file.errorString()));
 		return;
 	}
 	file.write(data);
 	file.close();
-
-	MMC->qmdb()->markModAsExists(version->mod, version, file.fileName());
 }
 
 

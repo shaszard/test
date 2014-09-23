@@ -2,12 +2,12 @@
 #include "logic/VersionFilterData.h"
 #include <QObject>
 
-QString ForgeVersion::name()
+QString ForgeVersion::name() const
 {
 	return "Forge " + jobbuildver;
 }
 
-QString ForgeVersion::descriptor()
+QString ForgeVersion::descriptor() const
 {
 	return universal_filename;
 }
@@ -19,7 +19,7 @@ QString ForgeVersion::typeString() const
 	return QString();
 }
 
-bool ForgeVersion::operator<(BaseVersion &a)
+bool ForgeVersion::operator<(BaseVersion &a) const
 {
 	ForgeVersion *pa = dynamic_cast<ForgeVersion *>(&a);
 	if (!pa)
@@ -27,7 +27,7 @@ bool ForgeVersion::operator<(BaseVersion &a)
 	return m_buildnr < pa->m_buildnr;
 }
 
-bool ForgeVersion::operator>(BaseVersion &a)
+bool ForgeVersion::operator>(BaseVersion &a) const
 {
 	ForgeVersion *pa = dynamic_cast<ForgeVersion *>(&a);
 	if (!pa)
@@ -35,7 +35,7 @@ bool ForgeVersion::operator>(BaseVersion &a)
 	return m_buildnr > pa->m_buildnr;
 }
 
-bool ForgeVersion::usesInstaller()
+bool ForgeVersion::usesInstaller() const
 {
 	if(installer_url.isEmpty())
 		return false;
@@ -44,12 +44,12 @@ bool ForgeVersion::usesInstaller()
 	return true;
 }
 
-QString ForgeVersion::filename()
+QString ForgeVersion::filename() const
 {
 	return usesInstaller() ? installer_filename : universal_filename;
 }
 
-QString ForgeVersion::url()
+QString ForgeVersion::url() const
 {
 	return usesInstaller() ? installer_url : universal_url;
 }

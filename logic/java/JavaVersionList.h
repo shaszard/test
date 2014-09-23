@@ -26,17 +26,17 @@ class JavaListLoadTask;
 
 struct JavaVersion : public BaseVersion
 {
-	virtual QString descriptor()
+	QString descriptor() const override
 	{
 		return id;
 	}
 
-	virtual QString name()
+	QString name() const override
 	{
 		return id;
 	}
 
-	virtual QString typeString() const
+	QString typeString() const override
 	{
 		return arch;
 	}

@@ -10,12 +10,12 @@ bool MinecraftVersion::usesLegacyLauncher()
 	return m_traits.contains("legacyLaunch") || m_traits.contains("aplhaLaunch");
 }
 
-QString MinecraftVersion::descriptor()
+QString MinecraftVersion::descriptor() const
 {
 	return m_descriptor;
 }
 
-QString MinecraftVersion::name()
+QString MinecraftVersion::name() const
 {
 	return m_name;
 }

@@ -28,7 +28,10 @@
 #include "logic/quickmod/QuickModMetadata.h"
 #include "QuickModDownload.h"
 #include "QuickModVersionRef.h"
+#include <logic/settings/SettingsObject.h>
 #include "modutils.h"
+#include "pathutils.h"
+#include "MultiMC.h"
 
 class BaseInstance;
 typedef std::shared_ptr<BaseInstance> InstancePtr;
@@ -39,7 +42,7 @@ Q_DECLARE_METATYPE(QuickModVersionPtr)
 
 class QuickModVersion : public BaseVersion
 {
-public:
+public: /* types */
 	enum InstallType
 	{
 		ForgeMod,
@@ -63,6 +66,7 @@ public:
 		QUrl repo;
 	};
 
+public: /* construction */
 	QuickModVersion(QuickModMetadataPtr mod, bool valid = true) : mod(mod)
 	{
 	}
@@ -71,12 +75,14 @@ public:
 	void parse(const QJsonObject &object);
 	QJsonObject toJson() const;
 
-	QString descriptor()
+public: /* methods */
+	
+	QString descriptor() const override
 	{
 		return m_version.toString();
 	}
 
-	QString name()
+	QString name() const override
 	{
 		return versionName;
 	}
@@ -91,8 +97,25 @@ public:
 		return QuickModVersionRef(mod->uid(), m_version);
 	}
 
-	bool needsDeploy() const;
+	/// get the file name for the mod file.
+	QString fileName() const;
 
+	/// get the local cache storage path for the mod
+	QString storagePath() const;
+
+	/// get the instance deploy path for the mod
+	QString instancePath() const;
+
+	/// is the local mod file available?
+	bool isCached() const;
+
+	//FIXME: does this really serve any purpose?
+	bool needsDeploy() const
+	{
+		return !instancePath().isNull();
+	}
+
+public: /* data */
 	/// quickmod this is associated with
 	QuickModMetadataPtr mod;
 
@@ -117,7 +140,7 @@ public:
 	QMap<QuickModRef, QuickModVersionRef> conflicts;
 	QMap<QuickModRef, QuickModVersionRef> provides;
 
-	//FIXME: move these to some 'File' object
+	// FIXME: move these to some 'File' object
 	/// SHA1 checksum of the downloaded file.
 	QString sha1;
 

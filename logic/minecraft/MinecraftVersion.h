@@ -32,8 +32,8 @@ class MinecraftVersion : public BaseVersion, public VersionPatch
 {
 public: /* methods */
 	bool usesLegacyLauncher();
-	virtual QString descriptor() override;
-	virtual QString name() override;
+	virtual QString descriptor() const override;
+	virtual QString name() const override;
 	virtual QString typeString() const override;
 	virtual bool hasJarMods() override;
 	virtual bool isMinecraftVersion() override;

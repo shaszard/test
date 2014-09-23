@@ -89,28 +89,6 @@ public: /* methods */
 	/// update quickmod files
 	void updateFiles();
 
-private: /* garbage from QuickModSettings */
-	/**
-	 * ensure that only mods that really exist on the local filesystem are marked as available
-	 */
-	void checkFileCache();
-
-public: /* garbage from QuickModSettings */
-	/// declare that we have downloaded and cached a file
-	void markModAsExists(QuickModMetadataPtr mod, const QuickModVersionRef &version, const QString &fileName);
-
-	/// have we in the past declared a file as downloaded?
-	bool isModMarkedAsExists(QuickModMetadataPtr mod, const QuickModVersionRef &version) const;
-
-	/// get where a file is actually stored?
-	QString existingModFile(QuickModMetadataPtr mod, const QuickModVersionRef &version) const;
-
-	/// general purpose garbage dump for things that didn't fit in.
-	std::shared_ptr<SettingsObject> settings() const
-	{
-		return m_settings;
-	}
-	
 signals:
 	void aboutToReset();
 	void reset();

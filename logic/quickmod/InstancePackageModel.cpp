@@ -251,7 +251,7 @@ QVariant InstancePackageModel::enabledData(int row, int role) const
 	// will have to wait
 	if (role == Qt::CheckStateRole)
 	{
-		return true;
+		return Qt::Checked;
 		// FIXME: implement
 		// return mods[row].enabled() ? Qt::Checked : Qt::Unchecked;
 	}

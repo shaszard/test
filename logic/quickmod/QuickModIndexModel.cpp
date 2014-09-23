@@ -16,6 +16,7 @@
 
 QuickModIndexModel::QuickModIndexModel(QObject *parent) : QAbstractItemModel(parent)
 {
+	/*
 	connect(MMC->qmdb()->settings()->getSetting("Indices").get(), &Setting::SettingChanged,
 	[this](const Setting &, QVariant)
 	{
@@ -23,10 +24,13 @@ QuickModIndexModel::QuickModIndexModel(QObject *parent) : QAbstractItemModel(par
 	});
 
 	QMetaObject::invokeMethod(this, "reload", Qt::QueuedConnection); // to prevent infinite loops
+	*/
 }
 
 int QuickModIndexModel::rowCount(const QModelIndex &parent) const
 {
+	return 0;
+	/*
 	if (!parent.isValid())
 	{
 		// root -> repositories
@@ -37,6 +41,7 @@ int QuickModIndexModel::rowCount(const QModelIndex &parent) const
 		// child -> mods
 		return m_repos.at(parent.row()).mods.size();
 	}
+	*/
 }
 int QuickModIndexModel::columnCount(const QModelIndex &parent) const
 {
@@ -45,6 +50,7 @@ int QuickModIndexModel::columnCount(const QModelIndex &parent) const
 
 QVariant QuickModIndexModel::data(const QModelIndex &index, int role) const
 {
+	/*
 	if (index.parent().isValid())
 	{
 		const Repo repo = m_repos.at(index.row());
@@ -78,6 +84,7 @@ QVariant QuickModIndexModel::data(const QModelIndex &index, int role) const
 			return qm->internalUid();
 		}
 	}
+	*/
 	return QVariant();
 }
 QVariant QuickModIndexModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -117,26 +124,37 @@ QModelIndex QuickModIndexModel::parent(const QModelIndex &child) const
 
 void QuickModIndexModel::setRepositoryIndexUrl(const QString &repository, const QUrl &url)
 {
+	/*
 	QMap<QString, QVariant> map = MMC->qmdb()->settings()->get("Indices").toMap();
 	map[repository] = url.toString(QUrl::FullyEncoded);
 	MMC->qmdb()->settings()->set("Indices", map);
+	*/
 }
 QUrl QuickModIndexModel::repositoryIndexUrl(const QString &repository) const
 {
+	/*
 	return QUrl(MMC->qmdb()->settings()->get("Indices").toMap()[repository].toString(), QUrl::StrictMode);
+	*/
+	return QUrl();
 }
 bool QuickModIndexModel::haveRepositoryIndexUrl(const QString &repository) const
 {
+	/*
 	return MMC->qmdb()->settings()->get("Indices").toMap().contains(repository);
+	*/
+	return false;
 }
 QList<QUrl> QuickModIndexModel::indices() const
 {
+	
 	QList<QUrl> out;
+	/*
 	const auto map = MMC->qmdb()->settings()->get("Indices").toMap();
 	for (const auto value : map.values())
 	{
 		out.append(QUrl(value.toString(), QUrl::StrictMode));
 	}
+	*/
 	return out;
 }
 

@@ -29,13 +29,13 @@ struct BaseVersion
 	 * A string used to identify this version in config files.
 	 * This should be unique within the version list or shenanigans will occur.
 	 */
-	virtual QString descriptor() = 0;
+	virtual QString descriptor() const = 0;
 
 	/*!
 	 * The name of this version as it is displayed to the user.
 	 * For example: "1.5.1"
 	 */
-	virtual QString name() = 0;
+	virtual QString name() const = 0;
 
 	/*!
 	 * This should return a string that describes
@@ -43,11 +43,11 @@ struct BaseVersion
 	 */
 	virtual QString typeString() const = 0;
 
-	virtual bool operator<(BaseVersion &a)
+	virtual bool operator<(BaseVersion &a) const
 	{
 		return name() < a.name();
 	};
-	virtual bool operator>(BaseVersion &a)
+	virtual bool operator>(BaseVersion &a) const
 	{
 		return name() > a.name();
 	};

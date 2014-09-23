@@ -26,6 +26,96 @@
 #include "logic/MMCJson.h"
 #include "logic/BaseInstance.h"
 
+//BEGIN mod file logic
+// FIXME: see the pattern. This CALLS for splitting into more classes, or abstracting away
+// into data.
+QString QuickModVersion::fileName() const
+{
+	QString ending;
+	switch (installType)
+	{
+	case QuickModVersion::ForgeMod:
+	case QuickModVersion::ForgeCoreMod:
+	{
+		ending = ".jar";
+		break;
+	}
+
+	case QuickModVersion::LiteLoaderMod:
+	{
+		ending = ".litemod";
+		break;
+	}
+
+	case QuickModVersion::Extract:
+	case QuickModVersion::ConfigPack:
+	{
+		ending = ".zip";
+		break;
+	}
+
+	case QuickModVersion::Group:
+	default:
+	{
+		return QString();
+	}
+	}
+	return mod->internalUid() + "-" + name() + ending;
+}
+
+//FIXME: simplistic, plug in a file cache into this
+bool QuickModVersion::isCached() const
+{
+	auto storage = storagePath();
+	if(storage.isNull())
+		return false;
+	
+	QFileInfo finfo (PathCombine(storagePath(), fileName()));
+	return finfo.exists();
+}
+
+// FIXME: do not reuse the original CentralModsDir!
+QString QuickModVersion::storagePath() const
+{
+	switch (installType)
+	{
+	case QuickModVersion::ForgeMod:
+	case QuickModVersion::ForgeCoreMod:
+	case QuickModVersion::LiteLoaderMod:
+		return PathCombine(MMC->settings()->get("CentralModsDir").toString(), "mods");
+
+	case QuickModVersion::Extract:
+	case QuickModVersion::ConfigPack:
+		return PathCombine(MMC->settings()->get("CentralModsDir").toString(), "archives");
+
+	case QuickModVersion::Group:
+	default:
+		return QString();
+	}
+}
+
+// FIXME: make this part of the json.
+QString QuickModVersion::instancePath() const
+{
+	QString dlpath;
+	switch (installType)
+	{
+	case QuickModVersion::ForgeMod:
+	case QuickModVersion::ForgeCoreMod:
+	case QuickModVersion::LiteLoaderMod:
+		return "mods";
+
+	case QuickModVersion::Extract:
+	case QuickModVersion::ConfigPack:
+	case QuickModVersion::Group:
+	default:
+		return QString();
+	}
+}
+//END
+
+
+//BEGIN de/serialization
 QList<QuickModVersionPtr> QuickModVersion::parse(const QJsonObject &object, QuickModMetadataPtr mod)
 {
 	QList<QuickModVersionPtr> out;
@@ -244,24 +334,25 @@ QJsonObject QuickModVersion::toJson() const
 	{
 	case ForgeMod:
 		obj.insert("installType", QStringLiteral("forgeMod"));
+		break;
 	case ForgeCoreMod:
 		obj.insert("installType", QStringLiteral("forgeCoreMod"));
+		break;
 	case LiteLoaderMod:
 		obj.insert("installType", QStringLiteral("liteloaderMod"));
+		break;
 	case Extract:
 		obj.insert("installType", QStringLiteral("extract"));
+		break;
 	case ConfigPack:
 		obj.insert("installType", QStringLiteral("configPack"));
+		break;
 	case Group:
 		obj.insert("installType", QStringLiteral("group"));
+		break;
 	}
 	MMCJson::writeObjectList(obj, "urls", downloads);
 	return obj;
-}
-
-bool QuickModVersion::needsDeploy() const
-{
-	return installType == ForgeCoreMod;
 }
 
 QJsonObject QuickModVersion::Library::toJson() const
@@ -274,4 +365,4 @@ QJsonObject QuickModVersion::Library::toJson() const
 	}
 	return obj;
 }
-
+//END
