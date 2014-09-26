@@ -35,6 +35,7 @@ public: /* data types */
 			Remove
 		} type = Invalid;
 		Action(QString uid, QString repo, QString version, Type t);
+		Action(const Action & a);
 		Action() {}
 	};
 

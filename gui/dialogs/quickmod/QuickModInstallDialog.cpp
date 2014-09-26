@@ -122,55 +122,9 @@ QuickModInstallDialog::~QuickModInstallDialog()
 	delete ui;
 }
 
-void QuickModInstallDialog::addProgressListEntry(QuickModVersionPtr version, const QString &url)
-{
-	auto item = new QTreeWidgetItem(ui->progressList);
-	m_progressEntries.insert(version, item);
-	item->setText(0, version->mod->name());
-	item->setIcon(0, version->mod->icon());
-	item->setText(1, version->name());
-	item->setText(2, url);
-	item->setData(4, ExtraRoles::IgnoreRole, true);
-	item->setText(4, tr("Download waiting"));
-}
-
-void QuickModInstallDialog::setProgressListUrl(QuickModVersionPtr version, const QString &url)
-{
-	auto item = itemForVersion(version);
-	item->setText(2, url);
-}
-
-void QuickModInstallDialog::setProgressListMsg(QuickModVersionPtr version, const QString &msg,
-											   const QColor &color)
-{
-	auto item = itemForVersion(version);
-	item->setData(4, ExtraRoles::IgnoreRole, true);
-	item->setText(4, msg);
-	item->setData(4, Qt::ForegroundRole, color);
-}
-
-void QuickModInstallDialog::setVersionProgress(QuickModVersionPtr version, qint64 current,
-											   qint64 max)
-{
-	auto item = itemForVersion(version);
-	item->setData(4, ExtraRoles::IgnoreRole, false);
-	item->setData(4, ExtraRoles::ProgressRole, current);
-	item->setData(4, ExtraRoles::TotalRole, max);
-}
-
-void QuickModInstallDialog::setShowProgressBar(QuickModVersionPtr version, bool show)
-{
-	auto item = itemForVersion(version);
-	item->setData(4, ExtraRoles::IgnoreRole, !show);
-}
-
-QTreeWidgetItem *QuickModInstallDialog::itemForVersion(QuickModVersionPtr version) const
-{
-	return m_progressEntries.value(version);
-}
-
 void QuickModInstallDialog::contextMenuRequested(const QPoint &pos)
 {
+	/*
 	QTreeWidgetItem *item = ui->progressList->itemAt(pos);
 	if (!item)
 	{
@@ -203,10 +157,12 @@ void QuickModInstallDialog::contextMenuRequested(const QPoint &pos)
 	copyDonation->setVisible(!item->text(3).isEmpty());
 
 	menu.exec(QCursor::pos());
+	*/
 }
 
 bool QuickModInstallDialog::checkIsDone()
 {
+	/*
 	if (m_downloadingUrls.isEmpty() && ui->webTabView->count() == 0 && m_modVersions.isEmpty())
 	{
 		ui->finishButton->setEnabled(true);
@@ -217,6 +173,9 @@ bool QuickModInstallDialog::checkIsDone()
 		ui->finishButton->setDisabled(true);
 		return false;
 	}
+	*/
+	ui->finishButton->setEnabled(true);
+	return true;
 }
 
 void QuickModInstallDialog::setWebViewShown(bool shown)
@@ -231,115 +190,47 @@ int QuickModInstallDialog::exec()
 {
 	showMaximized();
 
-	//TODO: remove use of m_modVersions. It is bad.
-	for (const auto action : m_actions)
+	//FIXME: move to a Task
+	/*
+	/// turn actions into extended actions, fit for processing
+	auto actions = m_instance->installedPackages()->getTransaction()->getActions();
+	for (const auto action : actions)
 	{
+		ExtendedAction ext_action(action);
 		if (action.type == Transaction::Action::Add || action.type == Transaction::Action::ChangeVersion)
 		{
-			m_modVersions.append(MMC->qmdb()->version(action.uid, action.targetVersion, action.targetRepo));
+			ext_action.version = MMC->qmdb()->version(action.uid, action.targetVersion, action.targetRepo);
+			if(!ext_action.version)
+			{
+				ext_action.status = ExtendedAction::Failed;
+				ext_action.message = tr("Mod not in database");
+			}
 		}
+		m_actions.append(ext_action);
 	}
-
-	processVersionList();
-
-	if (checkIsDone())
-	{
-		// displayMessage(tr("No mods need to be downloaded."));
-		return QDialog::exec();
-	}
-
-	selectDownloadUrls();
-
-	runDirectDownloads();
-
-	// Initialize the web mods progress bar.
-	ui->webModsProgressBar->setMaximum(m_modVersions.size());
-	ui->webModsProgressBar->setValue(0);
-	downloadNextMod();
-
+	*/
+	checkIsDone();
 	return QDialog::exec();
 }
 
-void QuickModInstallDialog::setActions(const QList<Transaction::Action> &actions)
-{
-	m_actions = actions;
-}
-
-void QuickModInstallDialog::processVersionList()
-{
-	QMutableListIterator<QuickModVersionPtr> it(m_modVersions);
-	while (it.hasNext())
-	{
-		QuickModVersionPtr version = it.next();
-
-		// Add a progress list entry for each download
-		addProgressListEntry(version);
-
-		if (version->isCached())
-		{
-			QLOG_INFO() << version->mod->uid() << "exists already. Only installing.";
-			install(version);
-			setProgressListMsg(version, tr("Success: Installed from cache"), Qt::darkGreen);
-			it.remove();
-		}
-
-		if (version->downloads.isEmpty())
-		{
-			it.remove();
-			setProgressListMsg(version, tr("Error: No download URLs"), Qt::red);
-		}
-	}
-}
+// FIXME: left only as a 'howto'
+/*
 
 void QuickModInstallDialog::selectDownloadUrls()
 {
-	QMutableListIterator<QuickModVersionPtr> it(m_modVersions);
-	while (it.hasNext())
+	for(auto & action: m_actions)
 	{
-		QuickModVersionPtr version = it.next();
-		setProgressListMsg(version, tr("Selecting URL..."));
+		QuickModVersionPtr version = action.version;
 
 		const auto download = QuickModDownloadSelectionDialog::select(version, this);
 		m_selectedDownloadUrls.insert(version, download);
-
-		clearProgressListMsg(version);
 	}
-}
-
-void QuickModInstallDialog::runDirectDownloads()
-{
-	// do all of the direct download mods
-	QMutableListIterator<QuickModVersionPtr> it(m_modVersions);
-	while (it.hasNext())
-	{
-		QuickModVersionPtr version = it.next();
-		QuickModDownload download = m_selectedDownloadUrls[version];
-		if (download.type == QuickModDownload::Direct)
-		{
-			QLOG_DEBUG() << "Direct download used for" << download.url;
-			processReply(MMC->qnam()->get(QNetworkRequest(QUrl(download.url))), version);
-			it.remove();
-		}
-	}
-}
-
-void QuickModInstallDialog::downloadNextMod()
-{
-	if (checkIsDone())
-		return;
-	if (m_modVersions.isEmpty())
-		return;
-
-	auto version = m_modVersions.takeFirst();
-	runWebDownload(version);
 }
 
 void QuickModInstallDialog::runWebDownload(QuickModVersionPtr version)
 {
 	const QUrl url = QUrl(m_selectedDownloadUrls[version].url);
 	QLOG_INFO() << "Downloading " << version->name() << "(" << url.toString() << ")";
-
-	setProgressListMsg(version, tr("Waiting on web page."), QColor(Qt::blue));
 
 	auto navigator = new WebDownloadNavigator(this);
 	navigator->load(url);
@@ -354,18 +245,6 @@ void QuickModInstallDialog::runWebDownload(QuickModVersionPtr version)
 	});
 
 	setWebViewShown(true);
-}
-
-bool QuickModInstallDialog::install(QuickModVersionPtr version)
-{
-	auto source = PathCombine(version->storagePath(), version->fileName());
-	auto destination = PathCombine(m_instance->minecraftRoot(), version->instancePath(), version->fileName());
-	if (!QFile::copy(source, destination))
-	{
-		setProgressListMsg(version, tr("Couldn't copy mod file to destination"), Qt::red);
-		return false;
-	}
-	return true;
 }
 
 void QuickModInstallDialog::urlCaught(QNetworkReply *reply, WebDownloadNavigator *navigator)
@@ -394,128 +273,5 @@ void QuickModInstallDialog::urlCaught(QNetworkReply *reply, WebDownloadNavigator
 		setWebViewShown(false);
 	}
 }
-
-void QuickModInstallDialog::processReply(QNetworkReply *reply, QuickModVersionPtr version)
-{
-	m_downloadingUrls.append(reply->url());
-
-	setProgressListUrl(version, reply->url().toString(QUrl::PrettyDecoded));
-	reply->setProperty("version", QVariant::fromValue(version));
-
-	connect(reply, &QNetworkReply::downloadProgress, this,
-			&QuickModInstallDialog::downloadProgress);
-	connect(reply, &QNetworkReply::finished, this, &QuickModInstallDialog::downloadCompleted);
-}
-
-void QuickModInstallDialog::downloadProgress(const qint64 current, const qint64 max)
-{
-	auto reply = qobject_cast<QNetworkReply *>(sender());
-	auto version = reply->property("version").value<QuickModVersionPtr>();
-	setVersionProgress(version, current, max);
-}
-
-void QuickModInstallDialog::downloadCompleted()
-{
-	QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
-	m_downloadingUrls.removeAll(reply->url());
-	auto version = reply->property("version").value<QuickModVersionPtr>();
-
-	QVariant statusCode = reply->attribute( QNetworkRequest::HttpStatusCodeAttribute );
-	if ( !statusCode.isValid() )
-		return;
-
-	int status = statusCode.toInt();
-	QString reasonText = reply->attribute( QNetworkRequest::HttpReasonPhraseAttribute ).toString();
-	QLOG_DEBUG() << "HTTP " << reasonText << ":" << status;
-	if(status != 200)
-	{
-		auto pairs = reply->rawHeaderPairs();
-		for(auto pair : pairs)
-		{
-			QLOG_DEBUG() << pair.first << ":" << pair.second;
-		}
-		QLOG_DEBUG() << reply->readAll();
-	}
-
-	// redirection
-	const QVariant location = reply->header(QNetworkRequest::LocationHeader);
-	QString redirectURL;
-	if(location.isValid())
-	{
-		redirectURL = location.toString();
-	}
-	// FIXME: This is a hack for https://bugreports.qt-project.org/browse/QTBUG-41061
-	else if(reply->hasRawHeader("Location"))
-	{
-		auto data = reply->rawHeader("Location");
-		if(data.size() > 2 && data[0] == '/' && data[1] == '/')
-			redirectURL = reply->url().scheme() + ":" + data;
-	}
-
-	if(!redirectURL.isEmpty())
-	{
-		QUrl locationUrl(redirectURL);
-		QLOG_DEBUG() << "Redirect to:" << locationUrl.toString();
-		processReply(MMC->qnam()->get(QNetworkRequest(locationUrl)), version);
-		m_downloadingUrls.append(locationUrl);
-		return;
-	}
-	QLOG_DEBUG() << "Final URL:" << reply->url().toString();
-
-	setProgressListMsg(version, tr("Installing"));
-
-	bool fail = false;
-	try
-	{
-		handleDownload(version, reply->readAll(), reply->url());
-	}
-	catch (MMCError &e)
-	{
-		setProgressListMsg(version, e.cause(), QColor(Qt::red));
-		fail = true;
-	}
-	reply->close();
-	reply->deleteLater();
-
-	if (!fail && install(version))
-	{
-		setProgressListMsg(version, tr("Success: Downloaded and installed successfully."),
-						   QColor(Qt::darkGreen));
-	}
-
-	checkIsDone();
-}
-
-void QuickModInstallDialog::handleDownload(QuickModVersionPtr version, const QByteArray &data,
-									   const QUrl &url)
-{
-	const QByteArray actual = QCryptographicHash::hash(data, QCryptographicHash::Sha1).toHex();
-	if (!version->sha1.isNull() && actual != version->sha1)
-	{
-		QLOG_INFO() << "Checksum missmatch for " << version->mod->uid()
-					<< ". Actual: " << actual << " Expected: " << version->sha1;
-		throw MMCError(tr("Error: Checksum mismatch"));
-	}
-	
-	QString dlpath = version->storagePath();
-
-	if(!ensureFolderPathExists(dlpath))
-	{
-		QLOG_INFO() << "Unable to create storage folder " << dlpath;
-		throw MMCError(tr("Unable to create storage folder %1").arg(dlpath));
-	}
-
-	QString filePath = PathCombine(dlpath, version->fileName());
-	QFile file(filePath);
-	if (!file.open(QFile::WriteOnly | QFile::Truncate))
-	{
-		throw MMCError(
-			tr("Error: Trying to save %1: %2").arg(filePath, file.errorString()));
-		return;
-	}
-	file.write(data);
-	file.close();
-}
-
-
+*/
 #include "QuickModInstallDialog.moc"

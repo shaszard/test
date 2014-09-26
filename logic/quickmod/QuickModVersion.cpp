@@ -20,8 +20,11 @@
 #include <QJsonDocument>
 
 #include "logic/net/HttpMetaCache.h"
+#include "logic/OneSixInstance.h"
 #include "QuickModMetadata.h"
+#include "InstancePackageList.h"
 #include "modutils.h"
+#include <JlCompress.h>
 #include "MultiMC.h"
 #include "logic/MMCJson.h"
 #include "logic/BaseInstance.h"
@@ -97,20 +100,133 @@ QString QuickModVersion::storagePath() const
 // FIXME: make this part of the json.
 QString QuickModVersion::instancePath() const
 {
-	QString dlpath;
 	switch (installType)
 	{
 	case QuickModVersion::ForgeMod:
 	case QuickModVersion::ForgeCoreMod:
 	case QuickModVersion::LiteLoaderMod:
 		return "mods";
-
 	case QuickModVersion::Extract:
+		return ".";
 	case QuickModVersion::ConfigPack:
+		return "config";
 	case QuickModVersion::Group:
 	default:
 		return QString();
 	}
+}
+
+void QuickModVersion::installInto(std::shared_ptr<OneSixInstance> m_instance)
+{
+	// remove any files from previously installed versions
+	/*
+	for (auto it : installedModFiles(version->mod->uid()))
+	{
+		if (!QFile::remove(PathCombine(instance->minecraftRoot(), it.path)))
+		{
+			QLOG_ERROR() << "Unable to remove previous version file" << it.path
+						 << ", this may cause problems";
+		}
+		markModAsUninstalled(version->mod->uid());
+	}
+	*/
+
+	QString source = PathCombine(storagePath(), fileName());
+	QString destination = instancePath();
+
+	// with nothing to install, we are finished.
+	if(destination.isNull())
+	{
+		return;
+	}
+	
+	destination = PathCombine(m_instance->minecraftRoot(), destination);
+
+	// make sure the destination folder exists
+	if(!ensureFolderPathExists(destination))
+	{
+		QLOG_INFO() << "Unable to create mod destination folder " << destination;
+		throw MMCError(QObject::tr("Unable to create mod destination folder %1").arg(destination));
+	}
+
+	if (installType == QuickModVersion::Extract ||
+		installType == QuickModVersion::ConfigPack)
+	{
+		QLOG_INFO() << "Extracting" << source << "to" << destination;
+		QFileInfo finfo(source);
+		const QMimeType mimeType = QMimeDatabase().mimeTypeForFile(finfo);
+		if (mimeType.inherits("application/zip"))
+		{
+			JlCompress::extractDir(finfo.absoluteFilePath(), destination);
+		}
+		else
+		{
+			throw MMCError(QObject::tr("Error: Trying to extract an unknown file type %1")
+								   .arg(finfo.completeSuffix()));
+		}
+	}
+	else
+	{
+		const QString dest = PathCombine(destination, QFileInfo(source).fileName());
+		if (QFile::exists(dest))
+		{
+			if (!QFile::remove(dest))
+			{
+				throw MMCError(QObject::tr("Error: Deploying %1 to %2").arg(source, dest));
+			}
+		}
+		if (!QFile::copy(source, dest))
+		{
+			throw MMCError(QObject::tr("Error: Deploying %1 to %2").arg(source, dest));
+		}
+		//FIXME: replace.
+		// markModAsInstalled(version, dest);
+	}
+
+	// do some things to libraries.
+	if (!libraries.isEmpty())
+	{
+		installLibrariesInto(m_instance);
+	}
+}
+
+//FIXME: this is crap. Use the actual version objects!
+void QuickModVersion::installLibrariesInto(std::shared_ptr<OneSixInstance> m_instance)
+{
+	QJsonObject obj;
+	obj.insert("order", qMin(m_instance->getFullVersion()->getHighestOrder(), 99) + 1);
+	obj.insert("name", mod->name());
+	obj.insert("fileId", mod->uid().toString());
+	obj.insert("version", name());
+	obj.insert("mcVersion", m_instance->intendedVersionId());
+
+	QJsonArray librariesJson;
+	for (auto lib : libraries)
+	{
+		QJsonObject libObj;
+		libObj.insert("name", lib.name);
+		const QString urlString = lib.repo.toString(QUrl::FullyEncoded);
+		libObj.insert("url", urlString);
+		libObj.insert("insert", QString("prepend"));
+		libObj.insert("MMC-depend", QString("soft"));
+		libObj.insert("MMC-hint", QString("recurse"));
+		librariesJson.append(libObj);
+	}
+	obj.insert("+libraries", librariesJson);
+
+	auto filename = PathCombine(m_instance->instanceRoot(),"patches", QString("%1.json").arg(mod->uid().toString()) );
+
+	QFile file(filename);
+	if (!file.open(QFile::WriteOnly))
+	{
+		QLOG_ERROR() << "Error opening" << file.fileName()
+					 << "for reading:" << file.errorString();
+		throw MMCError(QObject::tr("Error installing JSON patch"));
+	}
+	file.write(QJsonDocument(obj).toJson());
+	file.close();
+
+	m_instance->reloadVersion();
 }
 //END
 

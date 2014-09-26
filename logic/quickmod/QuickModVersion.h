@@ -33,6 +33,7 @@
 #include "pathutils.h"
 #include "MultiMC.h"
 
+class OneSixInstance;
 class BaseInstance;
 typedef std::shared_ptr<BaseInstance> InstancePtr;
 
@@ -76,7 +77,6 @@ public: /* construction */
 	QJsonObject toJson() const;
 
 public: /* methods */
-	
 	QString descriptor() const override
 	{
 		return m_version.toString();
@@ -109,11 +109,17 @@ public: /* methods */
 	/// is the local mod file available?
 	bool isCached() const;
 
-	//FIXME: does this really serve any purpose?
+	// FIXME: does this really serve any purpose?
 	bool needsDeploy() const
 	{
 		return !instancePath().isNull();
 	}
+
+	/// install this version of package into the specified instance
+	void installInto(std::shared_ptr<OneSixInstance> m_instance);
+
+private: /* methods */
+	void installLibrariesInto(std::shared_ptr<OneSixInstance> m_instance);
 
 public: /* data */
 	/// quickmod this is associated with

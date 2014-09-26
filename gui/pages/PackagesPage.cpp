@@ -130,7 +130,6 @@ void PackagesPage::on_applyTransaction_clicked()
 	}
 
 	QuickModInstallDialog dlg(m_instance, this);
-	dlg.setActions(transaction->getActions());
 	dlg.exec();
 }
 

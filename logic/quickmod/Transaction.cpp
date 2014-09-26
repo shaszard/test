@@ -6,6 +6,11 @@ Transaction::Action::Action(QString uid, QString repo, QString version,
 {
 }
 
+Transaction::Action::Action(const Transaction::Action &a)
+	: uid(a.uid), type(a.type), targetRepo(a.targetRepo), targetVersion(a.targetVersion)
+{
+}
+
 void Transaction::insert(QString uid, QString version, QString repo)
 {
 	auto ver = Version(repo, version);
@@ -23,7 +28,7 @@ void Transaction::resetComponentVersion(QString uid)
 		return;
 	}
 
-	if(!components[uid].currentVersion.isPresent())
+	if (!components[uid].currentVersion.isPresent())
 	{
 		components.remove(uid);
 	}
@@ -36,7 +41,7 @@ void Transaction::resetComponentVersion(QString uid)
 
 void Transaction::reset()
 {
-	for(auto key: components.keys())
+	for (auto key : components.keys())
 	{
 		resetComponentVersion(key);
 	}
@@ -51,7 +56,7 @@ void Transaction::setComponentVersion(QString uid, QString version, QString repo
 		emit actionAdded(TransactionSource, uid);
 		return;
 	}
-	
+
 	bool was_matched = components[uid].targetVersion == components[uid].currentVersion;
 
 	Version newversion(repo, version);
@@ -60,7 +65,7 @@ void Transaction::setComponentVersion(QString uid, QString version, QString repo
 	if (newversion == components[uid].currentVersion)
 	{
 		// if it was matched, nothing happens
-		if(was_matched)
+		if (was_matched)
 			return;
 		// otherwise we removed the action
 		emit actionRemoved(TransactionSource, uid);
@@ -68,8 +73,8 @@ void Transaction::setComponentVersion(QString uid, QString version, QString repo
 	}
 
 	// otherwise the action changed.
-	//if it was matched, the action is new.
-	if(was_matched)
+	// if it was matched, the action is new.
+	if (was_matched)
 	{
 		emit actionAdded(TransactionSource, uid);
 	}
@@ -98,7 +103,7 @@ void Transaction::removeComponent(QString uid)
 	if (!component.targetVersion.isPresent())
 		return;
 
-	if(component.targetVersion == component.currentVersion)
+	if (component.targetVersion == component.currentVersion)
 	{
 		component.targetVersion.remove();
 		emit actionAdded(TransactionSource, uid);
@@ -116,7 +121,7 @@ QList<Transaction::Action> Transaction::getActions() const
 	for (auto &component : components)
 	{
 		Action a;
-		if(component.getActionInternal(a))
+		if (component.getActionInternal(a))
 		{
 			result.append(a);
 		}
@@ -135,7 +140,7 @@ bool Transaction::Component::getActionInternal(Transaction::Action &a) const
 			a.type = Transaction::Action::Add;
 			a.uid = uid;
 			a.targetVersion = targetVersion.version;
-			a.targetRepo = targetVersion.repo; 
+			a.targetRepo = targetVersion.repo;
 			return true;
 		}
 	}
@@ -148,7 +153,7 @@ bool Transaction::Component::getActionInternal(Transaction::Action &a) const
 			a.type = Transaction::Action::Remove;
 			a.uid = uid;
 			a.targetVersion = QString();
-			a.targetRepo = QString(); 
+			a.targetRepo = QString();
 			return true;
 		}
 		// or the target version is there and different?
@@ -164,10 +169,10 @@ bool Transaction::Component::getActionInternal(Transaction::Action &a) const
 	return false;
 }
 
-bool Transaction::getAction(QString uid, Transaction::Action& action) const
+bool Transaction::getAction(QString uid, Transaction::Action &action) const
 {
 	auto component = components.find(uid);
-	if(component == components.end())
+	if (component == components.end())
 	{
 		return false;
 	}

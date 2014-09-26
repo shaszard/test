@@ -37,7 +37,7 @@
      <widget class="QWidget" name="verticalLayoutWidget_2">
       <layout class="QVBoxLayout" name="downloadListLayout">
        <item>
-        <widget class="QTreeWidget" name="progressList">
+        <widget class="QTreeView" name="progressList">
          <property name="editTriggers">
           <set>QAbstractItemView::NoEditTriggers</set>
          </property>
@@ -50,43 +50,6 @@
          <property name="rootIsDecorated">
           <bool>false</bool>
          </property>
-         <property name="columnCount">
-          <number>5</number>
-         </property>
-         <attribute name="headerDefaultSectionSize">
-          <number>100</number>
-         </attribute>
-         <attribute name="headerShowSortIndicator" stdset="0">
-          <bool>true</bool>
-         </attribute>
-         <attribute name="headerStretchLastSection">
-          <bool>true</bool>
-         </attribute>
-         <column>
-          <property name="text">
-           <string>Name</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>Version</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>URL</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>Donations</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>Progress</string>
-          </property>
-         </column>
         </widget>
        </item>
       </layout>
