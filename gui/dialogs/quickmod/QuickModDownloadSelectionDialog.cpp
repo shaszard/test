@@ -64,6 +64,7 @@ int QuickModDownloadSelectionDialog::selectedIndex() const
 	return ui->list->currentIndex().row();
 }
 
+//FIXME: move to version. Add the missing Any type (0) to enum.
 QuickModDownload
 QuickModDownloadSelectionDialog::highestPriorityDownload(const QuickModVersionPtr version,
 														 const int type)

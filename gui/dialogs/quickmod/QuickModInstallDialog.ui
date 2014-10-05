@@ -37,7 +37,7 @@
      <widget class="QWidget" name="verticalLayoutWidget_2">
       <layout class="QVBoxLayout" name="downloadListLayout">
        <item>
-        <widget class="QTreeView" name="progressList">
+        <widget class="ModListView" name="progressList">
          <property name="editTriggers">
           <set>QAbstractItemView::NoEditTriggers</set>
          </property>
@@ -109,6 +109,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+     <customwidget>
+         <class>ModListView</class>
+         <extends>QTreeView</extends>
+         <header>gui/widgets/ModListView.h</header>
+     </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

@@ -85,50 +85,6 @@ void PackagesPage::on_applyTransaction_clicked()
 		return;
 	}
 
-	// TODO dependency resolution
-	// transaction->depres();
-
-	// user confirmation
-	{
-		QStringList installs, removals, versionChanges;
-		for (const auto action : transaction->getActions())
-		{
-			const QString uid = MMC->qmdb()->userFacingUid(action.uid);
-			if (action.type == Transaction::Action::Add)
-			{
-				installs.append(QString("%1 (%2)").arg(uid, action.targetVersion));
-			}
-			else if (action.type == Transaction::Action::ChangeVersion)
-			{
-				versionChanges.append(QString("%1 (%2 -> %3").arg(uid, m_instance->installedPackages()->installedQuickModVersion(QuickModRef(action.uid)).userFacing(),
-																  action.targetVersion));
-			}
-			else if (action.type == Transaction::Action::Remove)
-			{
-				removals.append(uid);
-			}
-		}
-
-		QString msg = tr("The following actions will be taken:");
-		if (!installs.isEmpty())
-		{
-			msg += '\n' + tr("Install: ") + installs.join(", ");
-		}
-		if (!removals.isEmpty())
-		{
-			msg += '\n' + tr("Removal: ") + removals.join(", ");
-		}
-		if (!versionChanges.isEmpty())
-		{
-			msg += '\n' + tr("Version changes: ") + versionChanges.join(", ");
-		}
-		msg += "\n\n" + tr("Proceed?");
-		if (QMessageBox::question(this, tr("QuickMod Install"), msg, QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
-		{
-			return;
-		}
-	}
-
 	QuickModInstallDialog dlg(m_instance, this);
 	dlg.exec();
 }

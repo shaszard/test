@@ -101,5 +101,3 @@ private:
 	const InstancePackageList::storage_type &m_storage;
 	InstancePackageList::storage_type::const_iterator i;
 };
-
-class Task;

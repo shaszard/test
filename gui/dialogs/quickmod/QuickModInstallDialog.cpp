@@ -47,20 +47,11 @@
 #include <pathutils.h>
 #include "logic/quickmod/QuickModVersionModel.h"
 #include "logic/quickmod/InstancePackageList.h"
+#include <logic/quickmod/TransactionModel.h>
 
 Q_DECLARE_METATYPE(QTreeWidgetItem *)
 
 // TODO load parallel versions in parallel (makes sense, right?)
-
-struct ExtraRoles
-{
-	enum
-	{
-		ProgressRole = Qt::UserRole,
-		TotalRole,
-		IgnoreRole
-	};
-};
 
 class ProgressItemDelegate : public QStyledItemDelegate
 {
@@ -74,11 +65,10 @@ public:
 			   const QModelIndex &index) const
 	{
 		QStyledItemDelegate::paint(painter, opt, index);
-
-		if (!index.data(ExtraRoles::IgnoreRole).toBool())
+		if (index.data(TransactionModel::EnabledRole).toBool())
 		{
-			qlonglong progress = index.data(ExtraRoles::ProgressRole).toLongLong();
-			qlonglong total = index.data(ExtraRoles::TotalRole).toLongLong();
+			qlonglong progress = index.data(TransactionModel::CurrentRole).toLongLong();
+			qlonglong total = index.data(TransactionModel::TotalRole).toLongLong();
 
 			int percent = total == 0 ? 0 : qFloor(progress * 100 / total);
 
@@ -93,28 +83,35 @@ public:
 			QApplication::style()->drawControl(QStyle::CE_ProgressBar, &style, painter);
 		}
 	}
+	virtual QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+	{
+		auto hint = QStyledItemDelegate::sizeHint(option, index);
+		if(hint.width() < 150)
+			hint.setWidth(150);
+		return hint;
+	}
 };
 
 QuickModInstallDialog::QuickModInstallDialog(std::shared_ptr<OneSixInstance> instance,
 											 QWidget *parent)
 	: QDialog(parent), ui(new Ui::QuickModInstallDialog), m_instance(instance)
 {
+	m_model.reset(new TransactionModel(m_instance->installedPackages()->getTransaction()));
 	ui->setupUi(this);
 	setWindowModality(Qt::WindowModal);
 
 	setWebViewShown(false);
 
-	ui->progressList->setItemDelegateForColumn(4, new ProgressItemDelegate(this));
+	ui->progressList->setModel(m_model.get());
+	ui->progressList->setItemDelegateForColumn(2, new ProgressItemDelegate(this));
 
 	ui->webModsProgressBar->setMaximum(0);
 	ui->webModsProgressBar->setValue(0);
 
-	// Set the URL column's width.
-	ui->progressList->setColumnWidth(2, 420);
-
 	connect(ui->progressList, &QWidget::customContextMenuRequested, this,
 			&QuickModInstallDialog::contextMenuRequested);
 	ui->progressList->setContextMenuPolicy(Qt::CustomContextMenu);
+	m_model->start();
 }
 
 QuickModInstallDialog::~QuickModInstallDialog()
@@ -190,25 +187,6 @@ int QuickModInstallDialog::exec()
 {
 	showMaximized();
 
-	//FIXME: move to a Task
-	/*
-	/// turn actions into extended actions, fit for processing
-	auto actions = m_instance->installedPackages()->getTransaction()->getActions();
-	for (const auto action : actions)
-	{
-		ExtendedAction ext_action(action);
-		if (action.type == Transaction::Action::Add || action.type == Transaction::Action::ChangeVersion)
-		{
-			ext_action.version = MMC->qmdb()->version(action.uid, action.targetVersion, action.targetRepo);
-			if(!ext_action.version)
-			{
-				ext_action.status = ExtendedAction::Failed;
-				ext_action.message = tr("Mod not in database");
-			}
-		}
-		m_actions.append(ext_action);
-	}
-	*/
 	checkIsDone();
 	return QDialog::exec();
 }

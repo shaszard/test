@@ -662,6 +662,8 @@ SET(MULTIMC_SOURCES
 	logic/quickmod/InstancePackageModel.h
 	logic/quickmod/Transaction.cpp
 	logic/quickmod/Transaction.h
+	logic/quickmod/TransactionModel.cpp
+	logic/quickmod/TransactionModel.h
 	logic/quickmod/QuickModMetadata.cpp
 	logic/quickmod/QuickModMetadata.h
 	logic/quickmod/QuickModRef.cpp

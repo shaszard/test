@@ -34,6 +34,13 @@ void InstancePackageModel::populate()
 		added(InstanceSource, iter->uid().toString());
 		iter->next();
 	}
+	auto transaction = m_list->getTransaction();
+	auto actions = transaction->getActions();
+
+	for (auto &action : actions)
+	{
+		added(TransactionSource, action.uid);
+	}
 }
 
 void InstancePackageModel::added(ChangeSource source, QString uid)

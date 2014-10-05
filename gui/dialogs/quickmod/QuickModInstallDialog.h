@@ -26,6 +26,7 @@
 
 #include "logic/BaseInstance.h"
 
+class TransactionModel;
 namespace Ui
 {
 class QuickModInstallDialog;
@@ -62,28 +63,8 @@ private slots:
 
 	void contextMenuRequested(const QPoint &pos);
 
-private: /* types */
-	//TODO: move to a Task
-	/*
-	struct ExtendedAction : public Transaction::Action
-	{
-		ExtendedAction(const Transaction::Action & a);
-
-		Transaction::Action action;
-		QuickModVersionPtr version;
-		enum Status
-		{
-			Initial,
-			Running,
-			Failed,
-			Done
-		} status = Initial;
-		QString message;
-		int progress = 0;
-	};
-	*/
-
 private: /* data */
 	Ui::QuickModInstallDialog *ui;
+	std::shared_ptr<TransactionModel> m_model;
 	std::shared_ptr<OneSixInstance> m_instance;
 };

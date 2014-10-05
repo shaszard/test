@@ -25,6 +25,8 @@ public: /* data types */
 	struct Action
 	{
 		QString uid;
+		QString origRepo;
+		QString origVersion;
 		QString targetRepo;
 		QString targetVersion;
 		enum Type
@@ -34,7 +36,6 @@ public: /* data types */
 			ChangeVersion,
 			Remove
 		} type = Invalid;
-		Action(QString uid, QString repo, QString version, Type t);
 		Action(const Action & a);
 		Action() {}
 	};

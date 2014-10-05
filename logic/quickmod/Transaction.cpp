@@ -1,11 +1,5 @@
 #include "Transaction.h"
 
-Transaction::Action::Action(QString uid, QString repo, QString version,
-							Transaction::Action::Type t)
-	: uid(uid), targetRepo(repo), targetVersion(version), type(t)
-{
-}
-
 Transaction::Action::Action(const Transaction::Action &a)
 	: uid(a.uid), type(a.type), targetRepo(a.targetRepo), targetVersion(a.targetVersion)
 {
@@ -147,6 +141,8 @@ bool Transaction::Component::getActionInternal(Transaction::Action &a) const
 	// component started with a version
 	else
 	{
+		a.origRepo = currentVersion.repo;
+		a.origVersion = targetVersion.version;
 		// and it no longer has one?
 		if (!targetVersion.isPresent())
 		{
