@@ -23,7 +23,8 @@ namespace Ui
 class QuickModDownloadSelectionDialog;
 }
 
-typedef std::shared_ptr<class QuickModVersion> QuickModVersionPtr;
+class QuickModVersion;
+typedef std::shared_ptr<QuickModVersion> QuickModVersionPtr;
 class QuickModDownload;
 
 class QuickModDownloadSelectionDialog : public QDialog
@@ -33,8 +34,6 @@ class QuickModDownloadSelectionDialog : public QDialog
 public:
 	~QuickModDownloadSelectionDialog();
 
-	static QuickModDownload select(const QuickModVersionPtr version, QWidget *widgetParent = 0);
-
 private:
 	explicit QuickModDownloadSelectionDialog(const QuickModVersionPtr version,
 											 QWidget *parent = 0);
@@ -42,7 +41,4 @@ private:
 	const QuickModVersionPtr m_version;
 
 	int selectedIndex() const;
-
-	static QuickModDownload highestPriorityDownload(const QuickModVersionPtr version,
-													const int type = 0);
 };

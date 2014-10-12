@@ -59,92 +59,12 @@ QuickModDownloadSelectionDialog::QuickModDownloadSelectionDialog(
 	}
 }
 
-int QuickModDownloadSelectionDialog::selectedIndex() const
-{
-	return ui->list->currentIndex().row();
-}
-
-//FIXME: move to version. Add the missing Any type (0) to enum.
-QuickModDownload
-QuickModDownloadSelectionDialog::highestPriorityDownload(const QuickModVersionPtr version,
-														 const int type)
-{
-	Q_ASSERT(!version->downloads.isEmpty());
-	QuickModDownload current;
-	current.priority = -1;
-	for (auto download : version->downloads)
-	{
-		if (type != 0 && download.type != type)
-		{
-			continue;
-		}
-		if (download.priority > current.priority)
-		{
-			current = download;
-		}
-	}
-	// if we didn't find one that matches
-	if (current.priority == -1)
-	{
-		switch (type)
-		{
-		case QuickModDownload::Direct:
-			return highestPriorityDownload(version);
-		case QuickModDownload::Sequential:
-			return highestPriorityDownload(version, QuickModDownload::Parallel);
-		case QuickModDownload::Parallel:
-			return highestPriorityDownload(version);
-		case QuickModDownload::Encoded:
-			return highestPriorityDownload(version, QuickModDownload::Direct);
-		}
-	}
-	return current;
-}
-
 QuickModDownloadSelectionDialog::~QuickModDownloadSelectionDialog()
 {
 	delete ui;
 }
 
-QuickModDownload QuickModDownloadSelectionDialog::select(const QuickModVersionPtr version,
-														 QWidget *widgetParent)
+int QuickModDownloadSelectionDialog::selectedIndex() const
 {
-	if (version->downloads.isEmpty())
-	{
-		throw MMCError(tr("No downloads available"));
-	}
-	if (version->downloads.size() == 1)
-	{
-		return version->downloads.first();
-	}
-
-	const QString setting = MMC->settings()->get("QuickModDownloadSelection").toString();
-	if (setting == "ask")
-	{
-		QuickModDownloadSelectionDialog dialog(version, widgetParent);
-		if (dialog.exec() == QDialog::Accepted && dialog.selectedIndex() >= 0)
-		{
-			return version->downloads.at(dialog.selectedIndex());
-		}
-		QLOG_INFO() << "You didn't select a download, the one with the highest priority will "
-					   "be used as a fall back";
-		return highestPriorityDownload(version);
-	}
-	else if (setting == "priority")
-	{
-		return highestPriorityDownload(version);
-	}
-	else if (setting == "direct")
-	{
-		return highestPriorityDownload(version, QuickModDownload::Direct);
-	}
-	else if (setting == "sequential")
-	{
-		return highestPriorityDownload(version, QuickModDownload::Sequential);
-	}
-	else
-	{
-		// silently return the highest priority one
-		return highestPriorityDownload(version);
-	}
+	return ui->list->currentIndex().row();
 }

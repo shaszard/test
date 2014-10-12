@@ -305,10 +305,6 @@ void MultiMCPage::applySettings()
 	{
 		s->set("QuickModDownloadSelection", "priority");
 	}
-	else if (ui->qmAlwaysAskBtn->isChecked())
-	{
-		s->set("QuickModDownloadSelection", "ask");
-	}
 	else if (ui->qmDirectBtn->isChecked())
 	{
 		s->set("QuickModDownloadSelection", "direct");
@@ -375,15 +371,7 @@ void MultiMCPage::loadSettings()
 
 	// QuickMods
 	const QString downloadSelect = s->get("QuickModDownloadSelection").toString();
-	if (downloadSelect == "priority")
-	{
-		ui->qmPriorityBtn->setChecked(true);
-	}
-	else if (downloadSelect == "ask")
-	{
-		ui->qmAlwaysAskBtn->setChecked(true);
-	}
-	else if (downloadSelect == "direct")
+	if (downloadSelect == "direct")
 	{
 		ui->qmDirectBtn->setChecked(true);
 	}
@@ -393,7 +381,7 @@ void MultiMCPage::loadSettings()
 	}
 	else
 	{
-		// default
+		// default = "priority"
 		ui->qmPriorityBtn->setChecked(true);
 	}
 

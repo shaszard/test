@@ -8,6 +8,7 @@ class QuickModDownload
 public:
 	enum DownloadType
 	{
+		Invalid = 0,
 		Direct = 1,
 		Parallel,
 		Sequential,

@@ -403,8 +403,6 @@ SET(MULTIMC_SOURCES
 	gui/widgets/LineSeparator.cpp
 	gui/widgets/LineSeparator.h
 	gui/widgets/MCModInfoFrame.cpp
-	gui/widgets/WebDownloadNavigator.h
-	gui/widgets/WebDownloadNavigator.cpp
 	gui/widgets/MCModInfoFrame.h
 	gui/widgets/ModListView.cpp
 	gui/widgets/ModListView.h

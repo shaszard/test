@@ -119,7 +119,7 @@ private:
 										  : Qt::BlockingQueuedConnection);
 	}
 
-protected:
+public:
 	template <typename Ret, typename... Params> Ret wait(const QString &id, Params... params)
 	{
 		static_assert(!std::is_same<Ret, void>::value, "You need to use Bindable::waitVoid");

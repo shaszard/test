@@ -66,35 +66,28 @@ QString QuickModVersion::fileName() const
 	return mod->internalUid() + "-" + name() + ending;
 }
 
-//FIXME: simplistic, plug in a file cache into this
-bool QuickModVersion::isCached() const
+MetaEntryPtr QuickModVersion::cacheEntry() const
 {
-	auto storage = storagePath();
-	if(storage.isNull())
-		return false;
-	
-	QFileInfo finfo (PathCombine(storagePath(), fileName()));
-	return finfo.exists();
+	if(!fileName().isNull())
+	{
+		return MMC->metacache()->resolveEntry("quickmods/cache", fileName());
+	}
+	return nullptr;
 }
 
-// FIXME: do not reuse the original CentralModsDir!
+bool QuickModVersion::needsDeploy() const
+{
+	return !instancePath().isNull();
+}
+
 QString QuickModVersion::storagePath() const
 {
-	switch (installType)
+	auto entry = cacheEntry();
+	if(!entry)
 	{
-	case QuickModVersion::ForgeMod:
-	case QuickModVersion::ForgeCoreMod:
-	case QuickModVersion::LiteLoaderMod:
-		return PathCombine(MMC->settings()->get("CentralModsDir").toString(), "mods");
-
-	case QuickModVersion::Extract:
-	case QuickModVersion::ConfigPack:
-		return PathCombine(MMC->settings()->get("CentralModsDir").toString(), "archives");
-
-	case QuickModVersion::Group:
-	default:
 		return QString();
 	}
+	return entry->getFullPath();
 }
 
 // FIXME: make this part of the json.
@@ -227,6 +220,15 @@ void QuickModVersion::installLibrariesInto(std::shared_ptr<OneSixInstance> m_ins
 	file.close();
 
 	m_instance->reloadVersion();
+}
+
+QuickModDownload QuickModVersion::highestPriorityDownload(const QuickModDownload::DownloadType type)
+{
+	if (downloads.isEmpty())
+	{
+		throw MMCError(QObject::tr("No downloads available"));
+	}
+	return downloads.first();
 }
 //END
 
@@ -371,7 +373,7 @@ void QuickModVersion::parse(const QJsonObject &object)
 		download.group = dlObject.value("group").toString();
 		downloads.append(download);
 	}
-	std::sort(downloads.begin(), downloads.end(),
+	std::stable_sort(downloads.begin(), downloads.end(),
 			  [](const QuickModDownload dl1, const QuickModDownload dl2)
 	{ return dl1.priority < dl2.priority; });
 

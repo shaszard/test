@@ -1,5 +1,7 @@
 #include "TransactionModel.h"
 #include "QuickModDatabase.h"
+#include <QWebPage>
+#include <QWebFrame>
 
 TransactionModel::TransactionModel(std::shared_ptr<Transaction> transaction)
 	: QAbstractListModel()
@@ -12,7 +14,16 @@ TransactionModel::TransactionModel(std::shared_ptr<Transaction> transaction)
 	for (const auto action : actions)
 	{
 		ExtendedAction ext_action(action);
+		int idx = m_actions.size();
 		m_actions.append(ext_action);
+		if (ext_action.versionObj)
+		{
+			m_idx_installs.append(idx);
+		}
+		if (!ext_action.versionObj || ext_action.startVersionObj != ext_action.versionObj)
+		{
+			m_idx_removes.append(idx);
+		}
 	}
 	endResetModel();
 }
@@ -20,57 +31,204 @@ TransactionModel::TransactionModel(std::shared_ptr<Transaction> transaction)
 TransactionModel::ExtendedAction::ExtendedAction(const Transaction::Action &a) : Action(a)
 {
 	modObj = MMC->qmdb()->someModMetadata(QuickModRef(uid));
+	versionObj = MMC->qmdb()->version(uid, targetVersion, targetRepo);
+	startVersionObj = MMC->qmdb()->version(uid, origVersion, origRepo);
+
 	if (type == Transaction::Action::Add || type == Transaction::Action::ChangeVersion)
 	{
-		versionObj = MMC->qmdb()->version(uid, targetVersion, targetRepo);
 		if (!versionObj)
 		{
 			status = ExtendedAction::Failed;
 			statusString = tr("Unknown version");
+			return;
 		}
+		if (versionObj->downloads.isEmpty())
+		{
+			status = ExtendedAction::Failed;
+			statusString = tr("Error: No download URLs");
+			return;
+		}
+		try
+		{
+			downloadUrl = versionObj->highestPriorityDownload().url;
+		}
+		catch (MMCError & e)
+		{
+			status = ExtendedAction::Failed;
+			statusString = e.cause();
+			return;
+		}
+		status = ExtendedAction::Downloading;
+		statusString = tr("Will be downloaded");
+		return;
 	}
-	startVersionObj = MMC->qmdb()->version(uid, origVersion, origRepo);
-	if(type == Transaction::Action::Remove)
+	else if (type == Transaction::Action::Remove)
 	{
-		if(!startVersionObj)
+		if (!startVersionObj)
 		{
 			status = ExtendedAction::Failed;
 			statusString = tr("Unknown version");
+			return;
 		}
+		status = ExtendedAction::Ready;
+		statusString = tr("Will be removed");
+		return;
+	}
+	else
+	{
+		status = ExtendedAction::Failed;
+		statusString = tr("Unknown action type");
+		return;
 	}
 }
+
+TransactionModel::ExtendedAction::~ExtendedAction()
+{
+	if(dlPage)
+	{
+		dlPage->deleteLater();
+	}
+}
+
 
 //BEGIN logic
 void TransactionModel::start()
 {
-	// probe and classify the downloads for actions
-	for(auto &action: m_actions)
+	if (m_status != ExtendedAction::Initial)
 	{
-		auto version = action.versionObj;
-		if(!version)
-			continue;
-		
+		return;
+	}
+	m_status = ExtendedAction::Downloading;
+	startNextDownload();
+}
+
+void TransactionModel::startNextDownload()
+{
+	m_current_download++;
+	// done downloading?
+	if (m_current_download == m_idx_installs.size())
+	{
+		startInstalls();
+		return;
+	}
+	// run a download
+	auto &action = m_actions[m_idx_installs[m_current_download]];
+	auto URL = action.downloadUrl;
+	action.dlPage = new QWebPage();
+	action.dlPage->setForwardUnsupportedContent(true);
+	action.dlPage->setNetworkAccessManager(MMC->qnam().get());
+	connect(action.dlPage, SIGNAL(unsupportedContent(QNetworkReply *)),
+			SLOT(unsupportedContent(QNetworkReply *)));
+	connect(action.dlPage, SIGNAL(loadFinished(bool)), SLOT(loadFinished(bool)));
+	connect(action.dlPage, SIGNAL(loadProgress(int)), SLOT(downloadProgress(int)));
+	QLOG_INFO() << "Grabbing: " << URL.toString();
+	action.dlPage->mainFrame()->setUrl(URL);
+}
+
+void TransactionModel::unsupportedContent(QNetworkReply *reply)
+{
+	// we hit an actual download/content unsupported by webkit!
+	QLOG_INFO() << "Got download for: " << reply->url().toString();
+	auto &action = m_actions[m_idx_installs[m_current_download]];
+
+	emit hidePage();
+
+	action.download = CacheDownload::make(reply, action.versionObj->cacheEntry());
+	auto download = action.download.get();
+	
+	connect(download, SIGNAL(succeeded(int)), this, SLOT(downloadSucceeded(int)));
+	connect(download, SIGNAL(failed(int)), this, SLOT(downloadFailed(int)));
+	connect(download, SIGNAL(progress(int,qint64,qint64)), this, SLOT(downloadProgress(int,qint64,qint64)));
+	download->start();
+}
+
+void TransactionModel::downloadSucceeded(int)
+{
+	auto idx = m_idx_installs[m_current_download];
+	auto &action = m_actions[idx];
+	action.progress = 100;
+	action.totalProgress = 100;
+	emit dataChanged(index(idx, 0), index(idx, columnCount(QModelIndex())));
+	startNextDownload();
+}
+
+void TransactionModel::downloadFailed(int)
+{
+	// rollback from here.
+}
+
+void TransactionModel::downloadProgress(int, qint64 progress, qint64 total)
+{
+	auto idx = m_idx_installs[m_current_download];
+	auto &action = m_actions[idx];
+	action.progress = progress;
+	action.totalProgress = total;
+	QLOG_INFO() << action.progress << "/" << action.totalProgress;
+	emit dataChanged(index(idx, 0), index(idx, columnCount(QModelIndex())));
+}
+
+void TransactionModel::downloadProgress(int progress)
+{
+	auto idx = m_idx_installs[m_current_download];
+	auto &action = m_actions[idx];
+	action.progress = progress;
+	action.totalProgress = 100;
+	QLOG_INFO() << action.progress << "/" << action.totalProgress;
+	emit dataChanged(index(idx, 0), index(idx, columnCount(QModelIndex())));
+}
+
+
+void TransactionModel::loadFinished(bool success)
+{
+	QLOG_INFO() << "Site load finished: " << (success ? "success" : "failure");
+	if(!success)
+	{
+		// couldn't load it -> it's a download, most probably.
+		auto &action = m_actions[m_idx_installs[m_current_download]];
+		action.dlPage->deleteLater();
+		action.dlPage = nullptr;
+	}
+	else
+	{
+		// it was a success, show the page.
+		emit showPageOfRow(m_idx_installs[m_current_download]);
 	}
 }
+
+void TransactionModel::startInstalls()
+{
+	emit hidePage();
+	QLOG_INFO() << "Installs would start now";
+}
+
+QWebPage* TransactionModel::getPage(int row)
+{
+	if(row >= 0 && row < m_actions.size())
+	{
+		return m_actions[row].dlPage;
+	}
+	return nullptr;
+}
+
 //END
 
 //BEGIN Qt model machinery
 
 QVariant TransactionModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-	auto column = (Column) section;
-	if(role == Qt::DisplayRole)
+	auto column = (Column)section;
+	if (role == Qt::DisplayRole)
 	{
-		switch(column)
+		switch (column)
 		{
-			case TransactionModel::ActionColumn:
-				return tr("Action");
-			case TransactionModel::NameColumn:
-				return tr("Mod");
-			case TransactionModel::StatusColumn:
-				return tr("Status");
-			default:
-				return tr("Invalid");
+		case TransactionModel::ActionColumn:
+			return tr("Action");
+		case TransactionModel::NameColumn:
+			return tr("Mod");
+		case TransactionModel::StatusColumn:
+			return tr("Status");
+		default:
+			return tr("Invalid");
 		}
 	}
 	return QAbstractItemModel::headerData(section, orientation, role);
@@ -190,13 +348,19 @@ QVariant TransactionModel::statusData(int row, int role) const
 			return tr("Failed");
 		case ExtendedAction::Initial:
 			return tr("Pending");
-		case ExtendedAction::Running:
-			return tr("Running");
+		case ExtendedAction::Downloading:
+			return tr("Downloading");
+		case ExtendedAction::Ready:
+			return tr("Ready");
+		case ExtendedAction::Removing:
+			return tr("Removing");
+		case ExtendedAction::Installing:
+			return tr("Installing");
 		}
 	}
 	case EnabledRole:
 	{
-		return action.status == ExtendedAction::Running;
+		return action.status == ExtendedAction::Downloading;
 	}
 	case CurrentRole:
 	{

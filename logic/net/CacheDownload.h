@@ -25,6 +25,44 @@ class CacheDownload : public NetAction
 {
 	Q_OBJECT
 private:
+	explicit CacheDownload(QUrl url, MetaEntryPtr entry);
+	explicit CacheDownload(QNetworkReply *reply, MetaEntryPtr entry);
+
+public: /* methods */
+	/// create a cache download using an URL
+	static CacheDownloadPtr make(QUrl url, MetaEntryPtr entry)
+	{
+		return CacheDownloadPtr(new CacheDownload(url, entry));
+	}
+	/// create a cache download using an existing reply. reply is now owned by the download.
+	static CacheDownloadPtr make(QNetworkReply *reply, MetaEntryPtr entry)
+	{
+		return CacheDownloadPtr(new CacheDownload(reply, entry));
+	}
+	virtual ~CacheDownload(){};
+	QString getTargetFilepath()
+	{
+		return m_target_path;
+	}
+
+private: /* methods */ 
+	bool createSaveFile();
+	bool checkCacheStale();
+	void connectReply();
+
+protected slots:
+	virtual void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+	virtual void downloadError(QNetworkReply::NetworkError error);
+	virtual void downloadFinished();
+	virtual void downloadReadyRead();
+
+public slots:
+	virtual void start();
+
+public: /* data */
+	bool m_followRedirects = false;
+	
+private: /* data */
 	MetaEntryPtr m_entry;
 	/// if saving to file, use the one specified in this string
 	QString m_target_path;
@@ -34,28 +72,4 @@ private:
 	QCryptographicHash md5sum;
 
 	bool wroteAnyData = false;
-
-public:
-	bool m_followRedirects = false;
-
-	explicit CacheDownload(QUrl url, MetaEntryPtr entry);
-	static CacheDownloadPtr make(QUrl url, MetaEntryPtr entry)
-	{
-		return CacheDownloadPtr(new CacheDownload(url, entry));
-	}
-	virtual ~CacheDownload(){};
-	QString getTargetFilepath()
-	{
-		return m_target_path;
-	}
-protected
-slots:
-	virtual void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-	virtual void downloadError(QNetworkReply::NetworkError error);
-	virtual void downloadFinished();
-	virtual void downloadReadyRead();
-
-public
-slots:
-	virtual void start();
 };

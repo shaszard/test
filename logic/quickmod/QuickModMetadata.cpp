@@ -286,7 +286,7 @@ void QuickModMetadata::fetchImages()
 	if (iconUrl().isValid() && m_icon.isNull())
 	{
 		auto icon = CacheDownload::make(
-			iconUrl(), MMC->metacache()->resolveEntry("quickmod/icons", fileName(iconUrl())));
+			iconUrl(), MMC->metacache()->resolveEntry("quickmods/icons", fileName(iconUrl())));
 		connect(icon.get(), &CacheDownload::succeeded, this, &QuickModMetadata::iconDownloadFinished);
 		icon->m_followRedirects = true;
 		job->addNetAction(icon);
@@ -295,7 +295,7 @@ void QuickModMetadata::fetchImages()
 	if (logoUrl().isValid() && m_logo.isNull())
 	{
 		auto logo = CacheDownload::make(
-			logoUrl(), MMC->metacache()->resolveEntry("quickmod/logos", fileName(logoUrl())));
+			logoUrl(), MMC->metacache()->resolveEntry("quickmods/logos", fileName(logoUrl())));
 		connect(logo.get(), &CacheDownload::succeeded, this, &QuickModMetadata::logoDownloadFinished);
 		logo->m_followRedirects = true;
 		job->addNetAction(logo);

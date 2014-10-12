@@ -22,6 +22,11 @@
 #include <QDateTime>
 #include "logger/QsLog.h"
 
+void DeleteReply(QNetworkReply* reply)
+{
+    reply->deleteLater();
+}
+
 CacheDownload::CacheDownload(QUrl url, MetaEntryPtr entry)
 	: NetAction(), md5sum(QCryptographicHash::Md5)
 {
@@ -31,59 +36,99 @@ CacheDownload::CacheDownload(QUrl url, MetaEntryPtr entry)
 	m_status = Job_NotStarted;
 }
 
-void CacheDownload::start()
+CacheDownload::CacheDownload(QNetworkReply* reply, MetaEntryPtr entry)
+	: NetAction(), md5sum(QCryptographicHash::Md5)
+{
+	m_url = reply->url();
+	m_reply.reset(reply, &DeleteReply);
+	m_entry = entry;
+	m_target_path = entry->getFullPath();
+	m_status = Job_InProgress;
+}
+
+bool CacheDownload::createSaveFile()
+{
+	if (!ensureFilePathExists(m_target_path))
+	{
+		QLOG_ERROR() << "Could not create folder for " + m_target_path;
+		m_status = Job_Failed;
+		emit failed(m_index_within_job);
+		return false;
+	}
+
+	// create a new save file
+	m_output_file.reset(new QSaveFile(m_target_path));
+
+	if (!m_output_file->open(QIODevice::WriteOnly))
+	{
+		QLOG_ERROR() << "Could not open " + m_target_path + " for writing";
+		m_status = Job_Failed;
+		emit failed(m_index_within_job);
+		return false;
+	}
+	return true;
+}
+
+bool CacheDownload::checkCacheStale()
 {
 	m_status = Job_InProgress;
 	if (!m_entry->stale)
 	{
 		m_status = Job_Finished;
 		emit succeeded(m_index_within_job);
-		return;
+		return false;
 	}
-	// create a new save file
-	m_output_file.reset(new QSaveFile(m_target_path));
+	return true;
+}
 
-	// if there already is a file and md5 checking is in effect and it can be opened
-	if (!ensureFilePathExists(m_target_path))
-	{
-		QLOG_ERROR() << "Could not create folder for " + m_target_path;
-		m_status = Job_Failed;
-		emit failed(m_index_within_job);
-		return;
-	}
-	if (!m_output_file->open(QIODevice::WriteOnly))
-	{
-		QLOG_ERROR() << "Could not open " + m_target_path + " for writing";
-		m_status = Job_Failed;
-		emit failed(m_index_within_job);
-		return;
-	}
-	QLOG_INFO() << "Downloading " << m_url.toString();
-	QNetworkRequest request(m_url);
-
-	// check file consistency first.
-	QFile current(m_target_path);
-	if(current.exists() && current.size() != 0)
-	{
-		if (m_entry->remote_changed_timestamp.size())
-			request.setRawHeader(QString("If-Modified-Since").toLatin1(),
-								m_entry->remote_changed_timestamp.toLatin1());
-		if (m_entry->etag.size())
-			request.setRawHeader(QString("If-None-Match").toLatin1(), m_entry->etag.toLatin1());
-	}
-
-	request.setHeader(QNetworkRequest::UserAgentHeader, "MultiMC/5.0 (Cached)");
-
-	auto worker = MMC->qnam();
-	QNetworkReply *rep = worker->get(request);
-
-	m_reply = std::shared_ptr<QNetworkReply>(rep);
-	connect(rep, SIGNAL(downloadProgress(qint64, qint64)),
+void CacheDownload::connectReply()
+{
+	connect(m_reply.get(), SIGNAL(downloadProgress(qint64, qint64)),
 			SLOT(downloadProgress(qint64, qint64)));
-	connect(rep, SIGNAL(finished()), SLOT(downloadFinished()));
-	connect(rep, SIGNAL(error(QNetworkReply::NetworkError)),
+	connect(m_reply.get(), SIGNAL(finished()), SLOT(downloadFinished()));
+	connect(m_reply.get(), SIGNAL(error(QNetworkReply::NetworkError)),
 			SLOT(downloadError(QNetworkReply::NetworkError)));
-	connect(rep, SIGNAL(readyRead()), SLOT(downloadReadyRead()));
+	connect(m_reply.get(), SIGNAL(readyRead()), SLOT(downloadReadyRead()));
+}
+
+void CacheDownload::start()
+{
+	if(!checkCacheStale())
+	{
+		return;
+	}
+
+	if(!createSaveFile())
+	{
+		return;
+	}
+
+	QLOG_INFO() << "Downloading " << m_url.toString();
+	if(!m_reply)
+	{
+		QNetworkRequest request(m_url);
+
+		// Set the request headers
+		QFile current(m_target_path);
+		if(current.exists() && current.size() != 0)
+		{
+			if (m_entry->remote_changed_timestamp.size())
+				request.setRawHeader(QString("If-Modified-Since").toLatin1(),
+									m_entry->remote_changed_timestamp.toLatin1());
+			if (m_entry->etag.size())
+				request.setRawHeader(QString("If-None-Match").toLatin1(), m_entry->etag.toLatin1());
+		}
+		request.setHeader(QNetworkRequest::UserAgentHeader, "MultiMC/5.0 (Cached)");
+
+		m_reply = std::shared_ptr<QNetworkReply>(MMC->qnam()->get(request), &DeleteReply);
+		connectReply();
+	}
+	else
+	{
+		auto req = m_reply->request();
+		m_reply = std::shared_ptr<QNetworkReply>(MMC->qnam()->get(req),&DeleteReply);
+		connectReply();
+	}
 }
 
 void CacheDownload::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
@@ -120,6 +165,8 @@ void CacheDownload::downloadFinished()
 		{
 			m_url = QUrl(redirect.toString());
 			QLOG_INFO() << "Following redirect to " << m_url.toString();
+			// clean up, make sure the reply is gone
+			m_reply.reset();
 			start();
 			return;
 		}

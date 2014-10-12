@@ -100,20 +100,20 @@ public: /* methods */
 	/// get the file name for the mod file.
 	QString fileName() const;
 
+	
+	MetaEntryPtr cacheEntry() const;
+
 	/// get the local cache storage path for the mod
 	QString storagePath() const;
 
 	/// get the instance deploy path for the mod
 	QString instancePath() const;
 
-	/// is the local mod file available?
-	bool isCached() const;
+	/// Get a download to use.
+	QuickModDownload highestPriorityDownload(const QuickModDownload::DownloadType type = QuickModDownload::Invalid);
 
-	// FIXME: does this really serve any purpose?
-	bool needsDeploy() const
-	{
-		return !instancePath().isNull();
-	}
+	/// Does this actually need to be deployed into the instance?
+	bool needsDeploy() const;
 
 	/// install this version of package into the specified instance
 	void installInto(std::shared_ptr<OneSixInstance> m_instance);

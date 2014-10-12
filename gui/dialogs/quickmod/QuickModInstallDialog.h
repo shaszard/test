@@ -62,6 +62,8 @@ private slots:
 	void setWebViewShown(bool shown);
 
 	void contextMenuRequested(const QPoint &pos);
+	void hidePage();
+	void showPageOfRow(int);
 
 private: /* data */
 	Ui::QuickModInstallDialog *ui;

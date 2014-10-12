@@ -15,19 +15,18 @@
 #include "logic/settings/INISettingsObject.h"
 #include "logic/settings/Setting.h"
 
-QString QuickModDatabase::m_filename =
-	QDir::current().absoluteFilePath("quickmods/quickmods.json");
-
 QuickModDatabase::QuickModDatabase()
-	: QObject(), m_timer(new QTimer(this)),
-	  m_settings(new INISettingsObject(QDir::current().absoluteFilePath("quickmod.cfg")))
+	: QObject()
 {
-	m_settings->registerSetting("TrustedWebsites", QVariantList());
+	m_dbFile = "quickmods/quickmods.json";
+	m_configFile = "quickmods/quickmods.cfg";
+	ensureFilePathExists(m_dbFile);
+
+	m_timer.reset(new QTimer(this));
+	m_settings.reset(new INISettingsObject(m_configFile));
 	m_settings->registerSetting("Indices", QVariantMap());
-	ensureFolderPathExists(QDir::current().absoluteFilePath("quickmods/"));
+	
 	loadFromDisk();
-	// FIXME: USE METACACHE.
-	// checkFileCache();
 	connect(qApp, &QCoreApplication::aboutToQuit, this, &QuickModDatabase::flushToDisk);
 	connect(m_timer.get(), &QTimer::timeout, this, &QuickModDatabase::flushToDisk);
 	updateFiles();
@@ -292,13 +291,13 @@ void QuickModDatabase::flushToDisk()
 	root.insert("mods", quickmods);
 	root.insert("checksums", checksums);
 
-	if (!ensureFilePathExists(m_filename))
+	if (!ensureFilePathExists(m_dbFile))
 	{
-		QLOG_ERROR() << "Unable to create folder for QuickMod database:" << m_filename;
+		QLOG_ERROR() << "Unable to create folder for QuickMod database:" << m_dbFile;
 		return;
 	}
 
-	QFile file(m_filename);
+	QFile file(m_dbFile);
 	if (!file.open(QFile::WriteOnly))
 	{
 		QLOG_ERROR() << "Unable to save QuickMod Database to disk:" << file.errorString();
@@ -321,7 +320,7 @@ void QuickModDatabase::loadFromDisk()
 		m_etags.clear();
 
 		const QJsonObject root =
-			ensureObject(MMCJson::parseFile(m_filename, "QuickMod Database"));
+			ensureObject(MMCJson::parseFile(m_dbFile, "QuickMod Database"));
 		const QJsonObject quickmods = ensureObject(root.value("mods"));
 		for (auto it = quickmods.constBegin(); it != quickmods.constEnd(); ++it)
 		{

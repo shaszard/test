@@ -4,6 +4,8 @@
 #include "Transaction.h"
 #include "QuickModVersion.h"
 
+class QWebPage;
+class QWebPage;
 class TransactionModel : public QAbstractListModel
 {
 	Q_OBJECT
@@ -20,6 +22,9 @@ public: /* methods */
 	/// Start processing the wrapped transaction
 	void start();
 
+	// FIXME: dirty hack to get this working NOW.
+	QWebPage * getPage(int row);
+
 public: /* types */
 	enum ProgressRoles
 	{
@@ -32,31 +37,30 @@ private: /* types */
 	struct ExtendedAction : public Transaction::Action
 	{
 		ExtendedAction(const Transaction::Action &a);
+		~ExtendedAction();
+		enum Status
+		{
+			Initial,
+			Downloading,
+			Ready,
+			Installing,
+			Removing,
+			Failed,
+			Done
+		} status = Initial;
 
 		QuickModMetadataPtr modObj;
 		QuickModVersionPtr startVersionObj;
 		QuickModVersionPtr versionObj;
 
-		enum Status
-		{
-			Initial,
-			Running,
-			Failed,
-			Done
-		} status = Initial;
 		QString statusString;
 
 		int progress = 0;
 		int totalProgress = 100;
 
-		enum Download
-		{
-			Unknown,
-			None,
-			Direct,
-			Web
-		};
 		QUrl downloadUrl;
+		QWebPage * dlPage = nullptr;
+		CacheDownloadPtr download;
 	};
 
 	enum Column
@@ -71,7 +75,40 @@ private: /* methods */
 	QVariant actionData(int row, int role) const;
 	QVariant statusData(int row, int role) const;
 
+	void startNextDownload();
+
+	void startInstalls();
+	void startNextInstall();
+
+	void startRemoves();
+	void startNextRemove();
+
 private: /* data */
 	std::shared_ptr<Transaction> m_transaction;
 	QList<ExtendedAction> m_actions;
+
+	// index to look up removes in m_actions
+	QList<int> m_idx_removes;
+	int m_current_remove = -1;
+
+	// index to look up installs in m_actions
+	QList<int> m_idx_installs;
+	int m_current_download = -1;
+	int m_current_install = -1;
+
+	// overall status of the transaction
+	ExtendedAction::Status m_status = ExtendedAction::Initial;
+
+signals:
+	void showPageOfRow(int row);
+	void hidePage();
+
+private slots: /* slots for downloads */
+	void unsupportedContent(QNetworkReply *reply);
+	void loadFinished(bool);
+
+	void downloadSucceeded(int);
+	void downloadFailed(int);
+	void downloadProgress(int,qint64,qint64);
+	void downloadProgress(int);
 };

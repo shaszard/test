@@ -114,7 +114,8 @@ private: /* data */
 	bool m_isDirty = false;
 	std::unique_ptr<QTimer> m_timer;
 
-	static QString m_filename;
+	QString m_dbFile;
+	QString m_configFile;
 	
 	// FIXME: get rid of this.
 	std::shared_ptr<SettingsObject> m_settings;

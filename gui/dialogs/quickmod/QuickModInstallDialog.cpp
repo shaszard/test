@@ -28,30 +28,20 @@
 #include <QDesktopServices>
 #include <QMenu>
 #include <QAction>
+#include <pathutils.h>
 
-#include "gui/widgets/WebDownloadNavigator.h"
-#include "gui/dialogs/ProgressDialog.h"
-#include "gui/dialogs/VersionSelectDialog.h"
 #include "gui/dialogs/quickmod/QuickModVerifyModsDialog.h"
-#include "gui/dialogs/quickmod/QuickModDownloadSelectionDialog.h"
 #include "gui/GuiUtil.h"
 #include "logic/quickmod/QuickModDatabase.h"
 #include "logic/quickmod/QuickModMetadata.h"
 #include "logic/quickmod/QuickModVersion.h"
-#include "logic/OneSixInstance.h"
-#include "logic/net/ByteArrayDownload.h"
-#include "logic/net/NetJob.h"
-#include "MultiMC.h"
-#include "logic/settings/SettingsObject.h"
-#include "depends/quazip/JlCompress.h"
-#include <pathutils.h>
 #include "logic/quickmod/QuickModVersionModel.h"
 #include "logic/quickmod/InstancePackageList.h"
-#include <logic/quickmod/TransactionModel.h>
+#include "logic/quickmod/TransactionModel.h"
 
-Q_DECLARE_METATYPE(QTreeWidgetItem *)
+#include "logic/OneSixInstance.h"
 
-// TODO load parallel versions in parallel (makes sense, right?)
+#include "MultiMC.h"
 
 class ProgressItemDelegate : public QStyledItemDelegate
 {
@@ -60,7 +50,6 @@ public:
 	ProgressItemDelegate(QObject *parent = 0) : QStyledItemDelegate(parent)
 	{
 	}
-
 	void paint(QPainter *painter, const QStyleOptionViewItem &opt,
 			   const QModelIndex &index) const
 	{
@@ -105,12 +94,13 @@ QuickModInstallDialog::QuickModInstallDialog(std::shared_ptr<OneSixInstance> ins
 	ui->progressList->setModel(m_model.get());
 	ui->progressList->setItemDelegateForColumn(2, new ProgressItemDelegate(this));
 
-	ui->webModsProgressBar->setMaximum(0);
-	ui->webModsProgressBar->setValue(0);
-
 	connect(ui->progressList, &QWidget::customContextMenuRequested, this,
 			&QuickModInstallDialog::contextMenuRequested);
+
+	connect(m_model.get(), SIGNAL(hidePage()), SLOT(hidePage()));
+	connect(m_model.get(), SIGNAL(showPageOfRow(int)), SLOT(showPageOfRow(int)));
 	ui->progressList->setContextMenuPolicy(Qt::CustomContextMenu);
+	ui->webView->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
 	m_model->start();
 }
 
@@ -191,65 +181,19 @@ int QuickModInstallDialog::exec()
 	return QDialog::exec();
 }
 
-// FIXME: left only as a 'howto'
-/*
-
-void QuickModInstallDialog::selectDownloadUrls()
+void QuickModInstallDialog::hidePage()
 {
-	for(auto & action: m_actions)
-	{
-		QuickModVersionPtr version = action.version;
+	setWebViewShown(false);
+}
 
-		const auto download = QuickModDownloadSelectionDialog::select(version, this);
-		m_selectedDownloadUrls.insert(version, download);
+void QuickModInstallDialog::showPageOfRow(int row)
+{
+	auto page = m_model->getPage(row);
+	if(page)
+	{
+		ui->webView->setPage(page);
+		setWebViewShown(true);
 	}
 }
 
-void QuickModInstallDialog::runWebDownload(QuickModVersionPtr version)
-{
-	const QUrl url = QUrl(m_selectedDownloadUrls[version].url);
-	QLOG_INFO() << "Downloading " << version->name() << "(" << url.toString() << ")";
-
-	auto navigator = new WebDownloadNavigator(this);
-	navigator->load(url);
-	ui->webTabView->addTab(navigator,
-						   (QString("%1 %2").arg(version->mod->name(), version->name())));
-
-	navigator->setProperty("version", QVariant::fromValue(version));
-	connect(navigator, &WebDownloadNavigator::caughtUrl, [this, navigator](QNetworkReply *reply)
-			{
-		ui->webModsProgressBar->setValue(ui->webModsProgressBar->value() + 1);
-		urlCaught(reply, navigator);
-	});
-
-	setWebViewShown(true);
-}
-
-void QuickModInstallDialog::urlCaught(QNetworkReply *reply, WebDownloadNavigator *navigator)
-{
-	// TODO: Do more to verify that the correct file is being downloaded.
-	if (reply->url().path().endsWith(".exe"))
-	{
-		// because bad things
-		QLOG_WARN() << "Caught .exe from" << reply->url().toString();
-		return;
-	}
-	QLOG_INFO() << "Caught " << reply->url().toString();
-	downloadNextMod();
-
-	if (!navigator)
-	{
-		navigator = qobject_cast<WebDownloadNavigator *>(sender());
-	}
-
-	processReply(reply, navigator->property("version").value<QuickModVersionPtr>());
-
-	ui->webTabView->removeTab(ui->webTabView->indexOf(navigator));
-	navigator->deleteLater();
-	if (ui->webTabView->count() == 0)
-	{
-		setWebViewShown(false);
-	}
-}
-*/
 #include "QuickModInstallDialog.moc"

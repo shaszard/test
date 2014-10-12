@@ -57,22 +57,11 @@
      <widget class="QWidget" name="verticalLayoutWidget">
       <layout class="QVBoxLayout" name="webLayout">
        <item>
-        <widget class="QTabWidget" name="webTabView">
-         <property name="movable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QProgressBar" name="webModsProgressBar">
-         <property name="maximum">
-          <number>42</number>
-         </property>
-         <property name="value">
-          <number>13</number>
-         </property>
-         <property name="format">
-          <string>%v of %m web pages done</string>
+        <widget class="QWebView" name="webView">
+         <property name="url">
+          <url>
+           <string>about:blank</string>
+          </url>
          </property>
         </widget>
        </item>
@@ -110,11 +99,16 @@
   </layout>
  </widget>
  <customwidgets>
-     <customwidget>
-         <class>ModListView</class>
-         <extends>QTreeView</extends>
-         <header>gui/widgets/ModListView.h</header>
-     </customwidget>
+  <customwidget>
+   <class>QWebView</class>
+   <extends>QWidget</extends>
+   <header>QtWebKitWidgets/QWebView</header>
+  </customwidget>
+  <customwidget>
+   <class>ModListView</class>
+   <extends>QTreeView</extends>
+   <header>gui/widgets/ModListView.h</header>
+  </customwidget>
  </customwidgets>
  <resources/>
  <connections>
