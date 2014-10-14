@@ -418,7 +418,7 @@ SET(MULTIMC_SOURCES
 	logic/Mod.cpp
 	logic/ModList.h
 	logic/ModList.cpp
-	
+
 	# sets and maps for deciding based on versions
 	logic/VersionFilterData.h
 	logic/VersionFilterData.cpp
@@ -440,7 +440,7 @@ SET(MULTIMC_SOURCES
 	# Player skin utilities
 	logic/SkinUtils.h
 	logic/SkinUtils.cpp
-	
+
 	# misc model filter
 	logic/EnabledItemFilter.h
 	logic/EnabledItemFilter.cpp
@@ -630,7 +630,7 @@ SET(MULTIMC_SOURCES
 	logic/tools/JProfiler.cpp
 	logic/tools/JVisualVM.h
 	logic/tools/JVisualVM.cpp
-	
+
 	# Forge and all things forge related
 	logic/forge/ForgeVersion.h
 	logic/forge/ForgeVersion.cpp
@@ -645,7 +645,7 @@ SET(MULTIMC_SOURCES
 	logic/forge/LegacyForge.cpp
 	logic/forge/ForgeInstaller.h
 	logic/forge/ForgeInstaller.cpp
-	
+
 	# Liteloader and related things
 	logic/liteloader/LiteLoaderInstaller.h
 	logic/liteloader/LiteLoaderInstaller.cpp
@@ -714,8 +714,10 @@ endforeach()
 set(MULTIMC_QRCS
 	resources/backgrounds/backgrounds.qrc
 	resources/multimc/multimc.qrc
-	resources/pe_dark/pe_dark.qrc
-	resources/pe_light/pe_light.qrc
+	resources/simple_light/simple_light.qrc
+	resources/simple_blue/simple_blue.qrc
+	resources/simple_dark/simple_dark.qrc
+	resources/simple_color/simple_color.qrc
 	resources/instances/instances.qrc
 	resources/versions/versions.qrc
 )
@@ -760,8 +762,8 @@ add_executable(MultiMC MACOSX_BUNDLE WIN32 main.cpp ${MULTIMC_RCS})
 # Link
 target_link_libraries(MultiMC MultiMC_common)
 target_link_libraries(MultiMC_common xz-embedded unpack200 quazip libUtil LogicalGui ${MultiMC_LINK_ADDITIONAL_LIBS})
-qt5_use_modules(MultiMC Core Widgets Network Xml Concurrent WebKitWidgets ${MultiMC_QT_ADDITIONAL_MODULES})
-qt5_use_modules(MultiMC_common Core Widgets Network Xml Concurrent WebKitWidgets ${MultiMC_QT_ADDITIONAL_MODULES})
+qt5_use_modules(MultiMC Core Widgets Network Xml Concurrent WebKitWidgets Svg ${MultiMC_QT_ADDITIONAL_MODULES})
+qt5_use_modules(MultiMC_common Core Widgets Network Xml Concurrent WebKitWidgets Svg ${MultiMC_QT_ADDITIONAL_MODULES})
 
 ################################ INSTALLATION AND PACKAGING ################################
 

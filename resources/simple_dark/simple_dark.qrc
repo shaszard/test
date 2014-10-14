@@ -1,0 +1,82 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/icons/multimc">
+    <file>index.theme</file>
+
+    <!-- A proxy icon. Our own. SSSsss -->
+    <file>scalable/proxy.svg</file>
+
+    <!-- Java icon. From Oracle, fixed because it was derpy. -->
+    <file>scalable/java.svg</file>
+
+    <!-- Minecraft icon alt by pe -->
+    <file>scalable/minecraft.svg</file>
+
+    <!-- About dialog. Our own -->
+    <file>scalable/about.svg</file>
+
+    <!-- Report bug. Our own. -->
+    <file>scalable/bug.svg</file>
+
+    <!-- Screenshots. Our own. -->
+    <file>scalable/screenshots.svg</file>
+
+    <!-- Patron logo. (C) 2014 Patreon, Inc., http://www.patreon.com/toolbox?ftyp=media Modified by pe-->
+    <file>scalable/patreon.svg</file>
+
+    <!-- Show mods folder. By pe -->
+    <file>scalable/centralmods.svg</file>
+
+    <!-- Update. By pe -->
+    <file>scalable/checkupdate.svg</file>
+
+    <!-- copy instance. By pe -->
+    <file>scalable/copy.svg</file>
+
+    <!-- New instance. By pe -->
+    <file>scalable/new.svg</file>
+
+    <!-- Open news. Our own. -->
+    <file>scalable/news.svg</file>
+
+    <!-- Bad status. Our own. -->
+    <file>16x16/status-bad.png</file>
+    <file>24x24/status-bad.png</file>
+    <file>22x22/status-bad.png</file>
+    <file>32x32/status-bad.png</file>
+    <file>48x48/status-bad.png</file>
+    <file>64x64/status-bad.png</file>
+
+    <!-- Good status. Our own. -->
+    <file>16x16/status-good.png</file>
+    <file>24x24/status-good.png</file>
+    <file>22x22/status-good.png</file>
+    <file>32x32/status-good.png</file>
+    <file>48x48/status-good.png</file>
+    <file>64x64/status-good.png</file>
+
+    <!-- Plugin (blue recolor), By pe -->
+    <file>scalable/plugin-blue.svg</file>
+
+    <!-- Plugin (red recolor), By pe -->
+    <file>scalable/plugin-red.svg</file>
+
+    <!-- Plugin (green original), By pe -->
+    <file>scalable/plugin-green.svg</file>
+
+    <!-- Resource packs, By pe -->
+    <file>scalable/resourcepacks.svg</file>
+
+    <!-- Refresh, By pe -->
+    <file>scalable/refresh.svg</file>
+
+    <!-- Settings, By pe -->
+    <file>scalable/settings.svg</file>
+
+    <!-- View folder. By pe -->
+    <file>scalable/viewfolder.svg</file>
+
+    <!-- Log file, By pe -->
+    <file>scalable/log.svg</file>
+    </qresource>
+</RCC>

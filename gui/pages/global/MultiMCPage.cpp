@@ -112,9 +112,9 @@ void MultiMCPage::on_ftbBrowseBtn_clicked()
 
 void MultiMCPage::on_instDirBrowseBtn_clicked()
 {
-    QString raw_dir = QFileDialog::getExistingDirectory(this, tr("Instance Directory"),
-                                                        ui->instDirTextBox->text());
-    QString cooked_dir = NormalizePath(raw_dir);
+	QString raw_dir = QFileDialog::getExistingDirectory(this, tr("Instance Directory"),
+														ui->instDirTextBox->text());
+	QString cooked_dir = NormalizePath(raw_dir);
 
 	// do not allow current dir - it's dirty. Do not allow dirs that don't exist
 	if (!cooked_dir.isEmpty() && QDir(cooked_dir).exists())
@@ -267,14 +267,20 @@ void MultiMCPage::applySettings()
 	// Updates
 	s->set("AutoUpdate", ui->autoUpdateCheckBox->isChecked());
 	s->set("UpdateChannel", m_currentUpdateChannel);
-	//FIXME: make generic
+	// FIXME: make generic
 	switch (ui->themeComboBox->currentIndex())
 	{
 	case 1:
-		s->set("IconTheme", "pe_dark");
+		s->set("IconTheme", "simple_dark");
 		break;
 	case 2:
-		s->set("IconTheme", "pe_light");
+		s->set("IconTheme", "simple_light");
+		break;
+	case 3:
+		s->set("IconTheme", "simple_blue");
+		break;
+	case 4:
+		s->set("IconTheme", "simple_color");
 		break;
 	case 0:
 	default:
@@ -311,7 +317,7 @@ void MultiMCPage::loadSettings()
 	// Language
 	ui->languageBox->clear();
 	ui->languageBox->addItem(tr("English"), QLocale(QLocale::English));
-	foreach(const QString & lang, QDir(MMC->staticData() + "/translations")
+	foreach (const QString &lang, QDir(MMC->staticData() + "/translations")
 									  .entryList(QStringList() << "*.qm", QDir::Files))
 	{
 		QLocale locale(lang.section(QRegExp("[_\\.]"), 1));
@@ -323,15 +329,23 @@ void MultiMCPage::loadSettings()
 	// Updates
 	ui->autoUpdateCheckBox->setChecked(s->get("AutoUpdate").toBool());
 	m_currentUpdateChannel = s->get("UpdateChannel").toString();
-	//FIXME: make generic
+	// FIXME: make generic
 	auto theme = s->get("IconTheme").toString();
-	if (theme == "pe_dark")
+	if (theme == "simple_dark")
 	{
 		ui->themeComboBox->setCurrentIndex(1);
 	}
-	else if (theme == "pe_light")
+	else if (theme == "simple_light")
 	{
 		ui->themeComboBox->setCurrentIndex(2);
+	}
+	else if (theme == "simple_blue")
+	{
+		ui->themeComboBox->setCurrentIndex(3);
+	}
+	else if (theme == "simple_color")
+	{
+		ui->themeComboBox->setCurrentIndex(4);
 	}
 	else
 	{
