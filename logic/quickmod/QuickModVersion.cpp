@@ -248,14 +248,18 @@ QList<QuickModVersionPtr> QuickModVersion::parse(const QJsonObject &object, Quic
 
 void QuickModVersion::parse(const QJsonObject &object)
 {
-	versionString = MMCJson::ensureString(object.value("version"));
-	if(object.contains("name"))
+	if(object.contains("name") && object.contains("version"))
 	{
 		versionName = MMCJson::ensureString(object.value("name"), "name");
+		versionString = MMCJson::ensureString(object.value("version"));
+	}
+	else if (object.contains("name"))
+	{
+		versionString = versionName = MMCJson::ensureString(object.value("name"), "name");
 	}
 	else
 	{
-		versionName = versionString;
+		versionString = versionName = MMCJson::ensureString(object.value("version"));
 	}
 	if (object.contains("type"))
 	{

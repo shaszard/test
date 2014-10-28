@@ -98,6 +98,9 @@ void TransactionModel::start()
 	{
 		return;
 	}
+	m_current_remove = -1;
+	m_current_download = -1;
+	m_current_install = -1;
 	m_status = ExtendedAction::Downloading;
 	startNextDownload();
 }

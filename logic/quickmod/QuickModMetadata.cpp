@@ -157,6 +157,15 @@ QJsonObject QuickModMetadata::toJson() const
 		}
 		obj.insert("urls", urls);
 	}
+	if (!m_references.empty())
+	{
+		QJsonObject references;
+		for (auto it = m_references.constBegin(); it != m_references.constEnd(); ++it)
+		{
+			references.insert(it.key().toString(), it.value().toString());
+		}
+		obj.insert("references", references);
+	}
 	return obj;
 }
 
