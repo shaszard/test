@@ -79,25 +79,14 @@ endif(${BIGENDIAN})
 
 
 ######## Dark magic crash reports ########
-option(MultiMC_HANDLE_SEGV "Handle fatal crashes and generate crash reports." OFF)
-set(CRASH_HANDLER_IMPL "")
-message(STATUS "Crash dumps are ${MultiMC_HANDLE_SEGV}")
-if (MultiMC_HANDLE_SEGV)
-	add_definitions(-DHANDLE_SEGV)
-	if (WIN32)
-		find_package(DbgHelp)
-		set(MultiMC_LINK_ADDITIONAL_LIBS "${MultiMC_LINK_ADDITIONAL_LIBS}dbghelp")
-		set(MultiMC_CRASH_HANDLER_EXTRA_H "WinBacktrace.h")
-		set(MultiMC_CRASH_HANDLER_EXTRA_CPP "WinBacktrace.cpp")
-	endif ()
-endif ()
+option(MultiMC_HANDLE_CRASHES "Handle fatal crashes and generate crash reports." OFF)
 
 option(MultiMC_TEST_SEGV "Intentionally segfault sometimes to test crash handling." OFF)
-if (MultiMC_TEST_SEGV)
+if(MultiMC_TEST_SEGV)
 	# TODO: Make this a unit test instead.
 	message(WARNING "You have enabled crash handler testing. MULTIMC WILL INTENTIONALLY CRASH ITSELF. Crashes should occur on exit and when the new instance button is pressed.")
 	add_definitions(-DTEST_SEGV)
-endif ()
+endif()
 
 
 ######## Set URLs ########
@@ -254,6 +243,30 @@ include_directories(${XZ_INCLUDE_DIR})
 add_subdirectory(depends/pack200)
 include_directories(${PACK200_INCLUDE_DIR})
 
+# Add breakpad
+if(MultiMC_HANDLE_CRASHES)
+	include(ExternalProject)
+	set(BREAKPAD_ROOT ${CMAKE_BINARY_DIR/depends/breakpad)
+	ExternalProject_Add(breakpad
+		PREFIX ${BREAKPAD_ROOT}
+		SVN_REPOSITORY http://google-breakpad.googlecode.com/svn/trunk/
+		UPDATE_COMMAND ""
+		CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> "CXXFLAGS=-std=c++11 -D'typeof(X)=std::remove_reference<decltype(X)>::type'"
+		BUILD_IN_SOURCE 1
+		BUILD_COMMAND make -j3
+	)
+	include_directories(${BREAKPAD_ROOT}/src/breakpad/src)
+	add_definitions("-DHANDLE_CRASHES" "-D'typeof(X)=std::remove_reference<decltype(X)>::type'")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+
+	set(BREAKPAD_LIBRARIES -L${BREAKPAD_ROOT}/lib -lbreakpad_client)
+	set(BREAKPAD_DUMP_SYMS_EXECUTABLE ${BREAKPAD_ROOT}/bin/dump_syms)
+	set(BREAKPAD_MINIDUMP_STACKWALK_EXECUTABLE ${BREAKPAD_ROOT}/bin/minidump_stackwalk)
+
+	add_custom_target(generate_minidump_symbols
+		COMMAND ${BREAKPAD_DUMP_SYMS}
+endif()
+
 ######## MultiMC Libs ########
 
 # Add the util library.
@@ -279,11 +292,8 @@ SET(MULTIMC_SOURCES
 	BuildConfig.h
 	${PROJECT_BINARY_DIR}/BuildConfig.cpp
 
-	# Crash handling
+	# Handle crashes
 	HandleCrash.h
-	HandleCrash.cpp
-	${MultiMC_CRASH_HANDLER_EXTRA_H} # Extra platform specific stuff
-	${MultiMC_CRASH_HANDLER_EXTRA_CPP}
 
 	# Logging
 	logger/QsDebugOutput.cpp
@@ -734,7 +744,7 @@ endif()
 if(UNIX AND NOT APPLE)
 	set(MultiMC_QT_ADDITIONAL_MODULES ${MultiMC_QT_ADDITIONAL_MODULES} X11Extras)
 	set(MultiMC_LINK_ADDITIONAL_LIBS ${MultiMC_LINK_ADDITIONAL_LIBS} xcb)
-	list(APPEND MULTIMC_SOURCES gui/Platform_X11.cpp)
+	list(APPEND MULTIMC_SOURCES gui/Platform_X11.cpp HandleCrash_Linux.cpp)
 else()
 	list(APPEND MULTIMC_SOURCES gui/Platform_Other.cpp)
 endif()
@@ -747,9 +757,9 @@ if(WIN32)
 	set(MultiMC_LINK_ADDITIONAL_LIBS ${MultiMC_LINK_ADDITIONAL_LIBS} Qt5::WinMain)
 endif(WIN32)
 
-# Tell CMake that MultiMCLauncher.jar is generated.
-#SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/depends/launcher/MultiMCLauncher.jar GENERATED)
-#SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/depends/javacheck/JavaCheck.jar GENERATED)
+if(MultiMC_HANDLE_CRASHES)
+	set(MultiMC_LINK_ADDITIONAL_LIBS ${MultiMC_LINK_ADDITIONAL_LIBS} ${BREAKPAD_LIBRARIES})
+endif()
 
 # Qt 5 stuff
 qt5_wrap_ui(MULTIMC_UI ${MULTIMC_UIS})
