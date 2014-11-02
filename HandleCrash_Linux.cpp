@@ -6,19 +6,11 @@
 
 namespace HandleCrash
 {
-
-static bool dumpCallback(const google_breakpad::MinidumpDescriptor &descriptor,
-						 void *context,
-						 bool succeeded)
-{
-	return succeeded;
-}
-
 void init()
 {
-	ensureFolderPathExists("/tmp/multimc/crashes");
-	google_breakpad::MinidumpDescriptor descriptor("/tmp/multimc/crashes");
-	google_breakpad::ExceptionHandler *handler = new google_breakpad::ExceptionHandler(descriptor, nullptr, &dumpCallback, nullptr, true, -1);
+	const QString path = PathCombine(QDir::currentPath(), "crashes");
+	ensureFolderPathExists(path);
+	google_breakpad::MinidumpDescriptor descriptor(path.toStdString());
+	google_breakpad::ExceptionHandler *handler = new google_breakpad::ExceptionHandler(descriptor, nullptr, nullptr, nullptr, true, -1);
 }
-
 }

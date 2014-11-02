@@ -246,7 +246,7 @@ include_directories(${PACK200_INCLUDE_DIR})
 # Add breakpad
 if(MultiMC_HANDLE_CRASHES)
 	include(ExternalProject)
-	set(BREAKPAD_ROOT ${CMAKE_BINARY_DIR/depends/breakpad)
+	set(BREAKPAD_ROOT ${CMAKE_BINARY_DIR}/depends/breakpad)
 	ExternalProject_Add(breakpad
 		PREFIX ${BREAKPAD_ROOT}
 		SVN_REPOSITORY http://google-breakpad.googlecode.com/svn/trunk/
@@ -262,9 +262,6 @@ if(MultiMC_HANDLE_CRASHES)
 	set(BREAKPAD_LIBRARIES -L${BREAKPAD_ROOT}/lib -lbreakpad_client)
 	set(BREAKPAD_DUMP_SYMS_EXECUTABLE ${BREAKPAD_ROOT}/bin/dump_syms)
 	set(BREAKPAD_MINIDUMP_STACKWALK_EXECUTABLE ${BREAKPAD_ROOT}/bin/minidump_stackwalk)
-
-	add_custom_target(generate_minidump_symbols
-		COMMAND ${BREAKPAD_DUMP_SYMS}
 endif()
 
 ######## MultiMC Libs ########
@@ -745,8 +742,10 @@ if(UNIX AND NOT APPLE)
 	set(MultiMC_QT_ADDITIONAL_MODULES ${MultiMC_QT_ADDITIONAL_MODULES} X11Extras)
 	set(MultiMC_LINK_ADDITIONAL_LIBS ${MultiMC_LINK_ADDITIONAL_LIBS} xcb)
 	list(APPEND MULTIMC_SOURCES gui/Platform_X11.cpp HandleCrash_Linux.cpp)
+elseif(UNIX AND APPLE)
+	list(APPEND MULTIMC_SOURCES gui/Platform_Other.cpp HandleCrash_OSX.cpp)
 else()
-	list(APPEND MULTIMC_SOURCES gui/Platform_Other.cpp)
+	list(APPEND MULTIMC_SOURCES gui/Platform_Other.cpp HandleCrash_Windows.cpp)
 endif()
 
 
@@ -776,6 +775,8 @@ target_link_libraries(MultiMC MultiMC_common)
 target_link_libraries(MultiMC_common xz-embedded unpack200 quazip libUtil LogicalGui ${MultiMC_LINK_ADDITIONAL_LIBS})
 qt5_use_modules(MultiMC Core Widgets Network Xml Concurrent WebKitWidgets ${MultiMC_QT_ADDITIONAL_MODULES})
 qt5_use_modules(MultiMC_common Core Widgets Network Xml Concurrent WebKitWidgets ${MultiMC_QT_ADDITIONAL_MODULES})
+
+add_dependencies(MultiMC_common breakpad)
 
 ################################ INSTALLATION AND PACKAGING ################################
 
