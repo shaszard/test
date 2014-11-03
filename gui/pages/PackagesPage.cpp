@@ -87,6 +87,8 @@ void PackagesPage::on_applyTransaction_clicked()
 
 	QuickModInstallDialog dlg(m_instance, this);
 	dlg.exec();
+
+	m_instance->installedPackages()->transactionApplied();
 }
 
 void PackagesPage::on_changeVersion_clicked()

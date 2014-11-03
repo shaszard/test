@@ -69,7 +69,7 @@ std::unique_ptr< QuickModView > InstancePackageList::iterateQuickMods()
 
 std::shared_ptr< Transaction > InstancePackageList::getTransaction()
 {
-	if(!transaction)
+	if (!transaction)
 	{
 		transaction = std::make_shared<Transaction>();
 		for(auto & mod: installedMods)
@@ -78,6 +78,12 @@ std::shared_ptr< Transaction > InstancePackageList::getTransaction()
 		}
 	}
 	return transaction;
+}
+
+void InstancePackageList::transactionApplied()
+{
+	transaction.reset();
+	saveToFile("components.json");
 }
 
 

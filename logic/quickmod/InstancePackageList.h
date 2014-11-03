@@ -50,8 +50,8 @@ public: /* methods */
 	/// Get or create the current transaction to work with outside of the package list
 	std::shared_ptr<Transaction> getTransaction();
 
-	/// Begin to apply the current transaction
-	std::shared_ptr<Task> applyCurrentTransaction();
+	/// Call after the current transaction has been applied
+	void transactionApplied();
 
 signals:
 	void added(ChangeSource source, QString uid);
