@@ -83,7 +83,7 @@ void PackagesPage::on_applyTransaction_clicked()
 		return;
 	}
 
-	QuickModInstallDialog dlg(currentTransaction(), this);
+	QuickModInstallDialog dlg(m_instance, currentTransaction(), this);
 	if (dlg.exec() == QDialog::Accepted)
 	{
 		m_instance->installedPackages()->transactionApplied();

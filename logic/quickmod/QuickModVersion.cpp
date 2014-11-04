@@ -109,22 +109,9 @@ QString QuickModVersion::instancePath() const
 	}
 }
 
-void QuickModVersion::installInto(std::shared_ptr<OneSixInstance> m_instance)
+void QuickModVersion::installInto(std::shared_ptr<OneSixInstance> instance)
 {
-	// remove any files from previously installed versions
-	/*
-	for (auto it : installedModFiles(version->mod->uid()))
-	{
-		if (!QFile::remove(PathCombine(instance->minecraftRoot(), it.path)))
-		{
-			QLOG_ERROR() << "Unable to remove previous version file" << it.path
-						 << ", this may cause problems";
-		}
-		markModAsUninstalled(version->mod->uid());
-	}
-	*/
-
-	QString source = PathCombine(storagePath(), fileName());
+	QString source = storagePath();
 	QString destination = instancePath();
 
 	// with nothing to install, we are finished.
@@ -133,12 +120,11 @@ void QuickModVersion::installInto(std::shared_ptr<OneSixInstance> m_instance)
 		return;
 	}
 	
-	destination = PathCombine(m_instance->minecraftRoot(), destination);
+	destination = PathCombine(instance->minecraftRoot(), destination);
 
 	// make sure the destination folder exists
 	if(!ensureFolderPathExists(destination))
 	{
-		QLOG_INFO() << "Unable to create mod destination folder " << destination;
 		throw MMCError(QObject::tr("Unable to create mod destination folder %1").arg(destination));
 	}
 
@@ -179,19 +165,24 @@ void QuickModVersion::installInto(std::shared_ptr<OneSixInstance> m_instance)
 	// do some things to libraries.
 	if (!libraries.isEmpty())
 	{
-		installLibrariesInto(m_instance);
+		installLibrariesInto(instance);
 	}
 }
 
+void QuickModVersion::removeFrom(std::shared_ptr<OneSixInstance> instance)
+{
+	// TODO removal of quickmods
+}
+
 //FIXME: this is crap. Use the actual version objects!
-void QuickModVersion::installLibrariesInto(std::shared_ptr<OneSixInstance> m_instance)
+void QuickModVersion::installLibrariesInto(std::shared_ptr<OneSixInstance> instance)
 {
 	QJsonObject obj;
-	obj.insert("order", qMin(m_instance->getFullVersion()->getHighestOrder(), 99) + 1);
+	obj.insert("order", qMin(instance->getFullVersion()->getHighestOrder(), 99) + 1);
 	obj.insert("name", mod->name());
 	obj.insert("fileId", mod->uid().toString());
 	obj.insert("version", name());
-	obj.insert("mcVersion", m_instance->intendedVersionId());
+	obj.insert("mcVersion", instance->intendedVersionId());
 
 	QJsonArray librariesJson;
 	for (auto lib : libraries)
@@ -207,7 +198,7 @@ void QuickModVersion::installLibrariesInto(std::shared_ptr<OneSixInstance> m_ins
 	}
 	obj.insert("+libraries", librariesJson);
 
-	auto filename = PathCombine(m_instance->instanceRoot(),"patches", QString("%1.json").arg(mod->uid().toString()) );
+	auto filename = PathCombine(instance->instanceRoot(),"patches", QString("%1.json").arg(mod->uid().toString()) );
 
 	QFile file(filename);
 	if (!file.open(QFile::WriteOnly))
@@ -219,7 +210,7 @@ void QuickModVersion::installLibrariesInto(std::shared_ptr<OneSixInstance> m_ins
 	file.write(QJsonDocument(obj).toJson());
 	file.close();
 
-	m_instance->reloadVersion();
+	instance->reloadVersion();
 }
 
 QuickModDownload QuickModVersion::highestPriorityDownload(const QuickModDownload::DownloadType type)

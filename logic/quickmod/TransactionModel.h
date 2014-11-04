@@ -5,13 +5,13 @@
 #include "QuickModVersion.h"
 
 class QWebPage;
-class QWebPage;
+
 class TransactionModel : public QAbstractListModel
 {
 	Q_OBJECT
 public: /* methods */
-	explicit TransactionModel(std::shared_ptr<Transaction> transaction);
-	virtual ~TransactionModel(){};
+	explicit TransactionModel(std::shared_ptr<OneSixInstance> instance, std::shared_ptr<Transaction> transaction);
+	virtual ~TransactionModel() {}
 
 	virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 	virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -82,19 +82,21 @@ private: /* methods */
 
 	void startRemoves();
 	void startNextRemove();
+	
+	int indexOfCurrentAction() const;
 
 private: /* data */
+	std::shared_ptr<OneSixInstance> m_instance;
 	std::shared_ptr<Transaction> m_transaction;
 	QList<ExtendedAction> m_actions;
 
 	// index to look up removes in m_actions
-	QList<int> m_idx_removes;
-	int m_current_remove = -1;
+	QList<int> m_idxOfRemoves;
 
 	// index to look up installs in m_actions
-	QList<int> m_idx_installs;
+	QList<int> m_idxOfInstalls;
+
 	int m_current_download = -1;
-	int m_current_install = -1;
 
 	// overall status of the transaction
 	ExtendedAction::Status m_status = ExtendedAction::Initial;

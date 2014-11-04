@@ -3,11 +3,9 @@
 #include <QWebPage>
 #include <QWebFrame>
 
-TransactionModel::TransactionModel(std::shared_ptr<Transaction> transaction)
-	: QAbstractListModel()
+TransactionModel::TransactionModel(std::shared_ptr<OneSixInstance> instance, std::shared_ptr<Transaction> transaction)
+	: QAbstractListModel(), m_instance(instance), m_transaction(transaction)
 {
-	m_transaction = transaction;
-
 	beginResetModel();
 	/// turn actions into extended actions, fit for processing/display
 	auto actions = m_transaction->getActions();
@@ -18,11 +16,11 @@ TransactionModel::TransactionModel(std::shared_ptr<Transaction> transaction)
 		m_actions.append(ext_action);
 		if (ext_action.versionObj)
 		{
-			m_idx_installs.append(idx);
+			m_idxOfInstalls.append(idx);
 		}
 		if (!ext_action.versionObj || ext_action.startVersionObj != ext_action.versionObj)
 		{
-			m_idx_removes.append(idx);
+			m_idxOfRemoves.append(idx);
 		}
 	}
 	endResetModel();
@@ -98,9 +96,7 @@ void TransactionModel::start()
 	{
 		return;
 	}
-	m_current_remove = -1;
 	m_current_download = -1;
-	m_current_install = -1;
 	m_status = ExtendedAction::Downloading;
 	startNextDownload();
 }
@@ -109,13 +105,13 @@ void TransactionModel::startNextDownload()
 {
 	m_current_download++;
 	// done downloading?
-	if (m_current_download == m_idx_installs.size())
+	if (m_current_download == m_idxOfInstalls.size())
 	{
 		startInstalls();
 		return;
 	}
 	// run a download
-	auto &action = m_actions[m_idx_installs[m_current_download]];
+	auto &action = m_actions[m_idxOfInstalls[m_current_download]];
 	auto URL = action.downloadUrl;
 	action.dlPage = new QWebPage();
 	action.dlPage->setForwardUnsupportedContent(true);
@@ -131,7 +127,7 @@ void TransactionModel::unsupportedContent(QNetworkReply *reply)
 {
 	// we hit an actual download/content unsupported by webkit!
 	QLOG_INFO() << "Got download for: " << reply->url().toString();
-	auto &action = m_actions[m_idx_installs[m_current_download]];
+	auto &action = m_actions[indexOfCurrentAction()];
 
 	emit hidePage();
 
@@ -146,7 +142,7 @@ void TransactionModel::unsupportedContent(QNetworkReply *reply)
 
 void TransactionModel::downloadSucceeded(int)
 {
-	auto idx = m_idx_installs[m_current_download];
+	auto idx = indexOfCurrentAction();
 	auto &action = m_actions[idx];
 	action.progress = 100;
 	action.totalProgress = 100;
@@ -161,7 +157,7 @@ void TransactionModel::downloadFailed(int)
 
 void TransactionModel::downloadProgress(int, qint64 progress, qint64 total)
 {
-	auto idx = m_idx_installs[m_current_download];
+	auto idx = indexOfCurrentAction();
 	auto &action = m_actions[idx];
 	action.progress = progress;
 	action.totalProgress = total;
@@ -171,7 +167,7 @@ void TransactionModel::downloadProgress(int, qint64 progress, qint64 total)
 
 void TransactionModel::webDownloadProgress(int progress)
 {
-	auto idx = m_idx_installs[m_current_download];
+	auto idx = indexOfCurrentAction();
 	auto &action = m_actions[idx];
 	action.progress = progress;
 	action.totalProgress = 100;
@@ -186,21 +182,36 @@ void TransactionModel::loadFinished(bool success)
 	if(!success)
 	{
 		// couldn't load it -> it's a download, most probably.
-		auto &action = m_actions[m_idx_installs[m_current_download]];
+		auto &action = m_actions[indexOfCurrentAction()];
 		action.dlPage->deleteLater();
 		action.dlPage = nullptr;
 	}
 	else
 	{
 		// it was a success, show the page.
-		emit showPageOfRow(m_idx_installs[m_current_download]);
+		emit showPageOfRow(indexOfCurrentAction());
 	}
 }
+
+int TransactionModel::indexOfCurrentAction() const
+{
+	return sender()->property("action_index").toInt();
+}
+
 
 void TransactionModel::startInstalls()
 {
 	emit hidePage();
-	QLOG_INFO() << "Installs would start now";
+	for (const auto actionId : m_idxOfRemoves)
+	{
+		auto action = m_actions.at(actionId);
+		action.startVersionObj->removeFrom(m_instance);
+	}
+	for (const auto actionId : m_idxOfInstalls)
+	{
+		auto action = m_actions.at(actionId);
+		action.versionObj->installInto(m_instance);
+	}
 }
 
 QWebPage* TransactionModel::getPage(int row)

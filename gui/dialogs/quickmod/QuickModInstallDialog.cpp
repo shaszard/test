@@ -81,11 +81,11 @@ public:
 	}
 };
 
-QuickModInstallDialog::QuickModInstallDialog(std::shared_ptr<Transaction> transaction,
+QuickModInstallDialog::QuickModInstallDialog(std::shared_ptr<OneSixInstance> instance, std::shared_ptr<Transaction> transaction,
 											 QWidget *parent)
 	: QDialog(parent), ui(new Ui::QuickModInstallDialog)
 {
-	m_model = std::make_shared<TransactionModel>(transaction);
+	m_model = std::make_shared<TransactionModel>(instance, transaction);
 	ui->setupUi(this);
 	setWindowModality(Qt::WindowModal);
 

@@ -116,10 +116,13 @@ public: /* methods */
 	bool needsDeploy() const;
 
 	/// install this version of package into the specified instance
-	void installInto(std::shared_ptr<OneSixInstance> m_instance);
+	void installInto(std::shared_ptr<OneSixInstance> instance);
+
+	/// removes this version of package from the specified instance
+	void removeFrom(std::shared_ptr<OneSixInstance> instance);
 
 private: /* methods */
-	void installLibrariesInto(std::shared_ptr<OneSixInstance> m_instance);
+	void installLibrariesInto(std::shared_ptr<OneSixInstance> instance);
 
 public: /* data */
 	/// quickmod this is associated with

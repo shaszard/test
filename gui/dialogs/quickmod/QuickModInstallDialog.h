@@ -25,13 +25,15 @@ class QuickModInstallDialog;
 
 class TransactionModel;
 class Transaction;
+class OneSixInstance;
 
 class QuickModInstallDialog : public QDialog
 {
 	Q_OBJECT
 
 public:
-	explicit QuickModInstallDialog(std::shared_ptr<Transaction> transaction,
+	explicit QuickModInstallDialog(std::shared_ptr<OneSixInstance> instance,
+								   std::shared_ptr<Transaction> transaction,
 								   QWidget *parent = 0);
 	~QuickModInstallDialog();
 
