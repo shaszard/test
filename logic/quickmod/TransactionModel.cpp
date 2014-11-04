@@ -120,10 +120,9 @@ void TransactionModel::startNextDownload()
 	action.dlPage = new QWebPage();
 	action.dlPage->setForwardUnsupportedContent(true);
 	action.dlPage->setNetworkAccessManager(MMC->qnam().get());
-	connect(action.dlPage, SIGNAL(unsupportedContent(QNetworkReply *)),
-			SLOT(unsupportedContent(QNetworkReply *)));
-	connect(action.dlPage, SIGNAL(loadFinished(bool)), SLOT(loadFinished(bool)));
-	connect(action.dlPage, SIGNAL(loadProgress(int)), SLOT(downloadProgress(int)));
+	connect(action.dlPage, &QWebPage::unsupportedContent, this, &TransactionModel::unsupportedContent);
+	connect(action.dlPage, &QWebPage::loadFinished, this, &TransactionModel::loadFinished);
+	connect(action.dlPage, &QWebPage::loadProgress, this, &TransactionModel::downloadProgress);
 	QLOG_INFO() << "Grabbing: " << URL.toString();
 	action.dlPage->mainFrame()->setUrl(URL);
 }
@@ -137,11 +136,11 @@ void TransactionModel::unsupportedContent(QNetworkReply *reply)
 	emit hidePage();
 
 	action.download = CacheDownload::make(reply, action.versionObj->cacheEntry());
+
 	auto download = action.download.get();
-	
-	connect(download, SIGNAL(succeeded(int)), this, SLOT(downloadSucceeded(int)));
-	connect(download, SIGNAL(failed(int)), this, SLOT(downloadFailed(int)));
-	connect(download, SIGNAL(progress(int,qint64,qint64)), this, SLOT(downloadProgress(int,qint64,qint64)));
+	connect(download, &CacheDownload::succeeded, this, &TransactionModel::downloadSucceeded);
+	connect(download, &CacheDownload::failed, this, &TransactionModel::downloadFailed);
+	connect(download, &CacheDownload::progress, this, &TransactionModel::downloadProgress);
 	download->start();
 }
 

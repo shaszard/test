@@ -16,36 +16,22 @@
 #pragma once
 
 #include <QDialog>
-#include <QMap>
-#include <QPair>
 #include <memory>
 
-#include "logic/quickmod/QuickModMetadata.h"
-#include "logic/quickmod/QuickModVersion.h"
-#include "logic/quickmod/Transaction.h"
-
-#include "logic/BaseInstance.h"
-
-class TransactionModel;
 namespace Ui
 {
 class QuickModInstallDialog;
 }
 
-class QNetworkReply;
-class WebDownloadNavigator;
-class BaseInstance;
-class OneSixInstance;
-class QuickModMetadata;
-class QuickModInstaller;
-class QTreeWidgetItem;
+class TransactionModel;
+class Transaction;
 
 class QuickModInstallDialog : public QDialog
 {
 	Q_OBJECT
 
 public:
-	explicit QuickModInstallDialog(std::shared_ptr<OneSixInstance> instance,
+	explicit QuickModInstallDialog(std::shared_ptr<Transaction> transaction,
 								   QWidget *parent = 0);
 	~QuickModInstallDialog();
 
@@ -68,5 +54,4 @@ private slots:
 private: /* data */
 	Ui::QuickModInstallDialog *ui;
 	std::shared_ptr<TransactionModel> m_model;
-	std::shared_ptr<OneSixInstance> m_instance;
 };

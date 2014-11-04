@@ -12,6 +12,7 @@
 #include "logic/quickmod/Transaction.h"
 #include "logic/quickmod/QuickModVersion.h"
 #include "logic/quickmod/QuickModDatabase.h"
+#include "logic/quickmod/QuickModDownloadTask.h"
 #include "MultiMC.h"
 
 //BEGIN *struction
@@ -78,17 +79,13 @@ int PackagesPage::selectedRow()
 //BEGIN Event handling
 void PackagesPage::on_applyTransaction_clicked()
 {
-	auto transaction = m_instance->installedPackages()->getTransaction();
-
-	if (transaction->getActions().isEmpty())
+	if (currentTransaction()->getActions().isEmpty())
 	{
 		return;
 	}
 
-	QuickModInstallDialog dlg(m_instance, this);
-	dlg.exec();
-
-	m_instance->installedPackages()->transactionApplied();
+	QuickModDownloadTask task(m_instance);
+	task.start();
 }
 
 void PackagesPage::on_changeVersion_clicked()
@@ -110,9 +107,8 @@ void PackagesPage::on_changeVersion_clicked()
 	std::shared_ptr<QuickModVersion> version = std::dynamic_pointer_cast<QuickModVersion>(dialog.selectedVersion());
 	if(!version)
 		return;
-	auto transaction = m_instance->installedPackages()->getTransaction();
 	
-	transaction->setComponentVersion(uid.toString(), version->descriptor(), version->mod->repo());
+	currentTransaction()->setComponentVersion(uid.toString(), version->descriptor(), version->mod->repo());
 }
 
 void PackagesPage::on_install_clicked()
@@ -128,9 +124,8 @@ void PackagesPage::on_remove_clicked()
 		return;
 
 	auto uid = m_model->data(m_model->index(row), InstancePackageModel::UidRole);
-	auto transaction = m_instance->installedPackages()->getTransaction();
 
-	transaction->removeComponent(uid.toString());
+	currentTransaction()->removeComponent(uid.toString());
 }
 
 void PackagesPage::on_revert_clicked()
@@ -140,21 +135,18 @@ void PackagesPage::on_revert_clicked()
 		return;
 
 	auto uid = m_model->data(m_model->index(row), InstancePackageModel::UidRole);
-	auto transaction = m_instance->installedPackages()->getTransaction();
 
-	transaction->resetComponentVersion(uid.toString());
+	currentTransaction()->resetComponentVersion(uid.toString());
 }
 
 void PackagesPage::on_revertTransaction_clicked()
 {
-	auto transaction = m_instance->installedPackages()->getTransaction();
-
-	transaction->reset();
+	currentTransaction()->reset();
 }
 
-bool PackagesPage::eventFilter(QObject *obj, QEvent *ev)
+std::shared_ptr<Transaction> PackagesPage::currentTransaction()
 {
-	return QObject::eventFilter(obj, ev);
+	return m_instance->installedPackages()->getTransaction();
 }
 
 void PackagesPage::packageCurrent(const QModelIndex &current, const QModelIndex &previous)

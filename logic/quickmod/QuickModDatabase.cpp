@@ -46,8 +46,8 @@ QByteArray QuickModDatabase::lastETagForURL(const QUrl &url) const
 void QuickModDatabase::addMod(QuickModMetadataPtr mod)
 {
 	m_metadata[mod->uid()][mod->repo()] = mod;
-	connect(mod.get(), SIGNAL(iconUpdated(QString)), this, SIGNAL(modIconUpdated(QString)));
-	connect(mod.get(), SIGNAL(logoUpdated(QString)), this, SIGNAL(modLogoUpdated(QString)));
+	connect(mod.get(), &QuickModMetadata::iconUpdated, this, &QuickModDatabase::modIconUpdated);
+	connect(mod.get(), &QuickModMetadata::logoUpdated, this, &QuickModDatabase::modLogoUpdated);
 	delayedFlushToDisk();
 	emit justAddedMod(mod->uid());
 }

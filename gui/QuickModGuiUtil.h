@@ -36,7 +36,6 @@ public:
 public
 slots:
 	bool modMissing(const QString &id);
-	QList<QuickModVersionPtr> installMods(std::shared_ptr<OneSixInstance> instance, const QList<QuickModRef> &mods, bool *ok);
 	ForgeVersionPtr getForgeVersion(std::shared_ptr<OneSixInstance> instance, const QStringList &versionFilters);
 	LiteLoaderVersionPtr getLiteLoaderVersion(std::shared_ptr<OneSixInstance> instance, const QStringList &versionFilters);
 };

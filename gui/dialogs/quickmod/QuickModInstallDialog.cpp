@@ -81,11 +81,11 @@ public:
 	}
 };
 
-QuickModInstallDialog::QuickModInstallDialog(std::shared_ptr<OneSixInstance> instance,
+QuickModInstallDialog::QuickModInstallDialog(std::shared_ptr<Transaction> transaction,
 											 QWidget *parent)
-	: QDialog(parent), ui(new Ui::QuickModInstallDialog), m_instance(instance)
+	: QDialog(parent), ui(new Ui::QuickModInstallDialog)
 {
-	m_model.reset(new TransactionModel(m_instance->installedPackages()->getTransaction()));
+	m_model = std::make_shared<TransactionModel>(transaction);
 	ui->setupUi(this);
 	setWindowModality(Qt::WindowModal);
 
@@ -97,8 +97,8 @@ QuickModInstallDialog::QuickModInstallDialog(std::shared_ptr<OneSixInstance> ins
 	connect(ui->progressList, &QWidget::customContextMenuRequested, this,
 			&QuickModInstallDialog::contextMenuRequested);
 
-	connect(m_model.get(), SIGNAL(hidePage()), SLOT(hidePage()));
-	connect(m_model.get(), SIGNAL(showPageOfRow(int)), SLOT(showPageOfRow(int)));
+	connect(m_model.get(), &TransactionModel::hidePage, this, &QuickModInstallDialog::hidePage);
+	connect(m_model.get(), &TransactionModel::showPageOfRow, this, &QuickModInstallDialog::showPageOfRow);
 	ui->progressList->setContextMenuPolicy(Qt::CustomContextMenu);
 	ui->webView->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
 	m_model->start();

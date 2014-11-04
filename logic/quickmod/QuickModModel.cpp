@@ -53,9 +53,9 @@ QuickModModel::QuickModModel(QObject *parent) : QAbstractListModel(parent)
 		m_uids = storage->getPackageUIDs();
 		endResetModel();
 	});
-	connect(storage.get(), SIGNAL(modIconUpdated(QuickModRef)), SLOT(modIconUpdated(QuickModRef)));
-	connect(storage.get(), SIGNAL(modLogoUpdated(QuickModRef)), SLOT(modLogoUpdated(QuickModRef)));
-	connect(storage.get(), SIGNAL(justAddedMod(QuickModRef)), SLOT(modAdded(QuickModRef)));
+	connect(storage.get(), &QuickModDatabase::modIconUpdated, this, &QuickModModel::modIconUpdated);
+	connect(storage.get(), &QuickModDatabase::modLogoUpdated, this, &QuickModModel::modLogoUpdated);
+	connect(storage.get(), &QuickModDatabase::justAddedMod, this, &QuickModModel::modAdded);
 }
 
 QuickModModel::~QuickModModel()

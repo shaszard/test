@@ -19,7 +19,7 @@
 
 #include "logic/OneSixInstance.h"
 #include "logic/net/NetJob.h"
-#include <logic/quickmod/InstancePackageModel.h>
+#include "logic/quickmod/InstancePackageModel.h"
 #include "BasePage.h"
 
 class EnabledItemFilter;
@@ -56,15 +56,14 @@ public:
 	void opened() override;
 
 protected:
-	bool eventFilter(QObject *obj, QEvent *ev);
-
-protected:
 	BaseInstance *m_inst;
 
 private:
 	Ui::PackagesPage *ui;
 	std::shared_ptr<OneSixInstance> m_instance;
 	InstancePackageModel *m_model;
+
+	std::shared_ptr<class Transaction> currentTransaction();
 
 public slots:
 	void packageCurrent(const QModelIndex &current, const QModelIndex &previous);

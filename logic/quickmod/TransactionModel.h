@@ -106,9 +106,9 @@ signals:
 private slots: /* slots for downloads */
 	void unsupportedContent(QNetworkReply *reply);
 	void loadFinished(bool);
+	void webDownloadProgress(int);
 
 	void downloadSucceeded(int);
 	void downloadFailed(int);
 	void downloadProgress(int,qint64,qint64);
-	void downloadProgress(int);
 };

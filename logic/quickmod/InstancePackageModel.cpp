@@ -9,20 +9,14 @@ InstancePackageModel::InstancePackageModel(std::shared_ptr<InstancePackageList> 
 	: QAbstractListModel(), m_list(list)
 {
 	populate();
-	connect(m_list.get(), SIGNAL(added(ChangeSource, QString)),
-			SLOT(added(ChangeSource, QString)));
-	connect(m_list.get(), SIGNAL(removed(ChangeSource, QString)),
-			SLOT(removed(ChangeSource, QString)));
-	connect(m_list.get(), SIGNAL(updated(ChangeSource, QString)),
-			SLOT(updated(ChangeSource, QString)));
+	connect(m_list.get(), &InstancePackageList::added, this, &InstancePackageModel::added);
+	connect(m_list.get(), &InstancePackageList::removed, this, &InstancePackageModel::removed);
+	connect(m_list.get(), &InstancePackageList::updated, this, &InstancePackageModel::updated);
 
 	auto t = m_list->getTransaction();
-	connect(t.get(), SIGNAL(actionAdded(ChangeSource, QString)),
-			SLOT(added(ChangeSource, QString)));
-	connect(t.get(), SIGNAL(actionChanged(ChangeSource, QString)),
-			SLOT(updated(ChangeSource, QString)));
-	connect(t.get(), SIGNAL(actionRemoved(ChangeSource, QString)),
-			SLOT(removed(ChangeSource, QString)));
+	connect(t.get(), &Transaction::actionAdded, this, &InstancePackageModel::added);
+	connect(t.get(), &Transaction::actionChanged, this, &InstancePackageModel::removed);
+	connect(t.get(), &Transaction::actionRemoved, this, &InstancePackageModel::updated);
 }
 
 //BEGIN: data interactions

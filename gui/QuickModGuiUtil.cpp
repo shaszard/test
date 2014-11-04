@@ -20,7 +20,6 @@ void QuickModGuiUtil::setup(Bindable *task, QWidget *widgetParent)
 {
 	QuickModGuiUtil *util = new QuickModGuiUtil(widgetParent);
 	task->bind("QuickMods.ModMissing", util, &QuickModGuiUtil::modMissing);
-	task->bind("QuickMods.InstallMods", util, &QuickModGuiUtil::installMods);
 	task->bind("QuickMods.GetForgeVersion", util, &QuickModGuiUtil::getForgeVersion);
 	task->bind("QuickMods.GetLiteLoaderVersion", util, &QuickModGuiUtil::getLiteLoaderVersion);
 }
@@ -31,16 +30,6 @@ bool QuickModGuiUtil::modMissing(const QString &id)
 			   this, tr("Mod not available"),
 			   tr("You seem to be missing the QuickMod file for %1. Skip it?").arg(id),
 			   QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes;
-}
-
-#pragma warning("Remove?")
-QList<QuickModVersionPtr> QuickModGuiUtil::installMods(std::shared_ptr<OneSixInstance> instance,
-													   const QList<QuickModRef> &mods, bool *ok)
-{
-	QuickModInstallDialog dialog(instance, this);
-	//dialog.setInitialMods(mods);
-	*ok = dialog.exec() == QDialog::Accepted;
-	return QList<QuickModVersionPtr>();//dialog.modVersions();
 }
 
 ForgeVersionPtr QuickModGuiUtil::getForgeVersion(std::shared_ptr<OneSixInstance> instance,
