@@ -122,7 +122,7 @@ void TransactionModel::startNextDownload()
 	action.dlPage->setNetworkAccessManager(MMC->qnam().get());
 	connect(action.dlPage, &QWebPage::unsupportedContent, this, &TransactionModel::unsupportedContent);
 	connect(action.dlPage, &QWebPage::loadFinished, this, &TransactionModel::loadFinished);
-	connect(action.dlPage, &QWebPage::loadProgress, this, &TransactionModel::downloadProgress);
+	connect(action.dlPage, &QWebPage::loadProgress, this, &TransactionModel::webDownloadProgress);
 	QLOG_INFO() << "Grabbing: " << URL.toString();
 	action.dlPage->mainFrame()->setUrl(URL);
 }
@@ -169,7 +169,7 @@ void TransactionModel::downloadProgress(int, qint64 progress, qint64 total)
 	emit dataChanged(index(idx, 0), index(idx, columnCount(QModelIndex())));
 }
 
-void TransactionModel::downloadProgress(int progress)
+void TransactionModel::webDownloadProgress(int progress)
 {
 	auto idx = m_idx_installs[m_current_download];
 	auto &action = m_actions[idx];

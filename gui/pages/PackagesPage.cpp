@@ -12,7 +12,6 @@
 #include "logic/quickmod/Transaction.h"
 #include "logic/quickmod/QuickModVersion.h"
 #include "logic/quickmod/QuickModDatabase.h"
-#include "logic/quickmod/QuickModDownloadTask.h"
 #include "MultiMC.h"
 
 //BEGIN *struction
@@ -84,8 +83,11 @@ void PackagesPage::on_applyTransaction_clicked()
 		return;
 	}
 
-	QuickModDownloadTask task(m_instance);
-	task.start();
+	QuickModInstallDialog dlg(currentTransaction(), this);
+	if (dlg.exec() == QDialog::Accepted)
+	{
+		m_instance->installedPackages()->transactionApplied();
+	}
 }
 
 void PackagesPage::on_changeVersion_clicked()
